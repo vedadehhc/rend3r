@@ -1,6 +1,8 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
+import proctypes::*;
+
 // 1 stage pipeline - register on output
 module parser (
     input wire clk,
@@ -12,18 +14,21 @@ module parser (
 );
     logic nextShapeData;
 
-    DecodedInst nextDInst;
-    always_comb begin
+    DecodedInst nextDInst = DecodedInst'(0);
+    OpCode opcode = OpCode'(0);
+    logic [1:0] func;
+
+    always @(*) begin
         if (nextShapeData) begin
             nextDInst.iType = opShapeData;
             nextDInst.data  = instruction[31:16];
             nextDInst.data2 = instruction[15:0];
         end else begin
-            OpCode opcode = instruction[2:0];
+            opcode = OpCode'(instruction[2:0]);
 
             case (opcode)
                 ocFType: begin
-                    logic [1:0] func = instruction[10:9];
+                    func = instruction[10:9];
                     if (func == 2'b00) begin
                         nextDInst.iType = opRender;
                     end else begin
@@ -51,22 +56,21 @@ module parser (
                     nextDInst.sIndex = {instruction[31:16], instruction[5:3]};
                     nextDInst.sType = instruction[15:11];
                 end
-                ocSType: begin
+                ocSEType: begin
                     nextDInst.iType = opShapeSet;
                     nextDInst.sIndex = {instruction[31:16], instruction[5:3]};
                     nextDInst.prop = instruction[15:11];
                     nextDInst.prop2 = instruction[10:6];
                 end
-                default: 
             endcase
         end 
     end
 
     always_ff @( posedge clk ) begin 
         if (rst) begin
-            next_shape_data <= 1'b0;
+            nextShapeData <= 1'b0;
             valid_out <= 1'b0;
-            dInst <= {default: 0};
+            dInst <= 0;
         end else begin
             valid_out <= valid_in;
             dInst <= nextDInst;
