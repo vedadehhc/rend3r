@@ -17,6 +17,15 @@ typedef struct packed {
 
 
 // Instruction types
+typedef enum logic[2:0] { 
+    ocFType     = 3'b000;
+    ocCType     = 3'b001;
+    ocLIType    = 3'b010;
+    ocLType     = 3'b011;
+    ocSIType    = 3'b100;
+    ocSEType    = 3'b101;
+ } OpCode;
+
 typedef enum { 
     opRender,
     opFrame,
