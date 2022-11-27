@@ -1,4 +1,5 @@
 package proctypes;
+// TODO: rework based on updated ISA
     // Data types
     typedef logic [15:0] float16;
     typedef logic [31:0] float32;
@@ -7,17 +8,16 @@ package proctypes;
     typedef enum logic [2:0] { 
         ocFType     = 3'b000,
         ocCType     = 3'b001,
-        ocLIType    = 3'b010,
         ocLType     = 3'b011,
         ocSIType    = 3'b100,
         ocSEType    = 3'b101 
     } OpCode;
 
     typedef enum logic[2:0] { 
+        opUnsupported,
         opRender,
         opFrame,
         opCameraSet,
-        opLightInit,
         opLightSet,
         opShapeInit,
         opShapeSet,
@@ -51,7 +51,7 @@ package proctypes;
     typedef logic [LIGHT_INDEX_SIZE-1:0] LightIndex;
 
     typedef enum Prop { 
-        lpNull        = 5'd0,
+        lpType        = 5'd0,
         lpXLocation   = 5'd1,
         lpYLocation   = 5'd2,
         lpZLocation   = 5'd3,
@@ -88,12 +88,15 @@ package proctypes;
     } ShapeProperty;
 
     typedef enum logic[4:0] { 
-        stOff         = 5'd0,
-        stTriangle    = 5'd1,
-        stPlane       = 5'd2,
-        stSphere      = 5'd3,
-        stCube        = 5'd4,
-        stCylinder    = 5'd5
+        stOff           = 5'd0,
+        stEqTriangle    = 5'd1,
+        stRtTriangle    = 5'd2,
+        stPlane         = 5'd3,
+        stInfPlane      = 5'd4,
+        stSphere        = 5'd5,
+        stCube          = 5'd6,
+        stCylinder      = 5'd7,
+        stInfCylinder   = 5'd8
     } ShapeType;
     
     // Decoded instruction
@@ -101,7 +104,6 @@ package proctypes;
         InstructionType iType;
         LightIndex lIndex;
         ShapeIndex sIndex;
-        LightType lType;
         ShapeType sType;
         Prop prop;
         Prop prop2;

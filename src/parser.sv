@@ -40,11 +40,6 @@ module parser (
                     nextDInst.prop = instruction[15:11];
                     nextDInst.data = instruction[31:16];
                 end
-                ocLIType: begin
-                    nextDInst.iType = opLightInit;
-                    nextDInst.lIndex = instruction[8:3];
-                    nextDInst.lType = instruction[12:11];
-                end
                 ocLType: begin
                     nextDInst.iType = opLightSet;
                     nextDInst.lIndex = instruction[8:3];
@@ -62,6 +57,9 @@ module parser (
                     nextDInst.prop = instruction[15:11];
                     nextDInst.prop2 = instruction[10:6];
                 end
+                default: begin
+                    nextDInst.iType = opUnsupported;
+                end
             endcase
         end 
     end
@@ -76,7 +74,7 @@ module parser (
             dInst <= nextDInst;
             if (valid_in && (nextDInst.iType == opShapeSet)) begin
                 nextShapeData <= 1'b1;
-            end else begin
+            end else if (valid_in) begin
                 nextShapeData <= 1'b0;
             end
         end
