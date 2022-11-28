@@ -1,0 +1,13 @@
+nr
+nf
+cam zero, 0
+cam xloc, 1.0
+cam yloc, 1.5
+cam zloc, 2.0
+cam hfov, 1000
+cam vfov, -3.1415927
+nf
+lt  0x2, src, 0x1
+spi 0x0f1, 0b101
+nf
+sp  0x123, xloc, xfor, 1.0, -1.0
