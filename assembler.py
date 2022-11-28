@@ -9,6 +9,9 @@ usage: {sys.argv[0]} [-h] [-o dest] <source>
 options:
     -h: print in hex instead of binary
     -o: set the output file
+TODO:
+    generate dump file (instruction/binary side-by-side)
+    auto-sort intra-frame instructions
 """
 
 class RenderSyntaxException(Exception):
