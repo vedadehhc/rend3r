@@ -1,10 +1,12 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
+import proctypes::*;
 
 module top_level(
     input wire clk_100mhz, //clock @ 100 mhz
     input wire btnc, //btnc (used for reset)
+    input wire [15:0] sw,
     input wire eth_crsdv,
     input wire [1:0] eth_rxd,
     output logic [15:0] led, // leds
@@ -34,12 +36,21 @@ module top_level(
         .axiod(ether_axiod)
     );
 
+    logic parse_valid_out;
+    DecodedInst dInst;
+
     parser parse(
         .clk(clk_50mhz),
         .rst(rst),
-        .instruction(32'b0),
-        .valid_in(1'b0)
+        .instruction({16'b0, sw}),
+        .valid_in(1'b1),
+        .valid_out(parse_valid_out),
+        .dInst(dInst)
     );
+
+    assign led[15:11] = dInst.prop;
+    assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
+    assign led[2:0] = dInst.iType;
 
     logic bo_axiov;
     logic [1:0] bo_axiod;
@@ -113,11 +124,7 @@ module top_level(
         .kill(fcs_kill)
     );
 
-    assign led[15] = fcs_kill;
-    assign led[14] = fcs_done;
-
     logic [13:0] counter;
-    assign led[13:0] = counter[12:0];
     // assign led[13] = got_valid;
 
     always_ff @( posedge clk_50mhz ) begin
