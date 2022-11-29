@@ -49,7 +49,7 @@ module parser (
                 ocSIType: begin
                     nextDInst.iType = opShapeInit;
                     nextDInst.sIndex = {instruction[31:16], instruction[5:3]};
-                    nextDInst.sType = instruction[15:11];
+                    nextDInst.sType = ShapeType'(instruction[15:11]);
                 end
                 ocSEType: begin
                     nextDInst.iType = opShapeSet;

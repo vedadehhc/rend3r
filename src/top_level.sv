@@ -34,6 +34,13 @@ module top_level(
         .axiod(ether_axiod)
     );
 
+    parser parse(
+        .clk(clk_50mhz),
+        .rst(rst),
+        .instruction(32'b0),
+        .valid_in(1'b0)
+    );
+
     logic bo_axiov;
     logic [1:0] bo_axiod;
 

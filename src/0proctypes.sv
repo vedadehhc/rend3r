@@ -1,5 +1,4 @@
 package proctypes;
-// TODO: rework based on updated ISA
     // Data types
     typedef logic [15:0] float16;
     typedef logic [31:0] float32;
