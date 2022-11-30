@@ -1,7 +1,8 @@
 package proctypes;
     // Data types
     typedef logic [15:0] float16;
-    typedef logic [31:0] float32;
+    typedef float16 vec3 [2:0];
+    typedef float16 quaternion [3:0];
 
     // Instruction types
     typedef enum logic [2:0] { 
