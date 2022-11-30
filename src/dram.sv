@@ -21,6 +21,9 @@
 `define DISPATCH_READ_SEND 2'b10
 `define DISPATCH_READ_WAIT 2'b11
 
+`define Idle 0
+
+
 /* The DRAM module generates an 81.25 MHz clock
  * which we control it with (4:1 ratio). The controller
  * takes in a 200 MHz clock from the rest of the processor,
@@ -50,6 +53,11 @@ module dram #(
     write_request,
     write_address,
     write_data,
+
+    init_calib_complete,
+    dispatch_state,
+    read_resp_ctr,
+    app_rd_data_valid,
 
     /* DDR output signals strung straight to the top level */
     ddr2_addr,
@@ -142,6 +150,8 @@ module dram #(
   output logic [1:0] ddr2_dm;
   output logic ddr2_odt;
 
+  output logic init_calib_complete;
+
   inout logic [15:0] ddr2_dq;
   inout logic [1:0] ddr2_dqs_n;
   inout logic [1:0] ddr2_dqs_p;
@@ -155,10 +165,11 @@ module dram #(
   logic app_wdf_end;
   logic [15:0] app_wdf_mask;
   logic app_wdf_wren;
+  logic app_rd_data_end;
 
   /* And outputs we're interested in actually using */
   logic [127:0] app_rd_data;
-  logic app_rd_data_valid;
+  output logic app_rd_data_valid;
 
   logic app_rdy;
   logic app_wdf_rdy;
@@ -196,6 +207,8 @@ module dram #(
 
       .app_rd_data(app_rd_data),
       .app_rd_data_valid(app_rd_data_valid),
+      .app_rd_data_end(app_rd_data_end),
+      .init_calib_complete(init_calib_complete),
 
       .app_rdy(app_rdy),
       .app_wdf_rdy(app_wdf_rdy),
@@ -220,10 +233,11 @@ module dram #(
 	 * and buffer the data as it happens. Write is easier - just fire on all
 	 * cylinders and call it a night.
 	 */
-  logic [1:0] dispatch_state;
+  output logic [1:0] dispatch_state;
   logic read_active;
 
-  logic [BURST_CTR_BITS-1:0] read_req_ctr, read_resp_ctr, write_req_ctr;
+  logic [BURST_CTR_BITS-1:0] read_req_ctr, write_req_ctr;
+  output logic [BURST_CTR_BITS-1:0] read_resp_ctr;
 
   /* Do some signals combinationally to save clocks in the dispatch
 	 * state machine / head back to the idle state on the same
@@ -231,7 +245,7 @@ module dram #(
 	 */
   assign read_ready = dispatch_state == `DISPATCH_IDLE && ~write_request && ~read_request;
   assign read_active = (dispatch_state == `DISPATCH_READ_SEND) || (dispatch_state == `DISPATCH_READ_WAIT);
-
+  
   assign write_ready = read_ready;
 
   always_ff @(posedge sclk) begin : READ
@@ -263,6 +277,7 @@ module dram #(
       app_wdf_data <= 128'b0;
       app_wdf_end <= 1'b0;
       app_wdf_wren <= 1'b0;
+      
 
     end else begin
       case (dispatch_state)
@@ -355,7 +370,7 @@ module dram #(
           app_en <= 1'b0;
           app_wdf_wren <= 1'b0;
 
-          if (read_resp_ctr == CACHE_BLOCK_BURSTS - 1 && app_rd_data_valid)
+          if (read_resp_ctr == CACHE_BLOCK_BURSTS - 1 && app_rd_data_end)// && app_rd_data_valid)
             dispatch_state <= `DISPATCH_IDLE;
         end
       endcase

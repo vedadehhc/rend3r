@@ -32,15 +32,12 @@ module top_level (
     output logic ddr2_ras_n,
     ddr2_cas_n,
     output logic ddr2_we_n,
-
     output logic ddr2_ck_p,
     ddr2_ck_n,
     ddr2_cke,
     output logic ddr2_cs_n,
-
     output logic [1:0] ddr2_dm,
     output logic ddr2_odt,
-
     inout wire [15:0] ddr2_dq,
     inout wire [ 1:0] ddr2_dqs_n,
     inout wire [ 1:0] ddr2_dqs_p,
@@ -56,7 +53,7 @@ module top_level (
   localparam CACHE_BLOCK_BITS = `CACHE_BLOCK_BYTES * 8;
   localparam CACHE_BLOCK_BURSTS = CACHE_BLOCK_BITS / `BURST_BITS;
 
-  logic sys_rst, sys_clk, dram_ui_clk, clk_div_locked;
+  logic sys_rst, sys_clk, dram_ui_clk, clk_200mhz;
 
   logic dram_read_data_fifo_write_valid, dram_write_data_fifo_write_valid;
   logic dram_read_data_fifo_read_valid, dram_write_data_fifo_read_valid;
@@ -80,16 +77,17 @@ module top_level (
 
   assign sys_rst = sw[15];
   assign dram_write_addr = dram_read_addr;
+  assign sys_clk = clk_200mhz;
 
-  clkdiv_100_to_200mhz clkdiv (
-      .clk_in (clk_100mhz),
-      .reset  (sys_rst),
-      .clk_out(sys_clk)
+  clk_divider clk_div (
+      .clk_in_100(clk_100mhz),
+      .reset(sys_rst),
+      .clk_out_200(clk_200mhz)
   );
 
-  clk_sync_low_to_high #(
+  cdc_pipe #(
       .DATA_WIDTH(512)
-  ) read_data_sync (
+  ) read_data_cdc (
       .rst(sys_rst),
       .src_clk(dram_ui_clk),
       .dest_clk(sys_clk),
@@ -97,9 +95,9 @@ module top_level (
       .output_signal_dest_clk(dram_read_data_line)
   );
 
-  clk_sync_low_to_high #(
+  cdc_pipe #(
       .DATA_WIDTH(512)
-  ) write_data_sync (
+  ) write_data_cdc (
       .rst(sys_rst),
       .src_clk(sys_clk),
       .dest_clk(dram_ui_clk),
@@ -107,7 +105,7 @@ module top_level (
       .output_signal_dest_clk(dram_write_data_ui_clk)
   );
 
-  clk_sync_low_to_high read_rdy_sync (
+  cdc_pipe read_rdy_cdc (
       .rst(sys_rst),
       .src_clk(dram_ui_clk),
       .dest_clk(sys_clk),
@@ -115,7 +113,7 @@ module top_level (
       .output_signal_dest_clk(dram_read_rdy)
   );
 
-  clk_sync_low_to_high write_rdy_sync (
+  cdc_pipe write_rdy_cdc (
       .rst(sys_rst),
       .src_clk(dram_ui_clk),
       .dest_clk(sys_clk),
@@ -123,7 +121,7 @@ module top_level (
       .output_signal_dest_clk(dram_write_rdy)
   );
 
-  clk_sync_low_to_high read_valid_sync (
+  cdc_pipe read_valid_cdc (
       .rst(sys_rst),
       .src_clk(dram_ui_clk),
       .dest_clk(sys_clk),
@@ -131,7 +129,7 @@ module top_level (
       .output_signal_dest_clk(dram_read_valid)
   );
 
-  clk_sync_high_to_low read_rq_sync (
+  cdc_pulse read_rq_cdc (
       .rst(sys_rst),
       .src_clk(sys_clk),
       .dest_clk(dram_ui_clk),
@@ -139,7 +137,7 @@ module top_level (
       .output_signal_dest_clk(dram_read_rq_ui_clk)
   );
 
-  clk_sync_high_to_low write_rq_sync (
+  cdc_pulse write_rq_cdc (
       .rst(sys_rst),
       .src_clk(sys_clk),
       .dest_clk(dram_ui_clk),
@@ -147,7 +145,7 @@ module top_level (
       .output_signal_dest_clk(dram_write_rq_ui_clk)
   );
 
-  clk_sync_low_to_high read_addr_sync (
+  cdc_pipe read_addr_cdc (
       .rst(sys_rst),
       .src_clk(sys_clk),
       .dest_clk(dram_ui_clk),
@@ -155,7 +153,7 @@ module top_level (
       .output_signal_dest_clk(dram_read_addr_ui_clk)
   );
 
-  clk_sync_low_to_high write_addr_sync (
+  cdc_pipe write_addr_cdc (
       .rst(sys_rst),
       .src_clk(sys_clk),
       .dest_clk(dram_ui_clk),
@@ -209,55 +207,61 @@ module top_level (
       .an_out (an)
   );
 
-  button_pulse bup (
+  button bu (
       .clk(sys_clk),
       .rst(sys_rst),
       .raw_in(btnu),
-      .pulse_out(clean_btnu)
+      .pulse_out(p_btnu),
+      .clean_out(c_btnu)
   );
-  button_pulse bdp (
+  button bd (
       .clk(sys_clk),
       .rst(sys_rst),
       .raw_in(btnd),
-      .pulse_out(clean_btnd)
+      .pulse_out(p_btnd),
+      .clean_out(c_btnd)
   );
-  button_pulse blp (
+  button bl (
       .clk(sys_clk),
       .rst(sys_rst),
       .raw_in(btnl),
-      .pulse_out(clean_btnl)
+      .pulse_out(p_btnl),
+      .clean_out(c_btnl)
   );
-  button_pulse brp (
+  button br (
       .clk(sys_clk),
       .rst(sys_rst),
       .raw_in(btnr),
-      .pulse_out(clean_btnr)
+      .pulse_out(p_btnr),
+      .clean_out(c_btnr)
   );
-  button_pulse bcp (
+  button bc (
       .clk(sys_clk),
       .rst(sys_rst),
       .raw_in(btnc),
-      .pulse_out(clean_btnc)
+      .pulse_out(p_btnc),
+      .clean_out(c_btnc)
   );
 
-  logic clean_btnu, clean_btnd, clean_btnl, clean_btnr, reading, clean_btnc;
+  logic p_btnu, p_btnd, p_btnl, p_btnr, p_btnc, reading;
+  logic c_btnu, c_btnd, c_btnl, c_btnr, c_btnc;
 
   // am i reading or writing?
-  assign reading = ~sw[0];
-  assign led[0] = sw[0];
+  assign reading  = ~sw[0];
+  assign led[0]   = sw[0];
 
-  assign led[15] = dram_read_rdy;
-  assign led[14] = dram_write_rdy;
+  assign led[15]  = dram_read_rdy;
+  assign led[14]  = dram_write_rdy;
 
-  assign led[13] = dram_read_rq;
-  assign led[12] = dram_write_rq;
+  assign led[13]  = dram_read_rq;
+  assign led[12]  = dram_write_rq;
 
-  assign led[11] = dram_read_valid;
+  assign led[11]  = dram_read_valid;
   //what the address im writing to? control with left, right
-  assign led[10] = dram_ui_clk;
+  assign led[10]  = dram_ui_clk;
   assign led[9:1] = dram_read_addr;
 
-  assign ssc_val = reading ? dram_read_data : dram_write_data[0][31:0];
+  assign ssc_val  = reading ? dram_read_data : dram_write_data[0][31:0];
 
   always_ff @(posedge sys_clk) begin
     if (sys_rst) begin
@@ -271,19 +275,19 @@ module top_level (
 
     end else begin
 
-      if (clean_btnr) begin
+      if (p_btnr) begin
         dram_read_addr <= dram_read_addr + 1;
-      end else if (clean_btnl) begin
+      end else if (p_btnl) begin
         dram_read_addr <= dram_read_addr - 1;
       end
 
-      if (clean_btnu) begin
+      if (p_btnu) begin
         dram_write_data[0][31:0] <= dram_write_data[0][31:0] + 1;
-      end else if (clean_btnd) begin
+      end else if (p_btnd) begin
         dram_write_data[0][31:0] <= dram_write_data[0][31:0] - 1;
       end
 
-      if (clean_btnc) begin 
+      if (p_btnc) begin
         if (reading) begin
           dram_read_rq <= 1;
         end else begin

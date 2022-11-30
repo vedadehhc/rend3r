@@ -1,12 +1,14 @@
 `default_nettype none
-module button_pulse (
+module button (
     input  wire  clk,
     input  wire  rst,
     input  wire  raw_in,
-    output logic pulse_out
+    output logic pulse_out,
+    output logic clean_out
 );
 
   logic clean_btn;
+  assign clean_out = clean_btn;
 
   debouncer deb (
       .clk_in(clk),

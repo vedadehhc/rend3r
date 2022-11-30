@@ -2,7 +2,7 @@
 //
 `timescale 1ns / 1ps
 // only syncs high pulses from fast clock to slow clock
-module clk_sync_high_to_low (
+module cdc_pulse (
     input  wire  rst,
     input  wire  src_clk,
     input  wire  dest_clk,

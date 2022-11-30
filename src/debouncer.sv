@@ -12,8 +12,8 @@ module debouncer #(
     input  wire  dirty_in,
     output logic clean_out
 );
-  parameter COUNTER_SIZE = int'($ceil(DEBOUNCE_TIME_MS * 1_000_000 / CLK_PERIOD_NS));
-  parameter COUNTER_WIDTH = $clog2(COUNTER_SIZE);
+  localparam COUNTER_SIZE = int'($ceil(DEBOUNCE_TIME_MS * 1_000_000 / CLK_PERIOD_NS));
+  localparam COUNTER_WIDTH = $clog2(COUNTER_SIZE);
 
   logic [COUNTER_WIDTH-1:0] counter;
   logic old_dirty_in;

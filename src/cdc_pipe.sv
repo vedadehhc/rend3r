@@ -1,5 +1,5 @@
 `default_nettype none
-module clk_sync_low_to_high #(
+module cdc_pipe #(
     DATA_WIDTH = 1
 ) (
     input wire rst,
