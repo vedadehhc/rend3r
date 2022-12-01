@@ -6,6 +6,7 @@ import proctypes::*;
 module top_level(
     input wire clk_100mhz, //clock @ 100 mhz
     input wire btnc, //btnc (used for reset)
+    input wire btnu, //btnc
     input wire [15:0] sw,
     input wire eth_crsdv,
     input wire [1:0] eth_rxd,
@@ -51,6 +52,48 @@ module top_level(
     assign led[15:11] = dInst.prop;
     assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
     assign led[2:0] = dInst.iType;
+    
+    vec3 src;
+    assign src[0] = 16'h0;
+    assign src[1] = 16'h0;
+    assign src[2] = 16'h0;
+
+    vec3 dir;
+    assign dir[0] = 16'h3C00;
+    assign dir[1] = 16'h0;
+    assign dir[2] = 16'h0;
+    
+    quaternion rot;
+    assign rot[0] = 16'h39A8;
+    assign rot[1] = 16'h0;
+    assign rot[2] = 16'h0;
+    assign rot[3] = 16'h39A8;
+
+    vec3 scale;
+    assign scale[0] = 16'h3C00;
+    assign scale[1] = 16'h3C00;
+    assign scale[2] = 16'h3C00;
+
+    float16 distance;
+
+    raycaster raycast (
+        .clk(clk_50mhz),
+        .rst(rst),
+        .valid_in(1'b1),
+        .src(src),
+        .dir(dir),
+        .shape_type(stSphere),
+        .shape_trans_inv(src),
+        .shape_rot(rot),
+        .shape_scale_inv(scale),
+        .valid_out(),
+        .hit(),
+        .distance(distance),
+        .intersection(),
+        .normal()
+    );
+
+    logic [31:0] display = {distance, 16'b0};
 
     logic bo_axiov;
     logic [1:0] bo_axiod;
@@ -106,7 +149,7 @@ module top_level(
     seven_segment_controller ssc (
         .clk_in(clk_50mhz),
         .rst_in(rst),
-        .val_in(ssc_in),
+        .val_in(display),
         .cat_out({cg, cf, ce, cd, cc, cb, ca}),
         .an_out(an)
     );
