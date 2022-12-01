@@ -1,4 +1,17 @@
 package proctypes;
+    // FPU IP types
+    typedef enum logic [5:0] {
+        fpuOpAdd            = 6'b000000,
+        fpuOpSub            = 6'b000001,
+        fpuOpUnord          = 6'b000100,
+        fpuOpLt             = 6'b001100,
+        fpuOpEq             = 6'b010100,
+        fpuOpLeq            = 6'b011100,
+        fpuOpGt             = 6'b100100,
+        fpuOpNeq            = 6'b101100,
+        fpuOpGeq            = 6'b110100
+    } FpuOperation;
+
     // Data types
     typedef logic [15:0] float16;
     typedef float16 vec3 [2:0];
