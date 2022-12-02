@@ -1,0 +1,102 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2022.1 (lin64) Build 3526262 Mon Apr 18 15:47:01 MDT 2022
+| Date         : Wed Nov 30 22:13:56 2022
+| Host         : EECS-DIGITAL-03 running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_timing -file /tmp/tmp.Pg0yjK/obj/routerpt_report_timing.rpt
+| Design       : top_level
+| Device       : 7a100t-csg324
+| Speed File   : -1  PRODUCTION 1.23 2018-06-13
+------------------------------------------------------------------------------------
+
+Timing Report
+
+Slack (MET) :             15.457ns  (required time - arrival time)
+  Source:                 ssc/segment_counter_reg[0]/C
+                            (rising edge-triggered cell FDRE clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            ssc/segment_counter_reg[30]/D
+                            (rising edge-triggered cell FDRE clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             ethclk_divider
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            20.000ns  (ethclk_divider rise@20.000ns - ethclk_divider rise@0.000ns)
+  Data Path Delay:        4.536ns  (logic 2.385ns (52.577%)  route 2.151ns (47.423%))
+  Logic Levels:           9  (CARRY4=8 LUT5=1)
+  Clock Path Skew:        0.000ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.416ns = ( 18.584 - 20.000 ) 
+    Source Clock Delay      (SCD):    -0.816ns
+    Clock Pessimism Removal (CPR):    0.600ns
+  Clock Uncertainty:      0.082ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.147ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock ethclk_divider rise edge)
+                                                      0.000     0.000 r  
+    E3                                                0.000     0.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000     0.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         1.482     1.482 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, routed)           1.233     2.715    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.070    -4.355 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.719    -2.636    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.096    -2.540 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=62, routed)          1.724    -0.816    ssc/ethclk
+    SLICE_X0Y91          FDRE                                         r  ssc/segment_counter_reg[0]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X0Y91          FDRE (Prop_fdre_C_Q)         0.456    -0.360 r  ssc/segment_counter_reg[0]/Q
+                         net (fo=34, routed)          1.349     0.990    ssc/segment_counter[0]
+    SLICE_X1Y84          CARRY4 (Prop_carry4_CYINIT_CO[3])
+                                                      0.580     1.570 r  ssc/segment_counter0_carry/CO[3]
+                         net (fo=1, routed)           0.000     1.570    ssc/segment_counter0_carry_n_0
+    SLICE_X1Y85          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114     1.684 r  ssc/segment_counter0_carry__0/CO[3]
+                         net (fo=1, routed)           0.000     1.684    ssc/segment_counter0_carry__0_n_0
+    SLICE_X1Y86          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114     1.798 r  ssc/segment_counter0_carry__1/CO[3]
+                         net (fo=1, routed)           0.000     1.798    ssc/segment_counter0_carry__1_n_0
+    SLICE_X1Y87          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114     1.912 r  ssc/segment_counter0_carry__2/CO[3]
+                         net (fo=1, routed)           0.000     1.912    ssc/segment_counter0_carry__2_n_0
+    SLICE_X1Y88          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114     2.026 r  ssc/segment_counter0_carry__3/CO[3]
+                         net (fo=1, routed)           0.000     2.026    ssc/segment_counter0_carry__3_n_0
+    SLICE_X1Y89          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114     2.140 r  ssc/segment_counter0_carry__4/CO[3]
+                         net (fo=1, routed)           0.000     2.140    ssc/segment_counter0_carry__4_n_0
+    SLICE_X1Y90          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114     2.254 r  ssc/segment_counter0_carry__5/CO[3]
+                         net (fo=1, routed)           0.000     2.254    ssc/segment_counter0_carry__5_n_0
+    SLICE_X1Y91          CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334     2.588 r  ssc/segment_counter0_carry__6/O[1]
+                         net (fo=1, routed)           0.802     3.390    ssc/data0[30]
+    SLICE_X0Y91          LUT5 (Prop_lut5_I4_O)        0.331     3.721 r  ssc/segment_counter[30]_i_1/O
+                         net (fo=1, routed)           0.000     3.721    ssc/segment_counter_0[30]
+    SLICE_X0Y91          FDRE                                         r  ssc/segment_counter_reg[30]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock ethclk_divider rise edge)
+                                                     20.000    20.000 r  
+    E3                                                0.000    20.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000    20.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         1.411    21.411 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, routed)           1.162    22.573    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.324    15.249 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.639    16.888    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    16.979 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=62, routed)          1.604    18.584    ssc/ethclk
+    SLICE_X0Y91          FDRE                                         r  ssc/segment_counter_reg[30]/C
+                         clock pessimism              0.600    19.184    
+                         clock uncertainty           -0.082    19.103    
+    SLICE_X0Y91          FDRE (Setup_fdre_C_D)        0.075    19.178    ssc/segment_counter_reg[30]
+  -------------------------------------------------------------------
+                         required time                         19.178    
+                         arrival time                          -3.721    
+  -------------------------------------------------------------------
+                         slack                                 15.457    
+
+
+
+
