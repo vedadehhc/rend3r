@@ -6,7 +6,8 @@ import proctypes::*;
 module top_level(
     input wire clk_100mhz, //clock @ 100 mhz
     input wire btnc, //btnc (used for reset)
-    input wire btnu, //btnc
+    input wire btnu, //btnu
+    input wire btnl, //btnl
     input wire [15:0] sw,
     input wire eth_crsdv,
     input wire [1:0] eth_rxd,
@@ -60,21 +61,24 @@ module top_level(
 
     vec3 dir;
     assign dir[0] = 16'h3C00;
-    assign dir[1] = 16'h0;
-    assign dir[2] = 16'h0;
+    assign dir[1] = {5'b00111, sw[15:8], 3'b000};
+    assign dir[2] = 16'h0000;
     
     quaternion rot;
-    assign rot[0] = 16'h39A8;
+    assign rot[0] = 16'h3C00;
     assign rot[1] = 16'h0;
     assign rot[2] = 16'h0;
-    assign rot[3] = 16'h39A8;
+    assign rot[3] = 16'h0;
 
     vec3 scale;
-    assign scale[0] = 16'h3C00;
+    assign scale[0] = {5'b00111, sw[7:0], 3'b000};
     assign scale[1] = 16'h3C00;
     assign scale[2] = 16'h3C00;
 
-    float16 distance;
+    logic raycast_valid;
+    logic raycast_hit;
+    float16 raycast_sq_distance;
+    vec3 raycast_intersection;
 
     raycaster raycast (
         .clk(clk_50mhz),
@@ -86,14 +90,49 @@ module top_level(
         .shape_trans_inv(src),
         .shape_rot(rot),
         .shape_scale_inv(scale),
-        .valid_out(),
-        .hit(),
-        .distance(distance),
-        .intersection(),
-        .normal()
+        .valid_out(raycast_valid),
+        .hit(raycast_hit),
+        .sq_distance(raycast_sq_distance),
+        .intersection(raycast_intersection)
     );
 
-    logic [31:0] display = {distance, 16'b0};
+
+    vec3 dir2;
+    assign dir2[0] = {5'b00111, sw[15:8], 3'b000};
+    assign dir2[1] = 16'h3C00;
+    assign dir2[2] = 16'h0000;
+
+    vec3 scale2;
+    assign scale2[0] = 16'h3C00;
+    assign scale2[1] = {5'b00111, sw[7:0], 3'b000};
+    assign scale2[2] = 16'h3C00;
+
+    logic raycast_valid_2;
+    logic raycast_hit_2;
+    float16 raycast_sq_distance_2;
+    vec3 raycast_intersection_2;
+    
+    // raycaster raycast2 (
+    //     .clk(clk_50mhz),
+    //     .rst(rst),
+    //     .valid_in(1'b1),
+    //     .src(src),
+    //     .dir(dir2),
+    //     .shape_type(stSphere),
+    //     .shape_trans_inv(src),
+    //     .shape_rot(rot),
+    //     .shape_scale_inv(scale2),
+    //     .valid_out(raycast_valid_2),
+    //     .hit(raycast_hit_2),
+    //     .sq_distance(raycast_sq_distance_2),
+    //     .intersection(raycast_intersection_2)
+    // );
+
+
+    assign led[10:9] = btnl ? {raycast_valid_2, raycast_hit_2} : {raycast_valid, raycast_hit};
+    logic [31:0] display = btnl ? 
+    (btnu ? {raycast_intersection_2[2], raycast_sq_distance_2} : {raycast_intersection_2[0], raycast_intersection_2[1]})
+    : (btnu ? {raycast_intersection[2], raycast_sq_distance} : {raycast_intersection[0], raycast_intersection[1]});
 
     logic bo_axiov;
     logic [1:0] bo_axiod;
