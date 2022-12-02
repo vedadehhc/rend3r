@@ -303,7 +303,7 @@ module top_level (
       .clean_out(c_btnc)
   );
 
-  logic p_btnu, p_btnd, p_btnl, p_btnr, p_btnc, reading;
+  logic p_btnu, p_btnd, p_btnl, p_btnr, p_btnc;
   logic c_btnu, c_btnd, c_btnl, c_btnr, c_btnc;
 
   assign led[0] = dram_init_complete;

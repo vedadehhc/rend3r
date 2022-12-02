@@ -1,6 +1,6 @@
 `default_nettype none
 
-module triangle_3d_project (
+module projector (
     input wire clk,
     input wire rst,
     input wire signed cam_near_clip,
@@ -61,11 +61,6 @@ module triangle_3d_project (
     t2d_v3_y_p <= t3d_v3_y * cam_near_clip * -1'd1;
 
     // t2d_v1_x <= t2d_v1_x_p 
-
-
-
-
-
   end
 
 endmodule
