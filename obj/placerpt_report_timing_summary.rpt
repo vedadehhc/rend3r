@@ -1,0 +1,422 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2022.1 (lin64) Build 3526262 Mon Apr 18 15:47:01 MDT 2022
+| Date         : Fri Dec  2 15:17:00 2022
+| Host         : EECS-DIGITAL-54 running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_timing_summary -file /tmp/tmp.wBmrI7/obj/placerpt_report_timing_summary.rpt
+| Design       : top_level
+| Device       : 7a100t-csg324
+| Speed File   : -1  PRODUCTION 1.23 2018-06-13
+----------------------------------------------------------------------------------------------------
+
+Timing Summary Report
+
+------------------------------------------------------------------------------------------------
+| Timer Settings
+| --------------
+------------------------------------------------------------------------------------------------
+
+  Enable Multi Corner Analysis               :  Yes
+  Enable Pessimism Removal                   :  Yes
+  Pessimism Removal Resolution               :  Nearest Common Node
+  Enable Input Delay Default Clock           :  No
+  Enable Preset / Clear Arcs                 :  No
+  Disable Flight Delays                      :  No
+  Ignore I/O Paths                           :  No
+  Timing Early Launch at Borrowing Latches   :  No
+  Borrow Time for Max Delay Exceptions       :  Yes
+  Merge Timing Exceptions                    :  Yes
+
+  Corner  Analyze    Analyze    
+  Name    Max Paths  Min Paths  
+  ------  ---------  ---------  
+  Slow    Yes        Yes        
+  Fast    Yes        Yes        
+
+
+------------------------------------------------------------------------------------------------
+| Report Methodology
+| ------------------
+------------------------------------------------------------------------------------------------
+
+No report available as report_methodology has not been run prior. Run report_methodology on the current design for the summary of methodology violations.
+
+
+
+check_timing report
+
+Table of Contents
+-----------------
+1. checking no_clock (85)
+2. checking constant_clock (0)
+3. checking pulse_width_clock (0)
+4. checking unconstrained_internal_endpoints (30)
+5. checking no_input_delay (17)
+6. checking no_output_delay (30)
+7. checking multiple_clock (0)
+8. checking generated_clocks (0)
+9. checking loops (0)
+10. checking partial_input_delay (0)
+11. checking partial_output_delay (0)
+12. checking latch_loops (0)
+
+1. checking no_clock (85)
+-------------------------
+ There are 11 register/latch pins with no clock driven by root clock pin: sw[0] (HIGH)
+
+ There are 14 register/latch pins with no clock driven by root clock pin: sw[1] (HIGH)
+
+ There are 14 register/latch pins with no clock driven by root clock pin: sw[2] (HIGH)
+
+ There are 14 register/latch pins with no clock driven by root clock pin: parse/nextShapeData_reg/Q (HIGH)
+
+ There are 16 register/latch pins with no clock driven by root clock pin: raycast/quad_solver/s5_sign_t1_reg/Q (HIGH)
+
+ There are 16 register/latch pins with no clock driven by root clock pin: raycast/quad_solver/s5_sign_t2_reg/Q (HIGH)
+
+
+2. checking constant_clock (0)
+------------------------------
+ There are 0 register/latch pins with constant_clock.
+
+
+3. checking pulse_width_clock (0)
+---------------------------------
+ There are 0 register/latch pins which need pulse_width check
+
+
+4. checking unconstrained_internal_endpoints (30)
+-------------------------------------------------
+ There are 30 pins that are not constrained for maximum delay. (HIGH)
+
+ There are 0 pins that are not constrained for maximum delay due to constant clock.
+
+
+5. checking no_input_delay (17)
+-------------------------------
+ There are 17 input ports with no input delay specified. (HIGH)
+
+ There are 0 input ports with no input delay but user has a false path constraint.
+
+
+6. checking no_output_delay (30)
+--------------------------------
+ There are 30 ports with no output delay specified. (HIGH)
+
+ There are 0 ports with no output delay but user has a false path constraint
+
+ There are 0 ports with no output delay but with a timing clock defined on it or propagating through it
+
+
+7. checking multiple_clock (0)
+------------------------------
+ There are 0 register/latch pins with multiple clocks.
+
+
+8. checking generated_clocks (0)
+--------------------------------
+ There are 0 generated clocks that are not connected to a clock source.
+
+
+9. checking loops (0)
+---------------------
+ There are 0 combinational loops in the design.
+
+
+10. checking partial_input_delay (0)
+------------------------------------
+ There are 0 input ports with partial input delay specified.
+
+
+11. checking partial_output_delay (0)
+-------------------------------------
+ There are 0 ports with partial output delay specified.
+
+
+12. checking latch_loops (0)
+----------------------------
+ There are 0 combinational latch loops in the design through latch input
+
+
+
+------------------------------------------------------------------------------------------------
+| Design Timing Summary
+| ---------------------
+------------------------------------------------------------------------------------------------
+
+    WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+    -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+     15.579        0.000                      0                32693       -0.084       -1.978                     77                32693        3.000        0.000                       0                 24989  
+
+
+Timing constraints are not met.
+
+
+------------------------------------------------------------------------------------------------
+| Clock Summary
+| -------------
+------------------------------------------------------------------------------------------------
+
+Clock               Waveform(ns)       Period(ns)      Frequency(MHz)
+-----               ------------       ----------      --------------
+sys_clk_pin         {0.000 5.000}      10.000          100.000         
+  clkfbout_divider  {0.000 5.000}      10.000          100.000         
+  ethclk_divider    {0.000 10.000}     20.000          50.000          
+
+
+------------------------------------------------------------------------------------------------
+| Intra Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+Clock                   WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+-----                   -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+sys_clk_pin                                                                                                                                                           3.000        0.000                       0                     1  
+  clkfbout_divider                                                                                                                                                    7.845        0.000                       0                     3  
+  ethclk_divider         15.579        0.000                      0                32693       -0.084       -1.978                     77                32693        9.020        0.000                       0                 24985  
+
+
+------------------------------------------------------------------------------------------------
+| Inter Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+From Clock    To Clock          WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------    --------          -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+
+
+------------------------------------------------------------------------------------------------
+| Other Path Groups Table
+| -----------------------
+------------------------------------------------------------------------------------------------
+
+Path Group    From Clock    To Clock          WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------    ----------    --------          -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+
+
+------------------------------------------------------------------------------------------------
+| Timing Details
+| --------------
+------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  sys_clk_pin
+  To Clock:  sys_clk_pin
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack        3.000ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         sys_clk_pin
+Waveform(ns):       { 0.000 5.000 }
+Period(ns):         10.000
+Sources:            { clk_100mhz }
+
+Check Type        Corner  Lib Pin            Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period        n/a     MMCME2_ADV/CLKIN1  n/a            1.249         10.000      8.751      MMCME2_ADV_X1Y2  eth_clk_gen/mmcm_adv_inst/CLKIN1
+Max Period        n/a     MMCME2_ADV/CLKIN1  n/a            100.000       10.000      90.000     MMCME2_ADV_X1Y2  eth_clk_gen/mmcm_adv_inst/CLKIN1
+Low Pulse Width   Slow    MMCME2_ADV/CLKIN1  n/a            2.000         5.000       3.000      MMCME2_ADV_X1Y2  eth_clk_gen/mmcm_adv_inst/CLKIN1
+High Pulse Width  Slow    MMCME2_ADV/CLKIN1  n/a            2.000         5.000       3.000      MMCME2_ADV_X1Y2  eth_clk_gen/mmcm_adv_inst/CLKIN1
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clkfbout_divider
+  To Clock:  clkfbout_divider
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack        7.845ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clkfbout_divider
+Waveform(ns):       { 0.000 5.000 }
+Period(ns):         10.000
+Sources:            { eth_clk_gen/mmcm_adv_inst/CLKFBOUT }
+
+Check Type  Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period  n/a     BUFG/I              n/a            2.155         10.000      7.845      BUFGCTRL_X0Y17   eth_clk_gen/clkf_buf/I
+Max Period  n/a     MMCME2_ADV/CLKFBIN  n/a            100.000       10.000      90.000     MMCME2_ADV_X1Y2  eth_clk_gen/mmcm_adv_inst/CLKFBIN
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  ethclk_divider
+  To Clock:  ethclk_divider
+
+Setup :            0  Failing Endpoints,  Worst Slack       15.579ns,  Total Violation        0.000ns
+Hold  :           77  Failing Endpoints,  Worst Slack       -0.084ns,  Total Violation       -1.978ns
+PW    :            0  Failing Endpoints,  Worst Slack        9.020ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             15.579ns  (required time - arrival time)
+  Source:                 raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/YES_REG.l[0].reg.n.eOn.f/C
+                            (rising edge-triggered cell FDRE clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD/D
+                            (rising edge-triggered cell FDRE clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             ethclk_divider
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            20.000ns  (ethclk_divider rise@20.000ns - ethclk_divider rise@0.000ns)
+  Data Path Delay:        4.330ns  (logic 2.359ns (54.480%)  route 1.971ns (45.520%))
+  Logic Levels:           7  (CARRY4=5 LUT3=2)
+  Clock Path Skew:        -0.118ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.608ns = ( 18.392 - 20.000 ) 
+    Source Clock Delay      (SCD):    -1.009ns
+    Clock Pessimism Removal (CPR):    0.481ns
+  Clock Uncertainty:      0.082ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.147ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock ethclk_divider rise edge)
+                                                      0.000     0.000 r  
+    E3                                                0.000     0.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000     0.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         1.482     1.482 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, estimated)        1.233     2.715    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.154    -4.439 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, estimated)        1.719    -2.720    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.096    -2.624 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=24984, estimated)    1.615    -1.009    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/aclk
+    SLICE_X62Y108        FDRE                                         r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/YES_REG.l[0].reg.n.eOn.f/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X62Y108        FDRE (Prop_fdre_C_Q)         0.518    -0.491 f  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/YES_REG.l[0].reg.n.eOn.f/Q
+                         net (fo=1, estimated)        0.815     0.324    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/as[0].nflut.mlut/a[0]
+    SLICE_X62Y107        LUT3 (Prop_lut3_I0_O)        0.124     0.448 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/as[0].nflut.mlut/w3.lt/O
+                         net (fo=1, routed)           0.000     0.448    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/sInt
+    SLICE_X62Y107        CARRY4 (Prop_carry4_S[0]_CO[0])
+                                                      0.364     0.812 f  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/as[0].mc_CARRY4/CO[0]
+                         net (fo=2, estimated)        1.156     1.968    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/co
+    SLICE_X46Y113        LUT3 (Prop_lut3_I0_O)        0.367     2.335 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/CHAIN_GEN[0].C_MUX.CARRY_MUX_i_1__0/O
+                         net (fo=1, routed)           0.000     2.335    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/RND_BIT_GEN/NORM_1_OR_0.STRUCT_REQ.GENERAL.RND1/A[0]
+    SLICE_X46Y113        CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513     2.848 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/RND_BIT_GEN/NORM_1_OR_0.STRUCT_REQ.GENERAL.RND1/CHAIN_GEN[0].C_MUX.CARRY_MUX_CARRY4/CO[3]
+                         net (fo=1, estimated)        0.000     2.848    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND1/CHAIN_GEN[0].C_MUX.CARRY_MUX_n_0
+    SLICE_X46Y114        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     2.965 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND1/CHAIN_GEN[1].C_MUX.CARRY_MUX_CARRY4/CO[3]
+                         net (fo=1, estimated)        0.000     2.965    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/LOGIC.carry_rnd2
+    SLICE_X46Y115        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.082 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CHAIN_GEN[0].C_MUX.CARRY_MUX_CARRY4/CO[3]
+                         net (fo=1, estimated)        0.000     3.082    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/carry_4
+    SLICE_X46Y116        CARRY4 (Prop_carry4_CI_O[2])
+                                                      0.239     3.321 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CHAIN_GEN[4].C_MUX.CARRY_MUX_CARRY4/O[2]
+                         net (fo=1, routed)           0.000     3.321    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.carry_int
+    SLICE_X46Y116        FDRE                                         r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock ethclk_divider rise edge)
+                                                     20.000    20.000 r  
+    E3                                                0.000    20.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000    20.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         1.411    21.411 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, estimated)        1.171    22.583    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.404    15.179 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, estimated)        1.633    16.812    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    16.903 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=24984, estimated)    1.489    18.392    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/aclk
+    SLICE_X46Y116        FDRE                                         r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD/C
+                         clock pessimism              0.481    18.873    
+                         clock uncertainty           -0.082    18.791    
+    SLICE_X46Y116        FDRE (Setup_fdre_C_D)        0.109    18.900    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD
+  -------------------------------------------------------------------
+                         required time                         18.900    
+                         arrival time                          -3.321    
+  -------------------------------------------------------------------
+                         slack                                 15.579    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (VIOLATED) :        -0.084ns  (arrival time - required time)
+  Source:                 raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[3].ADDSUB/ADDSUB/Q_DEL/i_pipe/opt_has_pipe.first_q_reg[11]/C
+                            (rising edge-triggered cell FDRE clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[11].Q_DEL/i_pipe/opt_has_pipe.first_q_reg[7]_srl8/D
+                            (rising edge-triggered cell SRL16E clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             ethclk_divider
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (ethclk_divider rise@0.000ns - ethclk_divider rise@0.000ns)
+  Data Path Delay:        0.364ns  (logic 0.141ns (38.693%)  route 0.223ns (61.307%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.265ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    -0.829ns
+    Source Clock Delay      (SCD):    -0.575ns
+    Clock Pessimism Removal (CPR):    -0.520ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock ethclk_divider rise edge)
+                                                      0.000     0.000 r  
+    E3                                                0.000     0.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000     0.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         0.250     0.250 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, estimated)        0.520     0.769    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -2.648    -1.878 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, estimated)        0.725    -1.154    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.026    -1.128 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=24984, estimated)    0.553    -0.575    raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[3].ADDSUB/ADDSUB/Q_DEL/i_pipe/aclk
+    SLICE_X53Y115        FDRE                                         r  raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[3].ADDSUB/ADDSUB/Q_DEL/i_pipe/opt_has_pipe.first_q_reg[11]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X53Y115        FDRE (Prop_fdre_C_Q)         0.141    -0.434 r  raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[3].ADDSUB/ADDSUB/Q_DEL/i_pipe/opt_has_pipe.first_q_reg[11]/Q
+                         net (fo=14, estimated)       0.223    -0.210    raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[11].Q_DEL/i_pipe/opt_has_pipe.first_q_reg[8][0]
+    SLICE_X50Y114        SRL16E                                       r  raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[11].Q_DEL/i_pipe/opt_has_pipe.first_q_reg[7]_srl8/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock ethclk_divider rise edge)
+                                                      0.000     0.000 r  
+    E3                                                0.000     0.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000     0.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         0.438     0.438 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, estimated)        0.547     0.985    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.429    -2.444 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, estimated)        0.763    -1.681    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.029    -1.652 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=24984, estimated)    0.823    -0.829    raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[11].Q_DEL/i_pipe/aclk
+    SLICE_X50Y114        SRL16E                                       r  raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[11].Q_DEL/i_pipe/opt_has_pipe.first_q_reg[7]_srl8/CLK
+                         clock pessimism              0.520    -0.310    
+    SLICE_X50Y114        SRL16E (Hold_srl16e_CLK_D)
+                                                      0.183    -0.127    raycast/quad_solver/s5_divide_t1/inst/i_synth/DIV_OP.SPD.OP/MANT_DIV/RT[11].Q_DEL/i_pipe/opt_has_pipe.first_q_reg[7]_srl8
+  -------------------------------------------------------------------
+                         required time                          0.127    
+                         arrival time                          -0.210    
+  -------------------------------------------------------------------
+                         slack                                 -0.084    
+
+
+
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         ethclk_divider
+Waveform(ns):       { 0.000 10.000 }
+Period(ns):         20.000
+Sources:            { eth_clk_gen/mmcm_adv_inst/CLKOUT0 }
+
+Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period        n/a     DSP48E1/CLK         n/a            2.545         20.000      17.455     DSP48_X0Y44      raycast/p3_dp_dot/add_a_b_x_y/inst/i_synth/ADDSUB_OP.ADDSUB/DSP.OP/DSP48E1_BODY_HP.ALIGN_ADD/DSP2/i_no_versal_es1_workaround.DSP/CLK
+Max Period        n/a     MMCME2_ADV/CLKOUT0  n/a            213.360       20.000      193.360    MMCME2_ADV_X1Y2  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+Low Pulse Width   Slow    SRL16E/CLK          n/a            0.980         10.000      9.020      SLICE_X30Y79     raycast/p2_dir_reg[1][1][10]_srl9/CLK
+High Pulse Width  Slow    SRL16E/CLK          n/a            0.980         10.000      9.020      SLICE_X30Y79     raycast/p2_dir_reg[1][1][10]_srl9/CLK
+
+
+

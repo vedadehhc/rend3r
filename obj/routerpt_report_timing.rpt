@@ -1,0 +1,95 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2022.1 (lin64) Build 3526262 Mon Apr 18 15:47:01 MDT 2022
+| Date         : Fri Dec  2 15:17:51 2022
+| Host         : EECS-DIGITAL-54 running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_timing -file /tmp/tmp.wBmrI7/obj/routerpt_report_timing.rpt
+| Design       : top_level
+| Device       : 7a100t-csg324
+| Speed File   : -1  PRODUCTION 1.23 2018-06-13
+------------------------------------------------------------------------------------
+
+Timing Report
+
+Slack (MET) :             15.036ns  (required time - arrival time)
+  Source:                 raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/YES_REG.l[0].reg.n.eOn.f/C
+                            (rising edge-triggered cell FDRE clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Destination:            raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD/D
+                            (rising edge-triggered cell FDRE clocked by ethclk_divider  {rise@0.000ns fall@10.000ns period=20.000ns})
+  Path Group:             ethclk_divider
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            20.000ns  (ethclk_divider rise@20.000ns - ethclk_divider rise@0.000ns)
+  Data Path Delay:        4.874ns  (logic 2.226ns (45.667%)  route 2.648ns (54.333%))
+  Logic Levels:           7  (CARRY4=5 LUT3=1 LUT5=1)
+  Clock Path Skew:        -0.117ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.531ns = ( 18.469 - 20.000 ) 
+    Source Clock Delay      (SCD):    -0.925ns
+    Clock Pessimism Removal (CPR):    0.488ns
+  Clock Uncertainty:      0.082ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.147ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock ethclk_divider rise edge)
+                                                      0.000     0.000 r  
+    E3                                                0.000     0.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000     0.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         1.482     1.482 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, routed)           1.233     2.715    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.070    -4.355 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.719    -2.636    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.096    -2.540 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=24984, routed)       1.615    -0.925    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/aclk
+    SLICE_X62Y108        FDRE                                         r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/YES_REG.l[0].reg.n.eOn.f/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X62Y108        FDRE (Prop_fdre_C_Q)         0.518    -0.407 f  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/YES_REG.l[0].reg.n.eOn.f/Q
+                         net (fo=1, routed)           0.830     0.423    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/as[0].nflut.mlut/a[0]
+    SLICE_X62Y107        LUT3 (Prop_lut3_I0_O)        0.124     0.547 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/as[0].nflut.mlut/w3.lt/O
+                         net (fo=1, routed)           0.000     0.547    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/sInt
+    SLICE_X62Y107        CARRY4 (Prop_carry4_S[0]_CO[0])
+                                                      0.364     0.911 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/dzt.exAnd.detZeroAnd/as[0].mc_CARRY4/CO[0]
+                         net (fo=2, routed)           1.818     2.729    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/co
+    SLICE_X46Y113        LUT5 (Prop_lut5_I3_O)        0.367     3.096 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.MULT/QQ_VARIANT.MULT/MANT_MULT/logic_multiplier.m1/l[3].tree.assf.ai/adonly.ad/f/CHAIN_GEN[2].C_MUX.CARRY_MUX_i_1__0/O
+                         net (fo=1, routed)           0.000     3.096    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/RND_BIT_GEN/NORM_1_OR_0.STRUCT_REQ.GENERAL.RND1/A[1]
+    SLICE_X46Y113        CARRY4 (Prop_carry4_S[2]_CO[3])
+                                                      0.380     3.476 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/RND_BIT_GEN/NORM_1_OR_0.STRUCT_REQ.GENERAL.RND1/CHAIN_GEN[0].C_MUX.CARRY_MUX_CARRY4/CO[3]
+                         net (fo=1, routed)           0.000     3.476    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND1/CHAIN_GEN[0].C_MUX.CARRY_MUX_n_0
+    SLICE_X46Y114        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.593 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND1/CHAIN_GEN[1].C_MUX.CARRY_MUX_CARRY4/CO[3]
+                         net (fo=1, routed)           0.000     3.593    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/LOGIC.carry_rnd2
+    SLICE_X46Y115        CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     3.710 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CHAIN_GEN[0].C_MUX.CARRY_MUX_CARRY4/CO[3]
+                         net (fo=1, routed)           0.000     3.710    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/carry_4
+    SLICE_X46Y116        CARRY4 (Prop_carry4_CI_O[2])
+                                                      0.239     3.949 r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CHAIN_GEN[4].C_MUX.CARRY_MUX_CARRY4/O[2]
+                         net (fo=1, routed)           0.000     3.949    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.carry_int
+    SLICE_X46Y116        FDRE                                         r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock ethclk_divider rise edge)
+                                                     20.000    20.000 r  
+    E3                                                0.000    20.000 r  clk_100mhz (IN)
+                         net (fo=0)                   0.000    20.000    eth_clk_gen/clk_100mhz
+    E3                   IBUF (Prop_ibuf_I_O)         1.411    21.411 r  eth_clk_gen/clkin1_ibufg/O
+                         net (fo=1, routed)           1.162    22.573    eth_clk_gen/clk_divider
+    MMCME2_ADV_X1Y2      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.324    15.249 r  eth_clk_gen/mmcm_adv_inst/CLKOUT0
+                         net (fo=1, routed)           1.639    16.888    eth_clk_gen/ethclk_divider
+    BUFGCTRL_X0Y16       BUFG (Prop_bufg_I_O)         0.091    16.979 r  eth_clk_gen/clkout1_buf/O
+                         net (fo=24984, routed)       1.490    18.469    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/aclk
+    SLICE_X46Y116        FDRE                                         r  raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD/C
+                         clock pessimism              0.488    18.958    
+                         clock uncertainty           -0.082    18.876    
+    SLICE_X46Y116        FDRE (Setup_fdre_C_D)        0.109    18.985    raycast/quad_solver/s1_mult_b_b/inst/i_synth/MULT.OP/i_non_prim.R_AND_R/LOGIC.R_AND_R/LOGIC.RND2/CARRYS_Q_DEL.FAST_DEL.CARRY_FD
+  -------------------------------------------------------------------
+                         required time                         18.985    
+                         arrival time                          -3.949    
+  -------------------------------------------------------------------
+                         slack                                 15.036    
+
+
+
+
