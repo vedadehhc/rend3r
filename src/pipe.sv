@@ -5,10 +5,9 @@ module pipe #(
     input  wire  clk,
     input  wire  rst,
     input  wire  in,
-    output logic out
+    output logic out,
+    output logic [LENGTH-1:0] line
 );
-
-  logic [LENGTH-1:0] line;
 
   logic temp;
   assign out  = line[LENGTH-1];
@@ -18,7 +17,11 @@ module pipe #(
     if (rst) begin
       line <= 0;
     end else begin
-      line <= {temp[LENGTH-1:1], in};
+    line[0] <= in;
+    for (int i = 0; i < LENGTH - 1; i++ ) begin
+        line[i + 1] <= line[i];
+    end
+
     end
   end
 endmodule

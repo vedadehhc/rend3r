@@ -55,9 +55,9 @@ module dram #(
     write_data,
 
     init_calib_complete,
-    dispatch_state,
-    read_resp_ctr,
-    app_rd_data_valid,
+    // dispatch_state,
+    // read_resp_ctr,
+    // app_rd_data_valid,
 
     /* DDR output signals strung straight to the top level */
     ddr2_addr,
@@ -169,10 +169,42 @@ module dram #(
 
   /* And outputs we're interested in actually using */
   logic [127:0] app_rd_data;
-  output logic app_rd_data_valid;
+  logic app_rd_data_valid;
 
   logic app_rdy;
   logic app_wdf_rdy;
+
+  // ila_dram ila (
+  //     .clk(sclk),
+  //     .probe0(app_addr),
+  //     .probe1(app_cmd),
+  //     .probe2(app_en),
+
+  //     .probe3(app_wdf_data),
+  //     .probe4(app_wdf_end),
+  //     .probe5(app_wdf_mask),
+  //     .probe6(app_wdf_wren),
+
+  //     .probe7(app_rd_data),
+  //     .probe8(app_rd_data_valid),
+  //     .probe9(app_rd_data_end),
+
+  //     .probe10(app_rdy),
+  //     .probe11(app_wdf_rdy),
+
+  //     .probe12(read_req_ctr),  
+  //     .probe13(read_resp_ctr), 
+  //     .probe14(dispatch_state),
+
+  //     .probe15(init_calib_complete),
+  //     .probe16(read_request),
+  //     .probe17(write_request),
+  //     .probe18(read_response),
+  //     .probe19(read_ready),
+
+  //     .probe20(read_data),
+  //     .probe21(write_data)
+  // );
 
 
   /* Here we go... */
@@ -233,11 +265,11 @@ module dram #(
 	 * and buffer the data as it happens. Write is easier - just fire on all
 	 * cylinders and call it a night.
 	 */
-  output logic [1:0] dispatch_state;
+  logic [1:0] dispatch_state;
   logic read_active;
 
-  logic [BURST_CTR_BITS-1:0] read_req_ctr, write_req_ctr;
-  output logic [BURST_CTR_BITS-1:0] read_resp_ctr;
+  logic [BURST_CTR_BITS-1:0] read_req_ctr, write_req_ctr, read_resp_ctr;
+  // output logic [BURST_CTR_BITS-1:0] read_resp_ctr;
 
   /* Do some signals combinationally to save clocks in the dispatch
 	 * state machine / head back to the idle state on the same
@@ -245,7 +277,7 @@ module dram #(
 	 */
   assign read_ready = dispatch_state == `DISPATCH_IDLE && ~write_request && ~read_request;
   assign read_active = (dispatch_state == `DISPATCH_READ_SEND) || (dispatch_state == `DISPATCH_READ_WAIT);
-  
+
   assign write_ready = read_ready;
 
   always_ff @(posedge sclk) begin : READ
@@ -267,8 +299,8 @@ module dram #(
     if (rst) begin
       dispatch_state <= `DISPATCH_IDLE;
 
-      read_req_ctr <= { BURST_CTR_BITS{1'b0} };
-      write_req_ctr <= { BURST_CTR_BITS{1'b0} };
+      read_req_ctr <= {BURST_CTR_BITS{1'b0}};
+      write_req_ctr <= {BURST_CTR_BITS{1'b0}};
 
       app_addr <= 27'b0;
       app_cmd <= `WRITE_CMD;
@@ -277,7 +309,7 @@ module dram #(
       app_wdf_data <= 128'b0;
       app_wdf_end <= 1'b0;
       app_wdf_wren <= 1'b0;
-      
+
 
     end else begin
       case (dispatch_state)
@@ -332,7 +364,7 @@ module dram #(
           end
 
           /* either way, send the appropriate bits */
-          app_addr <= write_address + 16 * write_req_ctr;
+          app_addr <= write_address + 8 * write_req_ctr;
           app_cmd <= `WRITE_CMD;
           app_en <= 1'b1;
 
@@ -359,7 +391,7 @@ module dram #(
           end
 
           /* either way, try to issue */
-          app_addr <= read_address + 16 * read_req_ctr;
+          app_addr <= read_address + 8 * read_req_ctr;
           app_cmd <= `READ_CMD;
           app_en <= 1'b1;
 
@@ -370,7 +402,7 @@ module dram #(
           app_en <= 1'b0;
           app_wdf_wren <= 1'b0;
 
-          if (read_resp_ctr == CACHE_BLOCK_BURSTS - 1 && app_rd_data_end)// && app_rd_data_valid)
+          if (read_resp_ctr == CACHE_BLOCK_BURSTS - 1 && (app_rd_data_valid)) //app_rd_data_end)// && app_rd_data_valid)
             dispatch_state <= `DISPATCH_IDLE;
         end
       endcase
