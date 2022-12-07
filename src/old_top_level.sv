@@ -328,13 +328,6 @@ module top_level (
       .write_request(dram_write_rq_ui_clk),
       .write_address(dram_write_addr_ui_clk),
       .write_data(dram_write_data_ui_clk),
-
-      // .hcount_pix_clk(hcount_dui_clk_pix_clk),
-      // .vcount_pix_clk(vcount_dui_clk_pix_clk),
-
-      // .hcount_sys_clk(hcount_dui_clk_sys_clk),
-      // .vcount_sys_clk(vcount_dui_clk_sys_clk),
-
       .init_calib_complete(dram_init_complete_dui_clk),
 
       /* DDR output signals strung straight to the top level */
@@ -425,32 +418,22 @@ module top_level (
   logic [15:0] current_pixel;
 
   // vertices -> points
-  logic [2:0][2:0][10:0] triangle_3d;
-  logic [2:0][1:0][10:0] triangle_2d;
+  logic [2:0][1:0][10:0] triangle_a;
   logic is_within_a;
-  logic is_within_b;
 
   // x y z
-  assign triangle_a[0] = {$signed(-10'd1), 10'b0, 10'd1};
-  assign triangle_a[1] = {10'b0, 10'd2, 10'd2};
-  assign triangle_a[2] = {10'b10, 10'd0, 10'd2};
+  assign triangle_a[0] = {10'd100, 10'd100};
+  assign triangle_a[1] = {10'd700, 10'd500};
+  assign triangle_a[2] = {10'd900, 10'd800};
 
-  // triangle_2d_fill tfill_a (
-  //     .rst(sys_rst),
-  //     .clk(sys_clk),
-  //     .hcount(hcount),
-  //     .vcount(vcount),
-  //     .triangle(triangle_a),
-  //     .is_within(is_within_a)
-  // );
-  // triangle_fill tfill_b (
-  //     .clk(sys_clk),
-  //     .hcount(hcount),
-  //     .vcount(vcount),
-  //     .triangle(triangle_b),
-  //     .is_within(is_within_b)
-  // );
-
+  triangle_2d_fill tfill_a (
+      .rst(sys_rst),
+      .clk(sys_clk),
+      .hcount(hcount),
+      .vcount(vcount),
+      .triangle(triangle_a),
+      .is_within(is_within_a)
+  );
 
   always_comb begin
     if (sys_rst) begin
@@ -463,15 +446,6 @@ module top_level (
         current_pixel = 16'b0;
       end
 
-      // if ((hcount > 200) && (hcount < 300)) begin
-      //   current_pixel = 16'h0f0f;
-      // end else if ((vcount > 600) && (vcount < 700)) begin
-      //   current_pixel = 16'h0f0f;
-      // end else if ((hcount > 400) && (hcount < 500) && (vcount > 400) && (vcount < 500)) begin
-      //   current_pixel = 16'h000f;
-      // end else begin
-      //   current_pixel = 16'h0ff0;
-      // end
     end
   end
 
