@@ -3,6 +3,10 @@
 
 import proctypes::*;
 
+
+// SWITCHES:
+// sw[15] = use instruction bank
+
 module top_level(
     input wire clk_100mhz, //clock @ 100 mhz
     input wire btnc, //btnc (used for reset)
@@ -37,102 +41,6 @@ module top_level(
         .axiov(ether_axiov),
         .axiod(ether_axiod)
     );
-
-    logic parse_valid_out;
-    DecodedInst dInst;
-
-    parser parse(
-        .clk(clk_50mhz),
-        .rst(rst),
-        .instruction({16'b0, sw}),
-        .valid_in(1'b1),
-        .valid_out(parse_valid_out),
-        .dInst(dInst)
-    );
-
-    assign led[15:11] = dInst.prop;
-    assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
-    assign led[2:0] = dInst.iType;
-    
-    vec3 src;
-    assign src[0] = 16'h0;
-    assign src[1] = 16'h0;
-    assign src[2] = 16'h0;
-
-    vec3 dir;
-    assign dir[0] = 16'h3C00;
-    assign dir[1] = {5'b00111, sw[15:8], 3'b000};
-    assign dir[2] = 16'h0000;
-    
-    quaternion rot;
-    assign rot[0] = 16'h3C00;
-    assign rot[1] = 16'h0;
-    assign rot[2] = 16'h0;
-    assign rot[3] = 16'h0;
-
-    vec3 scale;
-    assign scale[0] = {5'b00111, sw[7:0], 3'b000};
-    assign scale[1] = 16'h3C00;
-    assign scale[2] = 16'h3C00;
-
-    logic raycast_valid;
-    logic raycast_hit;
-    float16 raycast_sq_distance;
-    vec3 raycast_intersection;
-
-    raycaster raycast (
-        .clk(clk_50mhz),
-        .rst(rst),
-        .valid_in(1'b1),
-        .src(src),
-        .dir(dir),
-        .shape_type(stSphere),
-        .shape_trans_inv(src),
-        .shape_rot(rot),
-        .shape_scale_inv(scale),
-        .valid_out(raycast_valid),
-        .hit(raycast_hit),
-        .sq_distance(raycast_sq_distance),
-        .intersection(raycast_intersection)
-    );
-
-
-    vec3 dir2;
-    assign dir2[0] = {5'b00111, sw[15:8], 3'b000};
-    assign dir2[1] = 16'h3C00;
-    assign dir2[2] = 16'h0000;
-
-    vec3 scale2;
-    assign scale2[0] = 16'h3C00;
-    assign scale2[1] = {5'b00111, sw[7:0], 3'b000};
-    assign scale2[2] = 16'h3C00;
-
-    logic raycast_valid_2;
-    logic raycast_hit_2;
-    float16 raycast_sq_distance_2;
-    vec3 raycast_intersection_2;
-    
-    // raycaster raycast2 (
-    //     .clk(clk_50mhz),
-    //     .rst(rst),
-    //     .valid_in(1'b1),
-    //     .src(src),
-    //     .dir(dir2),
-    //     .shape_type(stSphere),
-    //     .shape_trans_inv(src),
-    //     .shape_rot(rot),
-    //     .shape_scale_inv(scale2),
-    //     .valid_out(raycast_valid_2),
-    //     .hit(raycast_hit_2),
-    //     .sq_distance(raycast_sq_distance_2),
-    //     .intersection(raycast_intersection_2)
-    // );
-
-
-    assign led[10:9] = btnl ? {raycast_valid_2, raycast_hit_2} : {raycast_valid, raycast_hit};
-    logic [31:0] display = btnl ? 
-    (btnu ? {raycast_intersection_2[2], raycast_sq_distance_2} : {raycast_intersection_2[0], raycast_intersection_2[1]})
-    : (btnu ? {raycast_intersection[2], raycast_sq_distance} : {raycast_intersection[0], raycast_intersection[1]});
 
     logic bo_axiov;
     logic [1:0] bo_axiod;
@@ -179,12 +87,46 @@ module top_level(
         end else if (agg_axiov) begin
             ssc_in <= agg_axiod;
         end
-
         if ((~rst) & bo_axiov) begin 
             got_valid <= 1'b1;
         end
     end
 
+    logic parse_valid_out;
+    DecodedInst dInst;
+
+    logic use_instruction_bank;
+    assign use_instruction_bank = sw[15];
+
+    // xilinx_single_port_ram_read_first #(
+    //     .RAM_WIDTH(32),                       // Specify RAM data width
+    //     .RAM_DEPTH(1024),                     // Specify RAM depth (number of entries)
+    //     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+    //     .INIT_FILE(`FPATH(main.hex))          // Specify name/location of RAM initialization file if using one (leave blank if not)
+    // ) instruction_bank (
+    //     .addra(addra),     // Address bus, width determined from RAM_DEPTH
+    //     .dina(dina),       // RAM input data, width determined from RAM_WIDTH
+    //     .clka(clka),       // Clock
+    //     .wea(wea),         // Write enable
+    //     .ena(ena),         // RAM Enable, for additional power savings, disable port when not in use
+    //     .rsta(rsta),       // Output reset (does not affect memory contents)
+    //     .regcea(regcea),   // Output register enable
+    //     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
+    // );
+    
+    parser parse(
+        .clk(clk_50mhz),
+        .rst(rst),
+        .instruction(agg_axiod),
+        .valid_in(1'b1),
+        .valid_out(parse_valid_out),
+        .dInst(dInst)
+    );
+
+    assign led[15:11] = dInst.prop;
+    assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
+    assign led[2:0] = dInst.iType;
+    
     seven_segment_controller ssc (
         .clk_in(clk_50mhz),
         .rst_in(rst),
