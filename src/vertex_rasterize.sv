@@ -33,7 +33,8 @@ module vertex_rasterize (
   i13 rast_x, rast_y, rast_z;
 
   pipe #(
-      .LENGTH(6)
+      .LENGTH(6),
+      .WIDTH(16)
   ) ndc_x_pipe (
       .clk(clk),
       .rst(rst),
@@ -82,10 +83,19 @@ module vertex_rasterize (
       .output_valid(rast_y_valid)
   );
 
+  ila_rast ila (
+      .clk(clk),
+      .probe0(rast_x_valid),
+      .probe1(input_valid_delayed),
+      .probe2(ndc_x_delayed),
+      .probe3(ndc_x),
+      .probe4(rast_x)
+  );
+
   float_to_fixed13 z_to_fx13 (
       .aclk                (clk),          // input wire aclk
       .s_axis_a_tvalid     (input_valid),  // input wire s_axis_a_tvalid
-      .s_axis_a_tdata      (z_dist),       // input wire [15 : 0] s_axis_a_tdata
+      .s_axis_a_tdata      ({~z_dist[15], z_dist[14:0]}),       // input wire [15 : 0] s_axis_a_tdata
       .m_axis_result_tvalid(fx13_valid),   // output wire m_axis_result_tvalid
       .m_axis_result_tdata (fx13_out)      // output wire [15 : 0] m_axis_result_tdata
   );
@@ -95,7 +105,7 @@ module vertex_rasterize (
       rast_z <= 0;
     end else begin
       if (fx13_valid) begin
-        rast_z <= fx13_out[12] ? $signed({4'b0, fx13_out[11:0]}) : -$signed({4'b0, fx13_out[11:0]});
+        rast_z <= fx13_out; //fx13_out[12] ? -$signed({4'b0, fx13_out[11:0]}) : $signed({4'b0, fx13_out[11:0]});
       end
     end
   end
@@ -103,12 +113,12 @@ module vertex_rasterize (
 endmodule
 
 module coord_rast (
-    input  wire  clk,
-    input  wire  rst,
-    input  wire  input_valid,
-    input  wire f16   coord,
-    input  wire f16   dimension_extent,
-    output i13   rast_coord,
+    input wire clk,
+    input wire rst,
+    input wire input_valid,
+    input wire f16 coord,
+    input wire f16 dimension_extent,
+    output i13 rast_coord,
     output logic output_valid
 );
 
@@ -120,8 +130,9 @@ module coord_rast (
 
 
   assign output_valid = fx13_valid;
-  assign coord_i13   = $signed({1'b0, fx13_out[11:0]});
-  assign rast_coord  = fx13_out[12] ? -coord_i13 : coord_i13;
+  //   assign coord_i13   = $signed({1'b0, fx13_out[11:0]});
+  //   assign rast_coord  = fx13_out[12] ? -coord_i13 : coord_i13;
+  assign rast_coord   = fx13_out;
 
   float_multiply f_mul (
       .aclk                (clk),               // input wire aclk

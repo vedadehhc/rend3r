@@ -17,7 +17,7 @@
 `define FRAME_HEIGHT_BITS 11
 `define MAX_HCOUNT 1344
 
-module top_level (
+module old_top_level (
     input wire clk_100mhz,
     input wire [15:0] sw,
     input wire btnc,

@@ -1,12 +1,13 @@
 `default_nettype none
 module pipe #(
-    LENGTH = 1
+    LENGTH = 1,
+    WIDTH = 1
 ) (
     input  wire  clk,
     input  wire  rst,
-    input  wire  in,
-    output logic out,
-    output logic [LENGTH-1:0] line
+    input  wire  [WIDTH-1:0] in,
+    output logic [WIDTH-1:0] out,
+    output logic [LENGTH-1:0][WIDTH-1:0]  line
 );
 
   logic temp;
