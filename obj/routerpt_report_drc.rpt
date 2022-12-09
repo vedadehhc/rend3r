@@ -1,9 +1,9 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2022.1 (lin64) Build 3526262 Mon Apr 18 15:47:01 MDT 2022
-| Date         : Fri Dec  2 15:17:47 2022
-| Host         : EECS-DIGITAL-54 running 64-bit Ubuntu 20.04.5 LTS
-| Command      : report_drc -file /tmp/tmp.wBmrI7/obj/routerpt_report_drc.rpt
+| Date         : Thu Dec  8 22:18:19 2022
+| Host         : EECS-DIGITAL-36 running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_drc -file /tmp/tmp.uAHy9c/obj/routerpt_report_drc.rpt
 | Design       : top_level
 | Device       : xc7a100tcsg324-1
 | Speed File   : -1
@@ -24,12 +24,12 @@ Table of Contents
       Design limits: <entire design considered>
            Ruledeck: default
              Max violations: <unlimited>
-             Violations found: 5
+             Violations found: 7
 +----------+----------+-----------------------------------------------------+------------+
 | Rule     | Severity | Description                                         | Violations |
 +----------+----------+-----------------------------------------------------+------------+
 | CFGBVS-1 | Warning  | Missing CFGBVS and CONFIG_VOLTAGE Design Properties | 1          |
-| PDRC-153 | Warning  | Gated clock check                                   | 4          |
+| PDRC-153 | Warning  | Gated clock check                                   | 6          |
 +----------+----------+-----------------------------------------------------+------------+
 
 2. REPORT DETAILS
@@ -49,22 +49,32 @@ Related violations: <none>
 
 PDRC-153#1 Warning
 Gated clock check  
-Net parse/nextDInst_reg[lIndex][5]_i_1_n_0 is a gated clock net sourced by a combinational pin parse/nextDInst_reg[lIndex][5]_i_1/O, cell parse/nextDInst_reg[lIndex][5]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net agg/E[0] is a gated clock net sourced by a combinational pin agg/nextDInst_reg[data][15]_i_1/O, cell agg/nextDInst_reg[data][15]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 PDRC-153#2 Warning
 Gated clock check  
-Net parse/nextDInst_reg[prop][4]_i_1_n_0 is a gated clock net sourced by a combinational pin parse/nextDInst_reg[prop][4]_i_1/O, cell parse/nextDInst_reg[prop][4]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net agg/data_buffer_reg[33]_0[0] is a gated clock net sourced by a combinational pin agg/nextDInst_reg[prop][4]_i_1/O, cell agg/nextDInst_reg[prop][4]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 PDRC-153#3 Warning
 Gated clock check  
-Net parse/nextDInst_reg[sIndex][2]_i_1_n_0 is a gated clock net sourced by a combinational pin parse/nextDInst_reg[sIndex][2]_i_1/O, cell parse/nextDInst_reg[sIndex][2]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net agg/data_buffer_reg[33]_1[0] is a gated clock net sourced by a combinational pin agg/nextDInst_reg[sIndex][6]_i_1/O, cell agg/nextDInst_reg[sIndex][6]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 PDRC-153#4 Warning
 Gated clock check  
-Net raycast/quad_solver/s5_s6_t_reg[15]_i_2_n_0 is a gated clock net sourced by a combinational pin raycast/quad_solver/s5_s6_t_reg[15]_i_2/O, cell raycast/quad_solver/s5_s6_t_reg[15]_i_2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net agg/nextShapeData_reg[0] is a gated clock net sourced by a combinational pin agg/nextDInst_reg[lIndex][5]_i_1/O, cell agg/nextDInst_reg[lIndex][5]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#5 Warning
+Gated clock check  
+Net agg/nextShapeData_reg_0[0] is a gated clock net sourced by a combinational pin agg/nextDInst_reg[prop2][4]_i_1/O, cell agg/nextDInst_reg[prop2][4]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#6 Warning
+Gated clock check  
+Net agg/nextShapeData_reg_1[0] is a gated clock net sourced by a combinational pin agg/nextDInst_reg[sType][4]_i_1/O, cell agg/nextDInst_reg[sType][4]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 

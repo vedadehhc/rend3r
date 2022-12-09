@@ -6,7 +6,6 @@ import proctypes::*;
 
 // SWITCHES:
 // sw[15] = use instruction bank
-
 module top_level(
     input wire clk_100mhz, //clock @ 100 mhz
     input wire btnc, //btnc (used for reset)
@@ -28,7 +27,9 @@ module top_level(
     logic clk_50mhz;
     assign eth_refclk = clk_50mhz;
 
-    divider eth_clk_gen(.clk(clk_100mhz), .ethclk(clk_50mhz));
+    logic buf_clk_100mhz;
+
+    divider eth_clk_gen(.clk(clk_100mhz), .ethclk(clk_50mhz), .clk_divider(buf_clk_100mhz));
 
     logic ether_axiov;
     logic [1:0] ether_axiod;
@@ -100,7 +101,7 @@ module top_level(
 
     // xilinx_single_port_ram_read_first #(
     //     .RAM_WIDTH(32),                       // Specify RAM data width
-    //     .RAM_DEPTH(1024),                     // Specify RAM depth (number of entries)
+    //     .RAM_DEPTH(NUM_INSTRUCTIONS),                     // Specify RAM depth (number of entries)
     //     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
     //     .INIT_FILE(`FPATH(main.hex))          // Specify name/location of RAM initialization file if using one (leave blank if not)
     // ) instruction_bank (
@@ -114,23 +115,48 @@ module top_level(
     //     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
     // );
     
+    logic [NUM_INSTRUCTIONS_WIDTH-1:0] pc;
     parser parse(
         .clk(clk_50mhz),
         .rst(rst),
         .instruction(agg_axiod),
         .valid_in(1'b1),
         .valid_out(parse_valid_out),
-        .dInst(dInst)
+        .dInst(dInst),
+        .pc(pc)
     );
 
     assign led[15:11] = dInst.prop;
     assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
     assign led[2:0] = dInst.iType;
+
+    logic mem_ready;
+    Camera cur_camera;
+    Light cur_light;
+    logic [GEOMETRY_WIDTH-1:0] cur_geo;
+
+    execute exec (
+        .clk_50mhz(clk_50mhz),
+        .clk_100mhz(buf_clk_100mhz),
+        .rst(rst),
+        .dInst_valid(parse_valid_out),
+        .dInst(dInst),
+        .pc(pc),
+        .memory_ready(mem_ready),
+        .cur_camera(cur_camera),
+        .cur_light(cur_light),
+        .cur_geo(cur_geo)
+    );
+
+    // rasterization controller 
+    // should iterate through all triangles and pass to rasterizer
+
+
     
     seven_segment_controller ssc (
         .clk_in(clk_50mhz),
         .rst_in(rst),
-        .val_in(display),
+        .val_in({cur_camera.xloc, cur_camera.yloc}),
         .cat_out({cg, cf, ce, cd, cc, cb, ca}),
         .an_out(an)
     );

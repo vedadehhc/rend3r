@@ -10,7 +10,8 @@ module parser (
     input wire [31:0] instruction,
     input wire valid_in,
     output logic valid_out,
-    output DecodedInst dInst
+    output DecodedInst dInst,
+    output logic [NUM_INSTRUCTIONS-1:0] pc
 );
     logic nextShapeData;
 
@@ -69,7 +70,11 @@ module parser (
             nextShapeData <= 1'b0;
             valid_out <= 1'b0;
             dInst <= 0;
+            pc <= 0;
         end else begin
+            if (valid_in) begin
+                pc <= pc + 1;
+            end
             valid_out <= valid_in;
             dInst <= nextDInst;
             if (valid_in && (nextDInst.iType == opShapeSet)) begin

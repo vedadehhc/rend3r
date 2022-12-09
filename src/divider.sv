@@ -71,6 +71,7 @@ module divider
  (// Clock in ports
   // Clock out ports
   output        ethclk,
+  output        clk_divider,
   input         clk
  );
   // Input buffering

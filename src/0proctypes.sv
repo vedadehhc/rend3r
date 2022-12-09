@@ -1,4 +1,16 @@
+// TODO: update based on ISA
+
 package proctypes;
+
+    // Render mode
+    typedef enum {
+        renderNone = 2'b00,
+        renderRasterization = 2'b01,
+        renderRaytracing = 2'b11
+    } RenderMode;
+    parameter RENDERING_MODE = renderRasterization;
+
+
     // FPU IP types
     typedef enum logic [5:0] {
         fpuOpAdd            = 6'b000000,
@@ -91,27 +103,41 @@ package proctypes;
         spXLocation   = 5'd1,
         spYLocation   = 5'd2,
         spZLocation   = 5'd3,
-        spXForward    = 5'd4,
-        spYForward    = 5'd5,
-        spZForward    = 5'd6,
-        spXScale      = 5'd7,
-        spYScale      = 5'd8,
-        spZScale      = 5'd9,
-        spMaterial    = 5'd10
+        spRRotation   = 5'd4,
+        spIRotation   = 5'd5,
+        spJRotation   = 5'd6,
+        spKRotation   = 5'd7,
+        spXScale      = 5'd8,
+        spYScale      = 5'd9,
+        spZScale      = 5'd10,
+        spColor       = 5'd11,
+        spMaterial    = 5'd12
     } ShapeProperty;
 
     typedef enum logic[4:0] { 
-        stOff           = 5'd0,
-        stEqTriangle    = 5'd1,
-        stRtTriangle    = 5'd2,
-        stPlane         = 5'd3,
-        stInfPlane      = 5'd4,
-        stSphere        = 5'd5,
-        stCube          = 5'd6,
-        stCylinder      = 5'd7,
-        stInfCylinder   = 5'd8
+        stOff         = 5'd0,
+        stSphere      = 5'd1,
+        stCylinder    = 5'd2,
+        stCone        = 5'd3
     } ShapeType;
     
+    // Triangle properties
+
+    typedef enum Prop {
+        tpNull        = 5'd0,
+        tpX1          = 5'd1,
+        tpY1          = 5'd2,
+        tpZ1          = 5'd3,
+        tpX2          = 5'd4,
+        tpY2          = 5'd5,
+        tpZ2          = 5'd6,
+        tpX3          = 5'd7,
+        tpY3          = 5'd8,
+        tpZ3          = 5'd9,
+        tpColor       = 5'd11,
+        tpMaterial    = 5'd12
+    } TriangleProperty;
+
     // Decoded instruction
     typedef struct packed {
         InstructionType iType;
@@ -123,4 +149,84 @@ package proctypes;
         float16 data;
         float16 data2;
     } DecodedInst;
+    
+
+//// IMPORTANT GLOBALS
+    // Data Size
+    typedef struct packed {
+        float16 xloc;
+        float16 yloc;
+        float16 zloc;
+        float16 xfor;
+        float16 yfor;
+        float16 zfor;
+        float16 xup;
+        float16 yup;
+        float16 zup;
+        float16 nclip;
+        float16 fclip;
+        float16 hfov;
+        float16 vfov;
+    } Camera;
+    parameter CAMERA_WIDTH = $bits(Camera);
+
+    typedef struct packed {
+        LightType       lType;
+        float16         xloc;
+        float16         yloc;
+        float16         zloc;
+        float16         xfor;
+        float16         yfor;
+        float16         zfor;
+        logic [15:0]    col;
+        float16         intensity;
+    } Light;
+    parameter LIGHT_WIDTH = $bits(Light);
+    parameter NUM_LIGHTS = 8;
+    parameter LIGHT_ADDR_WIDTH = $clog2(NUM_LIGHTS);
+
+    typedef struct packed {
+        float16         x1;
+        float16         y1;
+        float16         z1;
+        float16         x2;
+        float16         y2;
+        float16         z2;
+        float16         x3;
+        float16         y3;
+        float16         z3;
+        logic [15:0]    col;
+        logic [1:0]     mat;
+    } Triangle;
+    parameter TRIANGLE_WIDTH = $bits(Triangle);
+    parameter NUM_TRIANGLES = 1024;
+    parameter TRIANGLE_ADDR_WIDTH = $clog2(NUM_TRIANGLES);
+
+    typedef struct packed {
+        ShapeType       sType;
+        float16         xloc;
+        float16         yloc;
+        float16         zloc;
+        float16         rrot;
+        float16         irot;
+        float16         jrot;
+        float16         krot;
+        float16         xscl;
+        float16         yscl;
+        float16         zscl;
+        logic [15:0]    col;
+        logic [1:0]     mat;
+    } Shape;
+    parameter SHAPE_WIDTH = $bits(Shape);
+    parameter NUM_SHAPES = 1024;
+    parameter SHAPE_ADDR_WIDTH = $clog2(NUM_SHAPES);
+
+    parameter GEOMETRY_WIDTH = (RENDERING_MODE == renderRasterization) ? TRIANGLE_WIDTH : SHAPE_WIDTH;
+    parameter GEOMETRY_DEPTH = (RENDERING_MODE == renderRasterization) ? NUM_TRIANGLES  : NUM_SHAPES;
+    parameter GEOMETRY_ADDR_WIDTH = $clog2(GEOMETRY_DEPTH);
+
+    parameter INSTRUCTION_WIDTH = 32;
+    parameter DECODED_INSTRUCTION_WIDTH = $bits(DecodedInst);
+    parameter NUM_INSTRUCTIONS = 1024;
+    parameter NUM_INSTRUCTIONS_WIDTH = $clog2(NUM_INSTRUCTIONS);
 endpackage
