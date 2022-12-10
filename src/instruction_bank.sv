@@ -11,8 +11,16 @@ module instruction_bank (
     output InstructionAddr pc_out,
     output Instruction inst
 );
+
+    typedef enum {fs_WAITING, fs_REPEAT_DEQUEUE} fetch_state;
+
+    fetch_state state;
     logic valid_1;
     logic valid_2;
+
+    logic canDequeue;
+    // all 0 = end render/invalid
+    assign canDequeue = (action == fetchDequeue) && instruction_out != {(INSTRUCTION_WIDTH){1'b0}};
 
     InstructionAddr pc;
     InstructionAddr pc_1;
@@ -25,12 +33,19 @@ module instruction_bank (
             pc <= 0;
             pc_1 <= 0;
             pc_2 <= 0;
+            state <= fs_WAITING;
         end else begin
-            valid_1 <= action == fetchDequeue;
-            valid_2 <= valid_1;
-            if (action == fetchDequeue) begin
+            if (state == fs_WAITING) begin
+                valid_1 <= canDequeue;
+                if (canDequeue) begin
+                    state <= fs_REPEAT_DEQUEUE;
+                end
+            end else if (state == fs_REPEAT_DEQUEUE) begin
+                valid_1 <= 1'b1;
                 pc <= pc + 1;
+                state <= fs_WAITING;
             end
+            valid_2 <= valid_1;
             pc_1 <= pc;
             pc_2 <= pc_1;
         end

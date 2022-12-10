@@ -37,11 +37,11 @@ module xilinx_true_dual_port_read_first_2_clock_ram #(
 
   //this loop below allows for rendering with iverilog simulations!
   
-  // genvar idx;
-  // for(idx = 0; idx < RAM_DEPTH; idx = idx+1) begin: cats
-  //   wire [RAM_WIDTH-1:0] tmp;
-  //   assign tmp = BRAM[idx];
-  // end
+  genvar idx;
+  for(idx = 0; idx < RAM_DEPTH; idx = idx+1) begin: cats
+    wire [RAM_WIDTH-1:0] tmp;
+    assign tmp = BRAM[idx];
+  end
   
 
   // The following code either initializes the memory values to a specified file or to all zeros to match hardware
@@ -56,12 +56,12 @@ module xilinx_true_dual_port_read_first_2_clock_ram #(
           BRAM[ram_index] = {RAM_WIDTH{1'b0}};
     end
   endgenerate
-  integer idx;
-  initial begin
-    for (idx = 0; idx < RAM_DEPTH; idx = idx + 1) begin
-      $dumpvars(0, BRAM[idx]);
-    end
-  end
+  // integer idx;
+  // initial begin
+  //   for (idx = 0; idx < RAM_DEPTH; idx = idx + 1) begin
+  //     $dumpvars(0, BRAM[idx]);
+  //   end
+  // end
   always @(posedge clka)
     if (ena) begin
       if (wea)

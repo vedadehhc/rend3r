@@ -22,7 +22,6 @@ import proctypes::*;
 //      seems difficult to manage dirty bits, etc.
 // 5. buffer all commands from ethernet first, then stall
 //
-// TODO: pass back the executed dInst_4 to allow future stages to manage new render, new frame correctly
 module memory_bank(
     input wire clk_100mhz,
     input wire rst,
@@ -30,6 +29,7 @@ module memory_bank(
     input wire [DECODED_INSTRUCTION_WIDTH + NUM_INSTRUCTIONS_WIDTH-1:0] dInst_flat,
     input wire LightAddr light_read_addr,
     input wire GeometryAddr geometry_read_addr,
+    output logic dInst_valid_out,
     output DecodedInst dInst_out,
     output logic output_enabled,
     output Camera camera_output,
@@ -57,6 +57,9 @@ module memory_bank(
     DecodedInst dInst_4;
     InstructionAddr pc_4;
     logic valid_4;
+
+    assign dInst_out = dInst_4;
+    assign dInst_valid_out = valid_4;
 
     always_ff @( posedge clk_100mhz ) begin
         if (rst) begin 
@@ -97,17 +100,32 @@ module memory_bank(
     Shape shape_3_4;
     logic [GEOMETRY_WIDTH-1:0] write_geometry_4;
 
+    logic [GEOMETRY_WIDTH-1:0] write_geometry_4_bypass;
+
     logic we_light;
     logic [LIGHT_WIDTH-1:0] read_light_3;
     Light light_3_4;
     logic [LIGHT_WIDTH-1:0] write_light_4;
     logic [LIGHT_ADDR_WIDTH-1:0] addr_light;
 
+    logic [LIGHT_WIDTH-1:0] write_light_4_bypass;
+
     logic we_camera;
     logic [CAMERA_WIDTH-1:0] read_camera_3;
     Camera camera_3_4;
     logic [CAMERA_WIDTH-1:0] write_camera_4;
+
+    logic [CAMERA_WIDTH-1:0] write_camera_4_bypass;
     
+    logic valid_4_bypass;
+    DecodedInst dInst_4_bypass;
+    always_ff @( posedge clk_100mhz ) begin
+        valid_4_bypass <= valid_4;
+        dInst_4_bypass <= dInst_4;
+        write_geometry_4_bypass <= write_geometry_4;
+        write_light_4_bypass <= write_light_4;
+        write_camera_4_bypass <= write_camera_4;
+    end
 
     always @(*) begin 
         camera_3_4 = read_camera_3;
@@ -293,9 +311,22 @@ module memory_bank(
     logic [LIGHT_WIDTH-1:0] read_light_3_out [1:0];
     logic [GEOMETRY_WIDTH-1:0] read_geometry_3_out [1:0];
     
-    assign read_camera_3 = read_camera_3_out[bram_write_index];
-    assign read_light_3 = read_light_3_out[bram_write_index];
-    assign read_geometry_3 = read_geometry_3_out[bram_write_index];
+    always @(*) begin 
+        read_camera_3 = read_camera_3_out[bram_write_index];
+        read_light_3 = read_light_3_out[bram_write_index];
+        read_geometry_3 = read_geometry_3_out[bram_write_index];
+        if (valid_4_bypass && dInst_4_bypass.iType == dInst_3.iType) begin
+            if (dInst_4_bypass.iType == opCameraSet) begin
+                read_camera_3 = write_camera_4_bypass;
+            end
+            if (dInst_4_bypass.iType == opLightSet && dInst_4_bypass.lIndex == dInst_3.lIndex) begin
+                read_light_3 = write_light_4_bypass;
+            end
+            if (dInst_4_bypass.iType == opShapeSet && dInst_4_bypass.sIndex == dInst_3.sIndex) begin
+                read_geometry_3 = write_geometry_4_bypass;
+            end
+        end
+    end
 
     logic [CAMERA_WIDTH-1:0] camera_out [1:0];
     logic [LIGHT_WIDTH-1:0] light_out [1:0];

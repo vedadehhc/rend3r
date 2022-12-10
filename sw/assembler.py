@@ -185,7 +185,9 @@ def parse_line(ln: str, ln_num: int, hex: bool) -> str:
 
     # print(cmd, args)
     
-    if cmd == "nr":
+    if cmd == "er":
+        if len(args) != 0: syntax_err()
+    elif cmd == "nr":
         if len(args) != 0: syntax_err()
         instr.set_range(10, 9, "01")
     elif cmd == "nf":

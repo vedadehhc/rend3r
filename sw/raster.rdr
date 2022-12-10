@@ -1,5 +1,10 @@
 nr
-cam xloc, 0
-cam yloc, 0
-cam zloc, 0
+cam xloc, 1.0
+cam yloc, 2.0
+cam zloc, 4.0
+cam xfor, 8.0
+cam yfor, 16.0
+cam zfor, 0.5
 nf
+er
+er

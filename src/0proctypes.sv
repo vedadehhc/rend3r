@@ -48,7 +48,7 @@ package proctypes;
         ocSEType    = 3'b101 
     } OpCode;
 
-    typedef enum logic[2:0] { 
+    typedef enum logic[3:0] { 
         opUnsupported,
         opEnd,
         opRender,
