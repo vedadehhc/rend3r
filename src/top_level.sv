@@ -93,43 +93,45 @@ module top_level(
         end
     end
 
-    logic parse_valid_out;
-    DecodedInst dInst;
-
     logic use_instruction_bank;
     assign use_instruction_bank = sw[15];
 
-    // xilinx_single_port_ram_read_first #(
-    //     .RAM_WIDTH(32),                       // Specify RAM data width
-    //     .RAM_DEPTH(NUM_INSTRUCTIONS),                     // Specify RAM depth (number of entries)
-    //     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    //     .INIT_FILE(`FPATH(main.hex))          // Specify name/location of RAM initialization file if using one (leave blank if not)
-    // ) instruction_bank (
-    //     .addra(addra),     // Address bus, width determined from RAM_DEPTH
-    //     .dina(dina),       // RAM input data, width determined from RAM_WIDTH
-    //     .clka(clka),       // Clock
-    //     .wea(wea),         // Write enable
-    //     .ena(ena),         // RAM Enable, for additional power savings, disable port when not in use
-    //     .rsta(rsta),       // Output reset (does not affect memory contents)
-    //     .regcea(regcea),   // Output register enable
-    //     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
-    // );
-    
-    logic [NUM_INSTRUCTIONS_WIDTH-1:0] pc;
-    parser parse(
+    /// TODO - route agg_axiod to instruction bank
+
+    logic fetch_valid_out;
+    InstructionAddr fetch_pc;
+    Instruction fetch_inst;
+
+    instruction_bank fetch (
         .clk(clk_50mhz),
         .rst(rst),
-        .instruction(agg_axiod),
-        .valid_in(1'b1),
+        .action(fetchStall),
+        .instruction_valid(fetch_valid_out),
+        .pc_out(fetch_pc),
+        .inst(fetch_inst)
+    );
+
+    logic parse_valid_out;
+    DecodedInst dInst;
+
+    InstructionAddr decode_pc;
+    parser decode (
+        .clk(clk_50mhz),
+        .rst(rst),
+        .pc_in(fetch_pc),
+        .instruction(fetch_inst),
+        .valid_in(fetch_valid_out),
         .valid_out(parse_valid_out),
         .dInst(dInst),
-        .pc(pc)
+        .pc_out(decode_pc)
     );
 
     assign led[15:11] = dInst.prop;
     assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
     assign led[2:0] = dInst.iType;
 
+    logic execInst_valid;
+    DecodedInst execInst;
     logic mem_ready;
     Camera cur_camera;
     Light cur_light;
@@ -139,9 +141,11 @@ module top_level(
         .clk_50mhz(clk_50mhz),
         .clk_100mhz(buf_clk_100mhz),
         .rst(rst),
-        .dInst_valid(parse_valid_out),
-        .dInst(dInst),
-        .pc(pc),
+        .dInst_valid_in(parse_valid_out),
+        .dInst_in(dInst),
+        .pc(decode_pc),
+        .dInst_valid_out(execInst_valid),
+        .dInst_out(execInst),
         .memory_ready(mem_ready),
         .cur_camera(cur_camera),
         .cur_light(cur_light),

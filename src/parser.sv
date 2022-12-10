@@ -7,11 +7,12 @@ import proctypes::*;
 module parser (
     input wire clk,
     input wire rst,
+    input wire InstructionAddr pc_in,
     input wire [31:0] instruction,
     input wire valid_in,
     output logic valid_out,
     output DecodedInst dInst,
-    output logic [NUM_INSTRUCTIONS-1:0] pc
+    output InstructionAddr pc_out
 );
     logic nextShapeData;
 
@@ -31,9 +32,13 @@ module parser (
                 ocFType: begin
                     func = instruction[10:9];
                     if (func == 2'b00) begin
+                        nextDInst.iType = opEnd;
+                    end else if (func == 2'b01) begin
                         nextDInst.iType = opRender;
-                    end else begin
+                    end else if (func == 2'b10) begin
                         nextDInst.iType = opFrame;
+                    end else if (func == 2'b11) begin
+                        nextDInst.iType = opLoop;
                     end
                 end
                 ocCType: begin
@@ -70,11 +75,9 @@ module parser (
             nextShapeData <= 1'b0;
             valid_out <= 1'b0;
             dInst <= 0;
-            pc <= 0;
+            pc_out <= 0;
         end else begin
-            if (valid_in) begin
-                pc <= pc + 1;
-            end
+            pc_out <= pc_in;
             valid_out <= valid_in;
             dInst <= nextDInst;
             if (valid_in && (nextDInst.iType == opShapeSet)) begin

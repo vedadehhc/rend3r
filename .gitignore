@@ -1,2 +1,4 @@
 nul
 .vscode
+*.out
+*.vcd

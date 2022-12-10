@@ -1,15 +1,25 @@
 // TODO: update based on ISA
+`ifdef SYNTHESIS
+`define FPATH(X) `"X`"
+`else /* ! SYNTHESIS */
+`define FPATH(X) `"data/X`"
+`endif  /* ! SYNTHESIS */
 
 package proctypes;
 
     // Render mode
-    typedef enum {
+    typedef enum logic [1:0] {
         renderNone = 2'b00,
         renderRasterization = 2'b01,
         renderRaytracing = 2'b11
     } RenderMode;
     parameter RENDERING_MODE = renderRasterization;
 
+    // Instruction Bank
+    typedef enum logic {
+        fetchStall     = 1'b0,
+        fetchDequeue   = 1'b1
+    } FetchAction;
 
     // FPU IP types
     typedef enum logic [5:0] {
@@ -40,8 +50,10 @@ package proctypes;
 
     typedef enum logic[2:0] { 
         opUnsupported,
+        opEnd,
         opRender,
         opFrame,
+        opLoop,
         opCameraSet,
         opLightSet,
         opShapeInit,
@@ -184,6 +196,8 @@ package proctypes;
     parameter LIGHT_WIDTH = $bits(Light);
     parameter NUM_LIGHTS = 8;
     parameter LIGHT_ADDR_WIDTH = $clog2(NUM_LIGHTS);
+    typedef logic[LIGHT_ADDR_WIDTH-1:0] LightAddr;
+    
 
     typedef struct packed {
         float16         x1;
@@ -201,6 +215,7 @@ package proctypes;
     parameter TRIANGLE_WIDTH = $bits(Triangle);
     parameter NUM_TRIANGLES = 1024;
     parameter TRIANGLE_ADDR_WIDTH = $clog2(NUM_TRIANGLES);
+    typedef logic[TRIANGLE_ADDR_WIDTH-1:0] TriangleAddr;
 
     typedef struct packed {
         ShapeType       sType;
@@ -220,13 +235,17 @@ package proctypes;
     parameter SHAPE_WIDTH = $bits(Shape);
     parameter NUM_SHAPES = 1024;
     parameter SHAPE_ADDR_WIDTH = $clog2(NUM_SHAPES);
+    typedef logic[SHAPE_ADDR_WIDTH-1:0] ShapeAddr;
 
     parameter GEOMETRY_WIDTH = (RENDERING_MODE == renderRasterization) ? TRIANGLE_WIDTH : SHAPE_WIDTH;
     parameter GEOMETRY_DEPTH = (RENDERING_MODE == renderRasterization) ? NUM_TRIANGLES  : NUM_SHAPES;
     parameter GEOMETRY_ADDR_WIDTH = $clog2(GEOMETRY_DEPTH);
+    typedef logic[GEOMETRY_ADDR_WIDTH-1:0] GeometryAddr;
 
     parameter INSTRUCTION_WIDTH = 32;
+    typedef logic [INSTRUCTION_WIDTH-1:0] Instruction;
     parameter DECODED_INSTRUCTION_WIDTH = $bits(DecodedInst);
-    parameter NUM_INSTRUCTIONS = 1024;
+    parameter NUM_INSTRUCTIONS = 65536;
     parameter NUM_INSTRUCTIONS_WIDTH = $clog2(NUM_INSTRUCTIONS);
+    typedef logic [NUM_INSTRUCTIONS_WIDTH-1:0] InstructionAddr;
 endpackage

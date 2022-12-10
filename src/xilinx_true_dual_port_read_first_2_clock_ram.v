@@ -36,13 +36,13 @@ module xilinx_true_dual_port_read_first_2_clock_ram #(
   reg [RAM_WIDTH-1:0] ram_data_b = {RAM_WIDTH{1'b0}};
 
   //this loop below allows for rendering with iverilog simulations!
-  /*
-  integer idx;
-  for(idx = 0; idx < RAM_DEPTH; idx = idx+1) begin: cats
-    wire [RAM_WIDTH-1:0] tmp;
-    assign tmp = BRAM[idx];
-  end
-  */
+  
+  // genvar idx;
+  // for(idx = 0; idx < RAM_DEPTH; idx = idx+1) begin: cats
+  //   wire [RAM_WIDTH-1:0] tmp;
+  //   assign tmp = BRAM[idx];
+  // end
+  
 
   // The following code either initializes the memory values to a specified file or to all zeros to match hardware
   generate
