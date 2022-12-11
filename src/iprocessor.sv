@@ -6,6 +6,9 @@ import proctypes::*;
 module iprocessor (
     input wire clk_100mhz,
     input wire rst,
+    input wire LightAddr light_read_addr,
+    input wire GeometryAddr geometry_read_addr,
+    input wire controller_busy,
     output logic execInst_valid,
     output DecodedInst execInst,
     output logic mem_ready,
@@ -17,11 +20,10 @@ module iprocessor (
     InstructionAddr fetch_pc;
     Instruction fetch_inst;
 
-    // TODO: pass back stall signals
     instruction_bank fetch (
         .clk(clk_100mhz),
         .rst(rst),
-        .action(fetchDequeue),
+        .action(stall == 1'b1 ? fetchStall : fetchDequeue),
         .instruction_valid(fetch_valid_out),
         .pc_out(fetch_pc),
         .inst(fetch_inst)
@@ -34,6 +36,7 @@ module iprocessor (
     parser decode (
         .clk(clk_100mhz),
         .rst(rst),
+        .stall(stall),
         .pc_in(fetch_pc),
         .instruction(fetch_inst),
         .valid_in(fetch_valid_out),
@@ -46,12 +49,18 @@ module iprocessor (
     // assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
     // assign led[2:0] = dInst.iType;
 
+    logic stall;
+
     execute exec (
         .clk_100mhz(clk_100mhz),
         .rst(rst),
         .dInst_valid_in(parse_valid_out),
         .dInst_in(dInst),
         .pc(decode_pc),
+        .controller_busy(controller_busy),
+        .light_read_addr(light_read_addr),
+        .geometry_read_addr(geometry_read_addr),
+        .stall(stall),
         .dInst_valid_out(execInst_valid),
         .dInst_out(execInst),
         .memory_ready(mem_ready),

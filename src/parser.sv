@@ -7,6 +7,7 @@ import proctypes::*;
 module parser (
     input wire clk,
     input wire rst,
+    input wire stall,
     input wire InstructionAddr pc_in,
     input wire [31:0] instruction,
     input wire valid_in,
@@ -14,14 +15,15 @@ module parser (
     output DecodedInst dInst,
     output InstructionAddr pc_out
 );
-    logic nextShapeData;
+    typedef enum { NORMAL, SINGLE_SE, DOUBLE_SE, SINGLE_SD } NextShapeDataState;
+    NextShapeDataState state;
 
     DecodedInst nextDInst = DecodedInst'(0);
     OpCode opcode = OpCode'(0);
     logic [1:0] func;
 
     always @(*) begin
-        if (nextShapeData) begin
+        if (state == DOUBLE_SE || state == SINGLE_SD) begin
             nextDInst.iType = opShapeData;
             nextDInst.data  = instruction[31:16];
             nextDInst.data2 = instruction[15:0];
@@ -72,18 +74,26 @@ module parser (
 
     always_ff @( posedge clk ) begin 
         if (rst) begin
-            nextShapeData <= 1'b0;
             valid_out <= 1'b0;
             dInst <= 0;
             pc_out <= 0;
-        end else begin
+            state <= NORMAL;
+        end else if (!stall) begin
             pc_out <= pc_in;
             valid_out <= valid_in;
             dInst <= nextDInst;
             if (valid_in && (nextDInst.iType == opShapeSet)) begin
-                nextShapeData <= 1'b1;
+                if (state == SINGLE_SE) begin
+                    state <= DOUBLE_SE;
+                end else begin
+                    state <= SINGLE_SE;
+                end
             end else if (valid_in) begin
-                nextShapeData <= 1'b0;
+                if (state == DOUBLE_SE) begin
+                    state <= SINGLE_SD;
+                end else begin
+                    state <= NORMAL;
+                end
             end
         end
     end

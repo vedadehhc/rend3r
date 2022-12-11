@@ -22,13 +22,20 @@ import proctypes::*;
 //      seems difficult to manage dirty bits, etc.
 // 5. buffer all commands from ethernet first, then stall
 //
+// CURRENT APPROACH:
+// we have instruction bank with stalling, etc. 
+// but, we still don't want to explicitly copy over (this is slow)
+// instead, still use apporach 2 above 
+// possible: rewrite with single memory, and add more stalling (i.e. always stall when rasterization is busy)
 module memory_bank(
     input wire clk_100mhz,
     input wire rst,
+    input wire controller_busy,
     input wire dInst_valid,
     input wire [DECODED_INSTRUCTION_WIDTH + NUM_INSTRUCTIONS_WIDTH-1:0] dInst_flat,
     input wire LightAddr light_read_addr,
     input wire GeometryAddr geometry_read_addr,
+    output logic stall,
     output logic dInst_valid_out,
     output DecodedInst dInst_out,
     output logic output_enabled,
@@ -74,7 +81,7 @@ module memory_bank(
             dInst_4 <= {(DECODED_INSTRUCTION_WIDTH){1'b0}};
             pc_4 <= {(NUM_INSTRUCTIONS_WIDTH){1'b1}};
             valid_4 <= 1'b0;
-        end else begin 
+        end else if (!stall) begin 
             dInst_2 <= dInst_1;
             pc_2 <= pc_1;
             valid_2 <= valid_1;
@@ -120,11 +127,13 @@ module memory_bank(
     logic valid_4_bypass;
     DecodedInst dInst_4_bypass;
     always_ff @( posedge clk_100mhz ) begin
-        valid_4_bypass <= valid_4;
-        dInst_4_bypass <= dInst_4;
-        write_geometry_4_bypass <= write_geometry_4;
-        write_light_4_bypass <= write_light_4;
-        write_camera_4_bypass <= write_camera_4;
+        if (!stall) begin
+            valid_4_bypass <= valid_4;
+            dInst_4_bypass <= dInst_4;
+            write_geometry_4_bypass <= write_geometry_4;
+            write_light_4_bypass <= write_light_4;
+            write_camera_4_bypass <= write_camera_4;
+        end
     end
 
     always @(*) begin 
@@ -236,12 +245,14 @@ module memory_bank(
     end
 
     always_ff @( posedge clk_100mhz ) begin 
-        write_light_4 <= light_3_4;
-        write_camera_4 <= camera_3_4;
-        if (RENDERING_MODE == renderRasterization) begin
-            write_geometry_4 <= triangle_3_4;
-        end else if (RENDERING_MODE == renderRaytracing) begin
-            write_geometry_4 <= shape_3_4;
+        if (!stall) begin
+            write_light_4 <= light_3_4;
+            write_camera_4 <= camera_3_4;
+            if (RENDERING_MODE == renderRasterization) begin
+                write_geometry_4 <= triangle_3_4;
+            end else if (RENDERING_MODE == renderRaytracing) begin
+                write_geometry_4 <= shape_3_4;
+            end
         end
     end
 
@@ -288,21 +299,40 @@ module memory_bank(
     logic bram_write_index;
     logic bram_read_index;
     assign bram_read_index = ~bram_write_index;
+
+    logic next_bram_write_index;
+    logic next_output_enabled;
+
+    always @(*) begin 
+        stall = 1'b0;
+        next_bram_write_index = bram_write_index;
+        next_output_enabled = output_enabled;
+        if (pc_2 == pc_3 && valid_2 && valid_3) begin 
+            // instruction pipe: C, A, A, B
+            if (dInst_2.iType == opFrame) begin
+                if (controller_busy) begin 
+                    stall = 1'b1;
+                end else begin
+                    next_bram_write_index = ~bram_write_index;
+                    next_output_enabled = 1'b1;
+                end
+            end else if (dInst_2.iType == opRender) begin
+                if (controller_busy) begin
+                    stall = 1'b1;
+                end else begin
+                    next_output_enabled = 1'b0;
+                end
+            end
+        end 
+    end
     
     always_ff @( posedge clk_100mhz ) begin
         if (rst) begin
             bram_write_index <= 1'b0;
             output_enabled <= 1'b0;
         end else begin
-            if (pc_2 == pc_3 && valid_2 && valid_3) begin 
-                // instruction pipe: C, A, A, B
-                if (dInst_2.iType == opFrame) begin
-                    bram_write_index <= ~bram_write_index;
-                    output_enabled <= 1'b1;
-                end else if (dInst_2.iType == opRender) begin
-                    output_enabled <= 1'b0;
-                end
-            end
+            bram_write_index <= next_bram_write_index;
+            output_enabled <= next_output_enabled;
         end
     end
 

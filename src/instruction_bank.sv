@@ -3,6 +3,7 @@
 
 import proctypes::*;
 
+// TODO: write eth into instruction_bank
 module instruction_bank (
     input wire clk,
     input wire rst,
@@ -34,7 +35,7 @@ module instruction_bank (
             pc_1 <= 0;
             pc_2 <= 0;
             state <= fs_WAITING;
-        end else begin
+        end else if (action != fetchStall) begin
             if (state == fs_WAITING) begin
                 valid_1 <= canDequeue;
                 if (canDequeue) begin

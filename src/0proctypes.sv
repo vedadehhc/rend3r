@@ -200,6 +200,8 @@ package proctypes;
     
 
     typedef struct packed {
+        logic [15:0]    col;
+        logic [1:0]     mat;
         float16         x1;
         float16         y1;
         float16         z1;
@@ -209,11 +211,9 @@ package proctypes;
         float16         x3;
         float16         y3;
         float16         z3;
-        logic [15:0]    col;
-        logic [1:0]     mat;
     } Triangle;
     parameter TRIANGLE_WIDTH = $bits(Triangle);
-    parameter NUM_TRIANGLES = 1024;
+    parameter NUM_TRIANGLES = 65536;
     parameter TRIANGLE_ADDR_WIDTH = $clog2(NUM_TRIANGLES);
     typedef logic[TRIANGLE_ADDR_WIDTH-1:0] TriangleAddr;
 

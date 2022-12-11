@@ -136,6 +136,9 @@ module top_level(
     iprocessor processor (
         .clk_100mhz(buf_clk_100mhz),
         .rst(rst),
+        .light_read_addr(),
+        .geometry_read_addr(rast_tri_addr),
+        .controller_busy(rast_busy),
         .execInst_valid(execInst_valid),
         .execInst(execInst),
         .mem_ready(mem_ready),
@@ -146,6 +149,24 @@ module top_level(
 
     // rasterization controller 
     // should iterate through all triangles and pass to rasterizer
+    logic rast_busy;
+    TriangleAddr rast_tri_addr;
+
+    logic rast_tri_valid;
+    Triangle rast_tri;
+
+    rasterization_controller controller (
+        .clk(buf_clk_100mhz),
+        .rst(rst),
+        .execInst_valid(execInst_valid),
+        .execInst(execInst),
+        .mem_ready(mem_ready),
+        .cur_triangle(cur_geo),
+        .busy(rast_busy),
+        .cur_tri_addr(rast_tri_addr),
+        .next_triangle_valid(rast_tri_valid),
+        .next_triangle(rast_tri)
+    );
     
     seven_segment_controller ssc (
         .clk_in(buf_clk_100mhz),
