@@ -19,7 +19,7 @@
 
 import types::*;
 
-module old_top_level (
+module top_level (
     input wire clk_100mhz,
     input wire [15:0] sw,
     input wire btnc,
@@ -27,16 +27,6 @@ module old_top_level (
     input wire btnl,
     input wire btnr,
     input wire btnd,
-    output logic [7:0] an,
-    output logic caa,
-    cab,
-    cac,
-    cad,
-    cae,
-    caf,
-    cag,
-
-    output wire [15:0] led,
 
     output logic [12:0] ddr2_addr,
     output logic [2:0] ddr2_ba,
@@ -226,92 +216,8 @@ module old_top_level (
       .doutb(dram_read_addr_ui_clk)
   );
 
-  cdc_bram_bridge_11 hcs_cdc (
-      .wea  (1'b1),
-      .clka (sys_clk),
-      .clkb (dram_ui_clk),
-      .addra(1'b0),
-      .addrb(1'b0),
-      .dina (hcount),
-      .doutb(hcount_dui_clk_sys_clk)
-  );
-
-  cdc_bram_bridge_11 hcp_cdc (
-      .wea  (1'b1),
-      .clka (pix_clk),
-      .clkb (dram_ui_clk),
-      .addra(1'b0),
-      .addrb(1'b0),
-      .dina (hcount_pix_clk),
-      .doutb(hcount_dui_clk_pix_clk)
-  );
-
-  cdc_bram_bridge_11 vcs_cdc (
-      .wea  (1'b1),
-      .clka (sys_clk),
-      .clkb (dram_ui_clk),
-      .addra(1'b0),
-      .addrb(1'b0),
-      .dina (vcount),
-      .doutb(vcount_dui_clk_sys_clk)
-  );
-
-  cdc_bram_bridge_11 vcp_cdc (
-      .wea  (1'b1),
-      .clka (pix_clk),
-      .clkb (dram_ui_clk),
-      .addra(1'b0),
-      .addrb(1'b0),
-      .dina (vcount_pix_clk),
-      .doutb(vcount_dui_clk_pix_clk)
-  );
-
   logic current_inner_pixel_read_buffer_pix_clk;
   logic [`COLOR_WIDTH-1:0] vga_pixel;
-
-  button bu (
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .raw_in(btnu),
-      .pulse_out(p_btnu),
-      .clean_out(c_btnu)
-  );
-  button bd (
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .raw_in(btnd),
-      .pulse_out(p_btnd),
-      .clean_out(c_btnd)
-  );
-  button bl (
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .raw_in(btnl),
-      .pulse_out(p_btnl),
-      .clean_out(c_btnl)
-  );
-  button br (
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .raw_in(btnr),
-      .pulse_out(p_btnr),
-      .clean_out(c_btnr)
-  );
-  // button bc (
-  //     .clk(sys_clk),
-  //     .rst(sys_rst),
-  //     .raw_in(btnc),
-  //     .pulse_out(p_btnc),
-  //     .clean_out(c_btnc)
-  // );
-
-  logic p_btnu, p_btnd, p_btnl, p_btnr, p_btnc;
-  logic c_btnu, c_btnd, c_btnl, c_btnr, c_btnc;
-
-  assign led[0] = dram_init_complete;
-
-  logic app_rd_data_valid_ui_clk;
-  logic [`BURST_CTR_BITS-1:0] read_resp_ctr_ui_clk;
 
   dram #(
       .BURST_BITS(`BURST_BITS),
@@ -349,140 +255,8 @@ module old_top_level (
       .ddr2_dqs_n(ddr2_dqs_n)
   );
 
-  tri_3d cam_tri;
-  tri_2d rast_tri, tfill_in;
 
-  vec3_i16 out_test_pt, rast_pt;
-
-  logic screen_pt_valid, ndc_pt_valid, rast_tri_valid;
-
-  vec2_f16 screen_pt, ndc_pt;
-
-  localparam ONE = 16'h3C00;
-  localparam TWO = 16'h4000;
-  localparam FIVE_TWELVE = 16'h6000;  // 512
-
-  localparam TEN_TWENTY_FOUR = 16'h6400;  // 1024
-  localparam SEVEN_SIXTY_EIGHT = 16'h6200;  // 768
-
-  view camera;
-  logic [31:0] seven_seg_val;
-
-
-  triangle_3d_to_2d t23 (
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .camera(camera),
-      .input_valid(1'b1),
-      .triangle_3d(cam_tri),
-      .triangle_2d(rast_tri),
-      .triangle_2d_valid(rast_tri_valid)
-  );
-
-  seven_segment_controller mssc (
-      .clk_in (sys_clk),
-      .rst_in (sys_rst),
-      .val_in (seven_seg_val),
-      .cat_out({cag, caf, cae, cad, cac, cab, caa}),
-      .an_out (an)
-  );
-
-  logic [2:0] vert_setting, coord_setting;
-  logic [1:0] vert_index, coord_index;
-  logic displaying_t3d;
-
-  assign coord_setting  = sw[2:0];
-  assign vert_setting   = sw[5:3];
-  assign displaying_t3d = sw[6];
-
-  always_comb begin
-    if (sys_rst) begin
-      seven_seg_val = 0;
-      coord_index = 0;
-      vert_index = 0;
-    end else begin
-
-      if (vert_setting == 'b001) begin
-        vert_index = 2'd0;
-      end else if (vert_setting == 'b010) begin
-        vert_index = 2'd1;
-      end else if (vert_setting == 'b100) begin
-        vert_index = 2'd2;
-      end else begin
-        vert_index = 2'd0;
-      end
-
-      if (coord_setting == 'b001) begin
-        coord_index = 2'd0;
-      end else if (coord_setting == 'b010) begin
-        coord_index = 2'd1;
-      end else if (coord_setting == 'b100) begin
-        coord_index = 2'd2;
-      end else begin
-        coord_index = 2'd0;
-      end
-
-      seven_seg_val = displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
-
-    end
-  end
-
-
-  logic sub_small_valid, sub_big_valid, add_small_valid, add_big_valid;
-  f16 sub_small_out, sub_big_out, add_small_out, add_big_out;
-
-  localparam TEN = 'h4900;
-  localparam HUNDRED = 'h5640;
-
-  float_add_sub f_sub_small (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnl),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnl),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnl),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(sub_small_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(sub_small_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
-
-  float_add_sub f_sub_big (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnd),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnd),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnd),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(sub_big_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(sub_big_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
-
-  float_add_sub f_add_small (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnr),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnr),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnr),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(add_small_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(add_small_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
-
-  float_add_sub f_add_big (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnu),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnu),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnu),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(add_big_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(add_big_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
-
-  logic [`PIXEL_BUFFER_ADDR_BITS-1:0] pixel_read_buffer_addr, pixel_read_buffer_addr_pix_clk;
+  logic [`PIXEL_BUFFER_ADDR_BITS-1:0] pixel_read_buffer_addr_pix_clk;
   logic [`PIXEL_BUFFER_ADDR_BITS-1:0] pixel_write_buffer_addr;
 
   logic [1:0][`PIXEL_BUFFER_SIZE-1:0][15:0] pixel_read_buffer_pix_clk;
@@ -491,45 +265,8 @@ module old_top_level (
 
   logic [`PIXEL_BUFFER_SIZE-1:0][15:0] pixel_write_buffer;
 
-
-
   assign pixel_addr = `FRAME_WIDTH * vcount + hcount;
   assign pixel_addr_pix_clk = `FRAME_WIDTH * vcount_pix_clk + hcount_pix_clk;
-
-  always_ff @(posedge sys_clk) begin
-    if (sys_rst) begin
-      cam_tri[0][0] <= 'hbc00;  // -1
-      cam_tri[0][1] <= 'hbc00;  // -1
-      cam_tri[0][2] <= 'hc000;  // -2
-
-      cam_tri[1][0] <= 'h3c00;  // 1
-      cam_tri[1][1] <= 'hbe00;  // -1.5
-      cam_tri[1][2] <= 'hc000;  // -2
-
-      cam_tri[2][0] <= 'h3c00;  // 1
-      cam_tri[2][1] <= 'h3c00;  // 1
-      cam_tri[2][2] <= 'hc000;  // -2
-
-      camera.near_clip <= ONE;
-
-      camera.canvas_dimensions[0] <= TEN;
-      camera.canvas_dimensions[1] <= TEN;
-
-      camera.image_dimensions[0] <= TEN_TWENTY_FOUR;
-      camera.image_dimensions[1] <= SEVEN_SIXTY_EIGHT;
-
-    end else begin
-      if (sub_small_valid) begin
-        cam_tri[vert_index][coord_index] <= sub_small_out;
-      end else if (sub_big_valid) begin
-        cam_tri[vert_index][coord_index] <= sub_big_out;
-      end else if (add_small_valid) begin
-        cam_tri[vert_index][coord_index] <= add_small_out;
-      end else if (add_big_valid) begin
-        cam_tri[vert_index][coord_index] <= add_big_out;
-      end
-    end
-  end
 
   always_comb begin
     if (sys_rst) begin
@@ -577,28 +314,10 @@ module old_top_level (
     end
   end
 
-  assign led[15] = dram_read_rdy;
-  assign led[14] = dram_write_rdy;
-
-  assign led[10] = dram_read_rq;
-  assign led[9]  = dram_write_rq;
-
-  assign led[12] = dram_ui_clk;
-
   logic [`DRAM_ADDR_BITS-1:0] initial_dram_addr;
   logic [15:0] current_pixel;
 
-  // vertices -> points
-  logic is_within;
-
-  triangle_2d_fill tfill_a (
-      .rst(sys_rst),
-      .clk(sys_clk),
-      .hcount(hcount),
-      .vcount(vcount),
-      .triangle(tfill_in),
-      .is_within(is_within)
-  );
+  logic is_within = 0;
 
   always_comb begin
     if (sys_rst) begin
@@ -630,8 +349,6 @@ module old_top_level (
       vcount <= 0;
 
     end else if (dram_init_complete) begin
-
-      tfill_in <= rast_tri;
 
       if (dram_write_rdy || pixel_write_buffer_addr != `PIXEL_BUFFER_SIZE - 1) begin
 
