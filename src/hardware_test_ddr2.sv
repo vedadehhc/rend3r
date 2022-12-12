@@ -8,6 +8,8 @@
 /* Hard coded */
 `define DRAM_ADDR_BITS 27
 
+
+
 module top_level (
     input wire clk_100mhz,
     input wire [15:0] sw,

@@ -8,7 +8,7 @@ module vertex_rasterize (
     input wire vec2_f16 ndc_pt,
     input wire vec3_f16 vertex_3d,
     input wire vec2_f16 image_dimensions,
-    output vec3_i13 rast_pt,  // third element of rast_pt is z distance
+    output vec3_i16 rast_pt,  // third element of rast_pt is z distance
     output logic rast_pt_valid
 );
 
@@ -30,7 +30,7 @@ module vertex_rasterize (
   assign rast_pt[1] = rast_y;
   assign rast_pt[2] = rast_z;
 
-  i13 rast_x, rast_y, rast_z;
+  i16 rast_x, rast_y, rast_z;
 
   pipe #(
       .LENGTH(6),
@@ -83,14 +83,14 @@ module vertex_rasterize (
       .output_valid(rast_y_valid)
   );
 
-  ila_rast ila (
-      .clk(clk),
-      .probe0(rast_x_valid),
-      .probe1(input_valid_delayed),
-      .probe2(ndc_x_delayed),
-      .probe3(ndc_x),
-      .probe4(rast_x)
-  );
+//   ila_rast ila (
+//       .clk(clk),
+//       .probe0(rast_x_valid),
+//       .probe1(input_valid_delayed),
+//       .probe2(ndc_x_delayed),
+//       .probe3(ndc_x),
+//       .probe4(rast_x)
+//   );
 
   float_to_fixed13 z_to_fx13 (
       .aclk                (clk),          // input wire aclk
@@ -118,7 +118,7 @@ module coord_rast (
     input wire input_valid,
     input wire f16 coord,
     input wire f16 dimension_extent,
-    output i13 rast_coord,
+    output i16 rast_coord,
     output logic output_valid
 );
 
@@ -126,12 +126,12 @@ module coord_rast (
   fx13 fx13_out;
   logic mul_valid, fx13_valid;
 
-  i13 coord_i13;  // $signed({1'b0, rast_coord[11:0]});
+  i16 coord_i16;  // $signed({1'b0, rast_coord[11:0]});
 
 
   assign output_valid = fx13_valid;
-  //   assign coord_i13   = $signed({1'b0, fx13_out[11:0]});
-  //   assign rast_coord  = fx13_out[12] ? -coord_i13 : coord_i13;
+  //   assign coord_i16   = $signed({1'b0, fx13_out[11:0]});
+  //   assign rast_coord  = fx13_out[12] ? -coord_i16 : coord_i16;
   assign rast_coord   = fx13_out;
 
   float_multiply f_mul (

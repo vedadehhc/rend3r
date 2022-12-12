@@ -17,6 +17,8 @@
 `define FRAME_HEIGHT_BITS 11
 `define MAX_HCOUNT 1344
 
+import types::*;
+
 module old_top_level (
     input wire clk_100mhz,
     input wire [15:0] sw,
@@ -295,13 +297,13 @@ module old_top_level (
       .pulse_out(p_btnr),
       .clean_out(c_btnr)
   );
-  button bc (
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .raw_in(btnc),
-      .pulse_out(p_btnc),
-      .clean_out(c_btnc)
-  );
+  // button bc (
+  //     .clk(sys_clk),
+  //     .rst(sys_rst),
+  //     .raw_in(btnc),
+  //     .pulse_out(p_btnc),
+  //     .clean_out(c_btnc)
+  // );
 
   logic p_btnu, p_btnd, p_btnl, p_btnr, p_btnc;
   logic c_btnu, c_btnd, c_btnl, c_btnr, c_btnc;
@@ -347,6 +349,139 @@ module old_top_level (
       .ddr2_dqs_n(ddr2_dqs_n)
   );
 
+  tri_3d cam_tri;
+  tri_2d rast_tri, tfill_in;
+
+  vec3_i16 out_test_pt, rast_pt;
+
+  logic screen_pt_valid, ndc_pt_valid, rast_tri_valid;
+
+  vec2_f16 screen_pt, ndc_pt;
+
+  localparam ONE = 16'h3C00;
+  localparam TWO = 16'h4000;
+  localparam FIVE_TWELVE = 16'h6000;  // 512
+
+  localparam TEN_TWENTY_FOUR = 16'h6400;  // 1024
+  localparam SEVEN_SIXTY_EIGHT = 16'h6200;  // 768
+
+  view camera;
+  logic [31:0] seven_seg_val;
+
+
+  triangle_3d_to_2d t23 (
+      .clk(sys_clk),
+      .rst(sys_rst),
+      .camera(camera),
+      .input_valid(1'b1),
+      .triangle_3d(cam_tri),
+      .triangle_2d(rast_tri),
+      .triangle_2d_valid(rast_tri_valid)
+  );
+
+  seven_segment_controller mssc (
+      .clk_in (sys_clk),
+      .rst_in (sys_rst),
+      .val_in (seven_seg_val),
+      .cat_out({cag, caf, cae, cad, cac, cab, caa}),
+      .an_out (an)
+  );
+
+  logic [2:0] vert_setting, coord_setting;
+  logic [1:0] vert_index, coord_index;
+  logic displaying_t3d;
+
+  assign coord_setting  = sw[2:0];
+  assign vert_setting   = sw[5:3];
+  assign displaying_t3d = sw[6];
+
+  always_comb begin
+    if (sys_rst) begin
+      seven_seg_val = 0;
+      coord_index = 0;
+      vert_index = 0;
+    end else begin
+
+      if (vert_setting == 'b001) begin
+        vert_index = 2'd0;
+      end else if (vert_setting == 'b010) begin
+        vert_index = 2'd1;
+      end else if (vert_setting == 'b100) begin
+        vert_index = 2'd2;
+      end else begin
+        vert_index = 2'd0;
+      end
+
+      if (coord_setting == 'b001) begin
+        coord_index = 2'd0;
+      end else if (coord_setting == 'b010) begin
+        coord_index = 2'd1;
+      end else if (coord_setting == 'b100) begin
+        coord_index = 2'd2;
+      end else begin
+        coord_index = 2'd0;
+      end
+
+      seven_seg_val = displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
+
+    end
+  end
+
+
+  logic sub_small_valid, sub_big_valid, add_small_valid, add_big_valid;
+  f16 sub_small_out, sub_big_out, add_small_out, add_big_out;
+
+  localparam TEN = 'h4900;
+  localparam HUNDRED = 'h5640;
+
+  float_add_sub f_sub_small (
+      .aclk(sys_clk),  // input wire aclk
+      .s_axis_a_tvalid(p_btnl),  // input wire s_axis_a_tvalid
+      .s_axis_b_tvalid(p_btnl),  // input wire s_axis_b_tvalid
+      .s_axis_operation_tvalid(p_btnl),  // input wire s_axis_operation_tvalid
+      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+      .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
+      .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
+      .m_axis_result_tvalid(sub_small_valid),  // output wire m_axis_result_tvalid
+      .m_axis_result_tdata(sub_small_out)  // output wire [15 : 0] m_axis_result_tdata
+  );
+
+  float_add_sub f_sub_big (
+      .aclk(sys_clk),  // input wire aclk
+      .s_axis_a_tvalid(p_btnd),  // input wire s_axis_a_tvalid
+      .s_axis_b_tvalid(p_btnd),  // input wire s_axis_b_tvalid
+      .s_axis_operation_tvalid(p_btnd),  // input wire s_axis_operation_tvalid
+      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+      .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
+      .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
+      .m_axis_result_tvalid(sub_big_valid),  // output wire m_axis_result_tvalid
+      .m_axis_result_tdata(sub_big_out)  // output wire [15 : 0] m_axis_result_tdata
+  );
+
+  float_add_sub f_add_small (
+      .aclk(sys_clk),  // input wire aclk
+      .s_axis_a_tvalid(p_btnr),  // input wire s_axis_a_tvalid
+      .s_axis_b_tvalid(p_btnr),  // input wire s_axis_b_tvalid
+      .s_axis_operation_tvalid(p_btnr),  // input wire s_axis_operation_tvalid
+      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+      .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
+      .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
+      .m_axis_result_tvalid(add_small_valid),  // output wire m_axis_result_tvalid
+      .m_axis_result_tdata(add_small_out)  // output wire [15 : 0] m_axis_result_tdata
+  );
+
+  float_add_sub f_add_big (
+      .aclk(sys_clk),  // input wire aclk
+      .s_axis_a_tvalid(p_btnu),  // input wire s_axis_a_tvalid
+      .s_axis_b_tvalid(p_btnu),  // input wire s_axis_b_tvalid
+      .s_axis_operation_tvalid(p_btnu),  // input wire s_axis_operation_tvalid
+      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+      .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
+      .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
+      .m_axis_result_tvalid(add_big_valid),  // output wire m_axis_result_tvalid
+      .m_axis_result_tdata(add_big_out)  // output wire [15 : 0] m_axis_result_tdata
+  );
+
   logic [`PIXEL_BUFFER_ADDR_BITS-1:0] pixel_read_buffer_addr, pixel_read_buffer_addr_pix_clk;
   logic [`PIXEL_BUFFER_ADDR_BITS-1:0] pixel_write_buffer_addr;
 
@@ -356,9 +491,45 @@ module old_top_level (
 
   logic [`PIXEL_BUFFER_SIZE-1:0][15:0] pixel_write_buffer;
 
+
+
   assign pixel_addr = `FRAME_WIDTH * vcount + hcount;
   assign pixel_addr_pix_clk = `FRAME_WIDTH * vcount_pix_clk + hcount_pix_clk;
 
+  always_ff @(posedge sys_clk) begin
+    if (sys_rst) begin
+      cam_tri[0][0] <= 'hbc00;  // -1
+      cam_tri[0][1] <= 'hbc00;  // -1
+      cam_tri[0][2] <= 'hc000;  // -2
+
+      cam_tri[1][0] <= 'h3c00;  // 1
+      cam_tri[1][1] <= 'hbe00;  // -1.5
+      cam_tri[1][2] <= 'hc000;  // -2
+
+      cam_tri[2][0] <= 'h3c00;  // 1
+      cam_tri[2][1] <= 'h3c00;  // 1
+      cam_tri[2][2] <= 'hc000;  // -2
+
+      camera.near_clip <= ONE;
+
+      camera.canvas_dimensions[0] <= TEN;
+      camera.canvas_dimensions[1] <= TEN;
+
+      camera.image_dimensions[0] <= TEN_TWENTY_FOUR;
+      camera.image_dimensions[1] <= SEVEN_SIXTY_EIGHT;
+
+    end else begin
+      if (sub_small_valid) begin
+        cam_tri[vert_index][coord_index] <= sub_small_out;
+      end else if (sub_big_valid) begin
+        cam_tri[vert_index][coord_index] <= sub_big_out;
+      end else if (add_small_valid) begin
+        cam_tri[vert_index][coord_index] <= add_small_out;
+      end else if (add_big_valid) begin
+        cam_tri[vert_index][coord_index] <= add_big_out;
+      end
+    end
+  end
 
   always_comb begin
     if (sys_rst) begin
@@ -395,7 +566,7 @@ module old_top_level (
         if (pixel_read_buffer_addr_pix_clk == 'b0) begin
           if (dram_read_rdy_pix_clk) begin
             dram_read_addr_pix_clk <= pixel_addr_pix_clk + `PIXEL_BUFFER_SIZE;
-            if (sw[0]) dram_read_rq_pix_clk <= 1;
+            if (sw[15]) dram_read_rq_pix_clk <= 1;
           end else begin
             dram_read_rq_pix_clk <= 0;
           end
@@ -418,21 +589,15 @@ module old_top_level (
   logic [15:0] current_pixel;
 
   // vertices -> points
-  logic [2:0][1:0][10:0] triangle_a;
-  logic is_within_a;
-
-  // x y z
-  assign triangle_a[0] = {10'd100, 10'd100};
-  assign triangle_a[1] = {10'd700, 10'd500};
-  assign triangle_a[2] = {10'd900, 10'd800};
+  logic is_within;
 
   triangle_2d_fill tfill_a (
       .rst(sys_rst),
       .clk(sys_clk),
       .hcount(hcount),
       .vcount(vcount),
-      .triangle(triangle_a),
-      .is_within(is_within_a)
+      .triangle(tfill_in),
+      .is_within(is_within)
   );
 
   always_comb begin
@@ -440,7 +605,7 @@ module old_top_level (
       current_pixel = 0;
     end else begin
 
-      if (is_within_a) begin
+      if (is_within) begin
         current_pixel = 16'hf0f;
       end else begin
         current_pixel = 16'b0;
@@ -465,6 +630,9 @@ module old_top_level (
       vcount <= 0;
 
     end else if (dram_init_complete) begin
+
+      tfill_in <= rast_tri;
+
       if (dram_write_rdy || pixel_write_buffer_addr != `PIXEL_BUFFER_SIZE - 1) begin
 
         if (hcount == `FRAME_WIDTH - 1) begin
@@ -489,7 +657,7 @@ module old_top_level (
           dram_write_data <= {current_pixel, pixel_write_buffer[`PIXEL_BUFFER_SIZE-2:0]};
           dram_write_addr <= initial_dram_addr;
 
-          if (sw[1]) dram_write_rq <= 1;
+          if (sw[14]) dram_write_rq <= 1;
 
         end else begin
           dram_write_rq <= 0;

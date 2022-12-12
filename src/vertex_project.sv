@@ -5,7 +5,7 @@ module vertex_project (
     input wire clk,
     input wire rst,
     input wire f16 cam_near_clip,
-    input wire vertex_3d_valid,
+    input wire input_valid,
     input wire vec3_f16 vertex_3d,
     output vec2_f16 screen_pt,
     output logic screen_pt_valid
@@ -34,7 +34,7 @@ module vertex_project (
       .cam_near_clip(cam_near_clip),
       .coord(v3d_x),
       .z_coord(v3d_z),
-      .input_valid(vertex_3d_valid),
+      .input_valid(input_valid),
       .screen_coord(zd_x_out),
       .output_valid(zd_x_valid)
   );
@@ -45,7 +45,7 @@ module vertex_project (
       .cam_near_clip(cam_near_clip),
       .coord(v3d_y),
       .z_coord(v3d_z),
-      .input_valid(vertex_3d_valid),
+      .input_valid(input_valid),
       .screen_coord(zd_y_out),
       .output_valid(zd_y_valid)
   );
