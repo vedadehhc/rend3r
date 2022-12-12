@@ -26,7 +26,7 @@ module execute (
 
 
     // memory bank - handles writes due to instructions and gives latency 2 reads to camera, light, geo
-    memory_bank mem_bank (
+    memory_bank_single mem_bank (
         .clk_100mhz(clk_100mhz),
         .rst(rst),
         .controller_busy(controller_busy),

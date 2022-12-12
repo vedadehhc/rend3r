@@ -24,6 +24,7 @@ module iprocessor (
         .clk(clk_100mhz),
         .rst(rst),
         .action(stall == 1'b1 ? fetchStall : fetchDequeue),
+        .dIType(dInst.iType),
         .instruction_valid(fetch_valid_out),
         .pc_out(fetch_pc),
         .inst(fetch_inst)

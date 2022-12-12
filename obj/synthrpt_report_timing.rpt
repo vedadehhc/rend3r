@@ -1,9 +1,9 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2022.1 (lin64) Build 3526262 Mon Apr 18 15:47:01 MDT 2022
-| Date         : Sun Dec 11 18:25:09 2022
-| Host         : EECS-DIGITAL-45 running 64-bit Ubuntu 20.04.5 LTS
-| Command      : report_timing -file /tmp/tmp.S6DDL7/obj/synthrpt_report_timing.rpt
+| Date         : Mon Dec 12 14:34:08 2022
+| Host         : EECS-DIGITAL-02 running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_timing -file /tmp/tmp.F1QlTx/obj/synthrpt_report_timing.rpt
 | Design       : top_level
 | Device       : 7a100t-csg324
 | Speed File   : -1  PRODUCTION 1.23 2018-06-13
@@ -11,16 +11,16 @@ Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 
 Timing Report
 
-Slack (MET) :             5.240ns  (required time - arrival time)
-  Source:                 processor/exec/mem_bank/pc_2_reg[3]/C
-                            (rising edge-triggered cell FDSE clocked by sys_clk_pin  {rise@0.000ns fall@5.000ns period=10.000ns})
-  Destination:            processor/decode/dInst_reg[data][0]/CE
+Slack (MET) :             5.776ns  (required time - arrival time)
+  Source:                 ssc/segment_counter_reg[22]/C
                             (rising edge-triggered cell FDRE clocked by sys_clk_pin  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            ssc/segment_state_reg[0]/CE
+                            (rising edge-triggered cell FDSE clocked by sys_clk_pin  {rise@0.000ns fall@5.000ns period=10.000ns})
   Path Group:             sys_clk_pin
   Path Type:              Setup (Max at Slow Process Corner)
   Requirement:            10.000ns  (sys_clk_pin rise@10.000ns - sys_clk_pin rise@0.000ns)
-  Data Path Delay:        4.378ns  (logic 1.554ns (35.496%)  route 2.824ns (64.504%))
-  Logic Levels:           4  (CARRY4=1 LUT1=1 LUT5=1 LUT6=1)
+  Data Path Delay:        3.842ns  (logic 1.021ns (26.575%)  route 2.821ns (73.425%))
+  Logic Levels:           3  (LUT4=2 LUT6=1)
   Clock Path Skew:        -0.145ns (DCD - SCD + CPR)
     Destination Clock Delay (DCD):    2.704ns = ( 12.704 - 10.000 ) 
     Source Clock Delay      (SCD):    2.965ns
@@ -40,21 +40,18 @@ Slack (MET) :             5.240ns  (required time - arrival time)
     E3                   IBUF (Prop_ibuf_I_O)         1.482     1.482 r  eth_clk_gen/clkin1_ibufg/O
                          net (fo=1, unplaced)         0.803     2.285    buf_clk_100mhz
                          BUFG (Prop_bufg_I_O)         0.096     2.381 r  buf_clk_100mhz_BUFG_inst/O
-                         net (fo=355, unplaced)       0.584     2.965    processor/exec/mem_bank/CLK
-                         FDSE                                         r  processor/exec/mem_bank/pc_2_reg[3]/C
+                         net (fo=352, unplaced)       0.584     2.965    ssc/CLK
+                         FDRE                                         r  ssc/segment_counter_reg[22]/C
   -------------------------------------------------------------------    -------------------
-                         FDSE (Prop_fdse_C_Q)         0.478     3.443 r  processor/exec/mem_bank/pc_2_reg[3]/Q
-                         net (fo=3, unplaced)         0.983     4.426    processor/exec/mem_bank/pc_2_reg[8]_0[3]
-                         LUT6 (Prop_lut6_I0_O)        0.295     4.721 r  processor/exec/mem_bank/FSM_onehot_state[1]_i_15/O
-                         net (fo=1, unplaced)         0.000     4.721    processor/exec/mem_bank/FSM_onehot_state[1]_i_15_n_0
-                         CARRY4 (Prop_carry4_S[1]_CO[3])
-                                                      0.533     5.254 f  processor/exec/mem_bank/FSM_onehot_state_reg[1]_i_8/CO[3]
-                         net (fo=2, unplaced)         0.759     6.013    processor/exec/mem_bank/stall3
-                         LUT5 (Prop_lut5_I2_O)        0.124     6.137 f  processor/exec/mem_bank/FSM_onehot_state[1]_i_3/O
-                         net (fo=7, unplaced)         0.484     6.621    processor/exec/mem_bank/stall
-                         LUT1 (Prop_lut1_I0_O)        0.124     6.745 r  processor/exec/mem_bank/dInst_2[iType][3]_i_1/O
-                         net (fo=277, unplaced)       0.598     7.343    processor/decode/E[0]
-                         FDRE                                         r  processor/decode/dInst_reg[data][0]/CE
+                         FDRE (Prop_fdre_C_Q)         0.478     3.443 f  ssc/segment_counter_reg[22]/Q
+                         net (fo=2, unplaced)         0.774     4.217    ssc/segment_counter_reg_n_0_[22]
+                         LUT4 (Prop_lut4_I1_O)        0.295     4.512 f  ssc/segment_counter[31]_i_5/O
+                         net (fo=1, unplaced)         0.732     5.244    ssc/segment_counter[31]_i_5_n_0
+                         LUT6 (Prop_lut6_I0_O)        0.124     5.368 f  ssc/segment_counter[31]_i_2/O
+                         net (fo=33, unplaced)        0.804     6.172    ssc/segment_counter[31]_i_2_n_0
+                         LUT4 (Prop_lut4_I0_O)        0.124     6.296 r  ssc/segment_state[7]_i_1/O
+                         net (fo=8, unplaced)         0.511     6.807    ssc/segment_state
+                         FDSE                                         r  ssc/segment_state_reg[0]/CE
   -------------------------------------------------------------------    -------------------
 
                          (clock sys_clk_pin rise edge)
@@ -64,16 +61,16 @@ Slack (MET) :             5.240ns  (required time - arrival time)
     E3                   IBUF (Prop_ibuf_I_O)         1.411    11.411 r  eth_clk_gen/clkin1_ibufg/O
                          net (fo=1, unplaced)         0.763    12.174    buf_clk_100mhz
                          BUFG (Prop_bufg_I_O)         0.091    12.265 r  buf_clk_100mhz_BUFG_inst/O
-                         net (fo=355, unplaced)       0.439    12.704    processor/decode/CLK
-                         FDRE                                         r  processor/decode/dInst_reg[data][0]/C
+                         net (fo=352, unplaced)       0.439    12.704    ssc/CLK
+                         FDSE                                         r  ssc/segment_state_reg[0]/C
                          clock pessimism              0.116    12.820    
                          clock uncertainty           -0.035    12.784    
-                         FDRE (Setup_fdre_C_CE)      -0.202    12.582    processor/decode/dInst_reg[data][0]
+                         FDSE (Setup_fdse_C_CE)      -0.202    12.582    ssc/segment_state_reg[0]
   -------------------------------------------------------------------
                          required time                         12.582    
-                         arrival time                          -7.343    
+                         arrival time                          -6.807    
   -------------------------------------------------------------------
-                         slack                                  5.240    
+                         slack                                  5.776    
 
 
 

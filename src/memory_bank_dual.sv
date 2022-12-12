@@ -27,7 +27,7 @@ import proctypes::*;
 // but, we still don't want to explicitly copy over (this is slow)
 // instead, still use apporach 2 above 
 // possible: rewrite with single memory, and add more stalling (i.e. always stall when rasterization is busy)
-module memory_bank(
+module memory_bank_dual (
     input wire clk_100mhz,
     input wire rst,
     input wire controller_busy,

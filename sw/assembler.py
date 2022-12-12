@@ -274,6 +274,7 @@ def assemble(src_path, dst_path, hex):
         with open(src_path, "r") as src, open(dst_path, "w") as dst:
             for i, line in enumerate(src):
                 try:
+                    if (line.strip().startswith("//")): continue
                     dst.write(parse_line(line.strip(), i+1, hex))
                     dst.write("\n")
                 except RenderSyntaxException:

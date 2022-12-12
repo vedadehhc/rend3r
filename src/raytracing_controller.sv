@@ -11,8 +11,7 @@ module raytracing_controller(
     input wire mem_ready,
     input Shape cur_shape,
     input Light cur_light,
-    output logic busy,
-    
+    output logic busy
 );
 
 endmodule

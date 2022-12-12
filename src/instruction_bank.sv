@@ -8,6 +8,7 @@ module instruction_bank (
     input wire clk,
     input wire rst,
     input wire FetchAction action,
+    input wire InstructionType dIType,
     output logic instruction_valid,
     output InstructionAddr pc_out,
     output Instruction inst
@@ -20,8 +21,9 @@ module instruction_bank (
     logic valid_2;
 
     logic canDequeue;
-    // all 0 = end render/invalid
-    assign canDequeue = (action == fetchDequeue) && instruction_out != {(INSTRUCTION_WIDTH){1'b0}};
+    // all 0 = end render/invalid UNLESS it is SD. 
+    // So, we need feedback from decode if the previous inst was SE
+    assign canDequeue = (action == fetchDequeue) && (instruction_out != {(INSTRUCTION_WIDTH){1'b0}} || dIType == opShapeSet);
 
     InstructionAddr pc;
     InstructionAddr pc_1;
