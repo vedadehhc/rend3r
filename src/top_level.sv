@@ -61,6 +61,59 @@ module old_top_level (
 
 );
 
+  logic execInst_valid;
+  DecodedInst execInst;
+  logic mem_ready;
+  Camera cur_camera;
+  Light cur_light;
+  logic [GEOMETRY_WIDTH-1:0] cur_geo;
+  iprocessor processor (
+      .clk_100mhz(sys_clk),
+      .rst(sys_rst),
+      .light_read_addr(),
+      .geometry_read_addr(rast_tri_addr),
+      .controller_busy(rast_busy),
+      .execInst_valid(execInst_valid),
+      .execInst(execInst),
+      .mem_ready(mem_ready),
+      .cur_camera(cur_camera),
+      .cur_light(cur_light),
+      .cur_geo(cur_geo)
+  );
+
+  // rasterization controller 
+  // should iterate through all triangles and pass to rasterizer
+  logic rast_busy;
+  TriangleAddr rast_tri_addr;
+
+  logic controller_tri_valid;
+  Triangle controller_tri;
+
+  rasterization_controller controller (
+      .clk(sys_clk),
+      .rst(sys_rst),
+      .execInst_valid(execInst_valid),
+      .execInst(execInst),
+      .mem_ready(mem_ready),
+      .cur_triangle(cur_geo),
+      .busy(rast_busy),
+      .cur_tri_addr(rast_tri_addr),
+      .next_triangle_valid(controller_tri_valid),
+      .next_triangle(controller_tri)
+  );
+
+  tri_3d controller_tri_3d;
+  controller_tri_3d[0][0] = controller_tri.x1;
+  controller_tri_3d[0][1] = controller_tri.y1;
+  controller_tri_3d[0][2] = controller_tri.z1;
+  controller_tri_3d[1][0] = controller_tri.x2;
+  controller_tri_3d[1][1] = controller_tri.y2;
+  controller_tri_3d[1][2] = controller_tri.z2;
+  controller_tri_3d[2][0] = controller_tri.x3;
+  controller_tri_3d[2][1] = controller_tri.y3;
+  controller_tri_3d[2][2] = controller_tri.z3;
+
+
   logic dram_init_complete, dram_init_complete_pix_clk, dram_init_complete_dui_clk;
 
   logic sys_rst, sys_clk, clk_200mhz, dram_ui_clk, clk_65mhz, pix_clk;
@@ -373,8 +426,8 @@ module old_top_level (
       .clk(sys_clk),
       .rst(sys_rst),
       .camera(camera),
-      .input_valid(1'b1),
-      .triangle_3d(cam_tri),
+      .input_valid(controller_tri_valid),
+      .triangle_3d(controller_tri_3d),
       .triangle_2d(rast_tri),
       .triangle_2d_valid(rast_tri_valid)
   );
