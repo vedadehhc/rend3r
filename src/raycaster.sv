@@ -384,7 +384,7 @@ module all_shapes_raycaster#(
     output logic valid_out,
     output logic hit,
     output vec3 intersection,
-    output Shape hit_shape,
+    output Shape hit_shape
 );
     typedef enum { IDLE, SENDING, WAITING, TABULATING } all_shape_rc_state;
     all_shape_rc_state state;
