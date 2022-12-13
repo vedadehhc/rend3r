@@ -125,7 +125,6 @@ module raytracing_controller(
         end
     end
 
-
     // calculate raycast direction based on pixel values
     // pass src, dir, shape type, shape transform to the raycaster
 
