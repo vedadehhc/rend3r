@@ -243,7 +243,7 @@ module top_level (
         coord_index = 2'd0;
       end
 
-      seven_seg_val = displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
+      seven_seg_val = rast_tri_addr;// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
 
     end
   end
