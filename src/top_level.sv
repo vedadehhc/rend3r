@@ -82,18 +82,6 @@ module top_level (
       .next_triangle(controller_tri)
   );
 
-  tri_3d controller_tri_3d;
-
-  assign controller_tri_3d[0][0] = controller_tri.x1;
-  assign controller_tri_3d[0][1] = controller_tri.y1;
-  assign controller_tri_3d[0][2] = controller_tri.z1;
-  assign controller_tri_3d[1][0] = controller_tri.x2;
-  assign controller_tri_3d[1][1] = controller_tri.y2;
-  assign controller_tri_3d[1][2] = controller_tri.z2;
-  assign controller_tri_3d[2][0] = controller_tri.x3;
-  assign controller_tri_3d[2][1] = controller_tri.y3;
-  assign controller_tri_3d[2][2] = controller_tri.z3;
-
   logic sys_rst, sys_clk, clk_div_100mhz, clk_div_65mhz, pix_clk;
 
   //vga module generation signals:
