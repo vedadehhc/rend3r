@@ -299,7 +299,7 @@ module top_level (
     end
   end
 
-  assign pixel_write_enable = 1'b1;
+  assign pixel_write_enable = is_within;
 
   logic is_within;
 
