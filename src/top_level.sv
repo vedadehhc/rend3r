@@ -18,6 +18,7 @@
 `define MAX_HCOUNT 1344
 
 import types::*;
+import proctypes::*;
 
 module old_top_level (
     input wire clk_100mhz,
