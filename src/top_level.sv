@@ -42,6 +42,7 @@ module top_level (
 );
 
   logic step_by_step = sw[0];
+  logic next_step = p_btnu;
 
   assign led[0] = c_btnu;
   assign led[1] = mem_ready;
@@ -59,7 +60,7 @@ module top_level (
       .clk_100mhz(sys_clk),
       .rst(sys_rst),
       .step_mode(step_by_step),
-      .next_step(p_btnu),
+      .next_step(next_step),
       .light_read_addr(),
       .geometry_read_addr(rast_tri_addr),
       .controller_busy(rast_busy),
