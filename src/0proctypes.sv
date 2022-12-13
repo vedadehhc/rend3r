@@ -195,7 +195,7 @@ package proctypes;
         float16         intensity;
     } Light;
     parameter LIGHT_WIDTH = $bits(Light);
-    parameter NUM_LIGHTS = 8;
+    parameter NUM_LIGHTS = 2;
     parameter LIGHT_ADDR_WIDTH = $clog2(NUM_LIGHTS);
     typedef logic[LIGHT_ADDR_WIDTH-1:0] LightAddr;
     
