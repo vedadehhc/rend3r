@@ -14,7 +14,8 @@ module iprocessor (
     output logic mem_ready,
     output Camera cur_camera,
     output Light cur_light,
-    output logic [GEOMETRY_WIDTH-1:0] cur_geo
+    output logic [GEOMETRY_WIDTH-1:0] cur_geo,
+    output InstructionAddr pc_debug
 );
     logic fetch_valid_out;
     InstructionAddr fetch_pc;
@@ -34,6 +35,7 @@ module iprocessor (
     DecodedInst dInst;
 
     InstructionAddr decode_pc;
+    assign pc_debug = decode_pc;
     parser decode (
         .clk(clk_100mhz),
         .rst(rst),
@@ -45,10 +47,6 @@ module iprocessor (
         .dInst(dInst),
         .pc_out(decode_pc)
     );
-
-    // assign led[15:11] = dInst.prop;
-    // assign led[8:3] = dInst.iType == opLightSet ? dInst.lIndex : dInst.sIndex[5:0];
-    // assign led[2:0] = dInst.iType;
 
     logic stall;
 
