@@ -6,7 +6,12 @@ import proctypes::*;
 // k-Stage pipeline - currently supports only sphere
 // TODO: add normal, support additional shapetype (change quadratic)
 // TODO: fix all pipelining
-module raycaster(
+module raycaster#(
+    parameter P1_STAGES = 8,
+    parameter P2_STAGES = 4,
+    parameter P3_STAGES = 6,
+    parameter P4_STAGES = 2
+)(
     input wire clk,
     input wire rst,
     input wire valid_in,
@@ -28,7 +33,6 @@ module raycaster(
     // dir -> dir_2 -> rot_dir (6) -> scale_rot_dir
 
     // Pipeline src, dir for later stages
-    parameter P1_STAGES = 8;
     vec3 p1_src [P1_STAGES-1:0];
     vec3 p1_dir [P1_STAGES-1:0];
     // TODO: pipeline rot, shape_type for normal + other computation
@@ -117,7 +121,6 @@ module raycaster(
     //  4-stage
 
     // Pipeline src, dir for later stages
-    parameter P2_STAGES = 4;
     vec3 p2_src [P2_STAGES-1:0];
     vec3 p2_dir [P2_STAGES-1:0];
 
@@ -152,7 +155,6 @@ module raycaster(
     // 6-stage
 
     // Pipeline src, dir for later stages
-    parameter P3_STAGES = 6;
     vec3 p3_src [P3_STAGES-1:0];
     vec3 p3_dir [P3_STAGES-1:0];
 
@@ -203,7 +205,6 @@ module raycaster(
     // intersection = src + t * dir (2 stages)
 
     // Pipeline stages for hit
-    parameter P4_STAGES = 2;
     logic p4_hit [P4_STAGES-1:0];
 
     always_ff @( posedge clk ) begin
