@@ -107,6 +107,8 @@ def main():
         elif prog == 'cube':
             generate_cube(f)
         f.write('nf\n')
+        f.write("lr\n")
+        f.write("lr\n")
         f.write("er\n")
         f.write("er\n")
 

@@ -195,6 +195,9 @@ def parse_line(ln: str, ln_num: int, hex: bool) -> str:
     elif cmd == "nf":
         if len(args) != 0: syntax_err()
         instr.set_range(10, 9, "10")
+    elif cmd == "lr":
+        if len(args) != 0: syntax_err()
+        instr.set_range(10, 9, "11")
     elif cmd == "cam":
         if len(args) != 2: syntax_err()
         prop = parse_prop(args[0], camera_props)
