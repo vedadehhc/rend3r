@@ -12,7 +12,6 @@ options:
 TODO:
     REWORK REGISTERS BASED ON NEW ISA
     generate dump file (instruction/binary side-by-side)
-    auto-sort intra-frame instructions
 """
 
 class RenderSyntaxException(Exception):
@@ -72,23 +71,25 @@ def usage():
     print(usagestr)
     sys.exit(1)
 
-def syntax_err():
-    print(f"Syntax error on line {line_num}: {line}")
+def syntax_err(msg: str):
+    print(f"\nSyntax error on line {line_num}:\n\t{line}\n{msg}\n")
     sys.exit(1)
 
 # return n-bit BitArray
 def parse_int(num: str, length: int = 16) -> BitArray:
+    num = num.replace('_', '')
+
     if len(num) > 2 and num[0:2] == "0x":
         # hex
-        try: return BitArray(int=int(num, 16), length=length)
+        try: return BitArray(uint=int(num, 16), length=length)
         except: raise RenderSyntaxException
     elif len(num) > 2 and num[0:2] == "0b":
         # binary
-        try: return BitArray(int=int(num, 2), length=length)
+        try: return BitArray(uint=int(num, 2), length=length)
         except: raise RenderSyntaxException
     else:
         # decimal
-        try: return BitArray(int=int(num), length=length)
+        try: return BitArray(uint=int(num), length=length)
         except Exception: raise RenderSyntaxException
 
 # returns 16-bit BitArray
@@ -194,6 +195,9 @@ def parse_line(ln: str, ln_num: int, hex: bool) -> str:
     elif cmd == "nf":
         if len(args) != 0: syntax_err()
         instr.set_range(10, 9, "10")
+    elif cmd == "lr":
+        if len(args) != 0: syntax_err()
+        instr.set_range(10, 9, "11")
     elif cmd == "cam":
         if len(args) != 2: syntax_err()
         prop = parse_prop(args[0], camera_props)
@@ -220,7 +224,7 @@ def parse_line(ln: str, ln_num: int, hex: bool) -> str:
         instr.set_range(15, 11, prop["bit_array"].bin)
         instr.set_range(31, 16, data.bin)
     elif cmd == "sp" or cmd == "tr":
-        if len(args) != 5: syntax_err()
+        if len(args) != 5: syntax_err("Wrong number of arguments")
 
         props_list = shape_props if cmd == "sp" else triangle_props
 
@@ -270,7 +274,7 @@ def assemble(src_path, dst_path, hex):
                     dst.write(parse_line(line.strip(), i+1, hex))
                     dst.write("\n")
                 except RenderSyntaxException:
-                    syntax_err()
+                    syntax_err("")
     except IOError as e:
         print(f"Could not find source file: {src_path}")
 
@@ -294,7 +298,7 @@ def main():
     if dst is None:
         dst = f"{src[::-1].split('.', 1)[1][::-1]}.{'hex' if hex else 'bin'}"
     
-    print("Reading from ", src)
+    print("Reading from", src)
     print("Writing to", dst)
     assemble(src, dst, hex)
 
