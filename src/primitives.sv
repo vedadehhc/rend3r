@@ -3,7 +3,7 @@
 
 import proctypes::*;
 
-// single stage pipeline
+// 6 stage
 module mult_elementwise(
     input wire clk,
     input wire rst,
@@ -37,8 +37,8 @@ module mult_elementwise(
     assign valid_out = a_b_valid[0];
 endmodule
 
-// 3-stage pipeline
-// (a, b) -> (ax * bx, ay * by, az * bz) ->  (ax * bx + ay * by, az * bz)  -> (ax * bx + ay * by + az * bz) 
+// 22-stage pipeline
+// (a, b) --[6]--> (ax * bx, ay * by, az * bz) --[8]-->  (ax * bx + ay * by, az * bz)  --[8]--> (ax * bx + ay * by + az * bz) 
 module dot_product(
     input wire clk,
     input wire rst,
@@ -51,6 +51,7 @@ module dot_product(
     vec3 a_b;
     logic a_b_valid [2:0];
 
+    // PS1: 6 stages
     generate
         genvar a_b_ind;
         for (a_b_ind = 0; a_b_ind < 3; a_b_ind = a_b_ind + 1) begin
@@ -69,6 +70,7 @@ module dot_product(
     float16 a_b_x_y;
     logic a_b_x_y_valid;
 
+    // PS2: 8 stages
     float_add_sub add_a_b_x_y (
         .aclk(clk),                                        // input wire aclk
         .s_axis_a_tvalid(a_b_valid[0]),                  // input wire s_axis_a_tvalid
@@ -82,11 +84,17 @@ module dot_product(
     );
 
     // Pipeline stage
-    float16 a_b_z;
+    localparam PS2_STAGES = 8;
+    float16 a_b_z [PS2_STAGES-1:0];
     always_ff @( posedge clk ) begin
-        a_b_z <= a_b[2];
+        a_b_z[0] <= a_b[2];
+        for (int i = 1; i < PS2_STAGES; i = i+1) begin
+            a_b_z[i] <= a_b_z[i-1];
+        end
     end
 
+
+    // PS3: 8 stages
     float16 a_b_x_y_z;
     logic a_b_x_y_z_valid;
 
@@ -95,7 +103,7 @@ module dot_product(
         .s_axis_a_tvalid(a_b_x_y_valid),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(a_b_x_y),                    // input wire [15 : 0] s_axis_a_tdata
         .s_axis_b_tvalid(a_b_x_y_valid),                  // input wire s_axis_b_tvalid
-        .s_axis_b_tdata(a_b_z),                    // input wire [15 : 0] s_axis_b_tdata
+        .s_axis_b_tdata(a_b_z[PS2_STAGES-1]),                    // input wire [15 : 0] s_axis_b_tdata
         .s_axis_operation_tvalid(a_b_x_y_valid),  // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpAdd}),    // input wire [7 : 0] s_axis_operation_tdata
         .m_axis_result_tvalid(a_b_x_y_z_valid),        // output wire m_axis_result_tvalid
@@ -107,7 +115,8 @@ module dot_product(
 
 endmodule
 
-// 4-stage pipeline
+// 30-stage pipeline
+// (a, b) --[22]--> (a.b) --[8]--> (a.b + a.b)
 module double_dot_product(
     input wire clk,
     input wire rst,
@@ -121,6 +130,7 @@ module double_dot_product(
     float16 a_dot_b;
     logic a_dot_b_valid;
 
+    // 22-stages
     dot_product dp(
         .clk(clk),
         .rst(rst),
@@ -131,7 +141,7 @@ module double_dot_product(
         .a_dot_b(a_dot_b)
     );
 
-    
+    // 8 stages
     float16 a_dot_b_double;
     logic a_dot_b_double_valid;
     float_add_sub add_dir_sq_x_y_z (
@@ -151,8 +161,8 @@ module double_dot_product(
 endmodule
 
 // See: https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Advantages_of_quaternions
-// 3-stage pipeline (each fpu adds 1 stage)
-// (a, b, bi, bj, bk) -> (dotr, doti, dotj, dotk) -> (r1, r2, i1, i2, j1, j2, k1, k2) -> c
+// 22-stage pipeline 
+// (a, b, bi, bj, bk) --[6]--> (dotr, doti, dotj, dotk) --[8]--> (r1, r2, i1, i2, j1, j2, k1, k2) --[8]--> c
 module quaternion_mult(
     input wire clk,
     input wire rst,
@@ -185,6 +195,8 @@ module quaternion_mult(
     float16 dotr [3:0];
     logic vdotr [3:0];   
 
+
+    /// PS1: 6-stage
     generate
         genvar r_ind;
         for (r_ind = 0; r_ind < 4; r_ind = r_ind + 1) begin
@@ -205,6 +217,7 @@ module quaternion_mult(
     logic vr1r2;
     // logic vr2;
 
+    /// PS2: 8-stage
     float_add_sub add_r1 (
         .aclk(clk),                                        // input wire aclk
         .s_axis_a_tvalid(vdotr[0]),                  // input wire s_axis_a_tvalid
@@ -228,6 +241,7 @@ module quaternion_mult(
         .m_axis_result_tdata(r2)          // output wire [15 : 0] m_axis_result_tdata
     );
     
+    /// PS3: 8-stage
     float16 cr;  // = r1 - r2
     logic vcr;
 
@@ -245,7 +259,8 @@ module quaternion_mult(
 
     // i part
     float16 doti [3:0];
-    
+
+    /// PS1: 6-stage
     generate
         genvar i_ind;
         for (i_ind = 0; i_ind < 4; i_ind = i_ind + 1) begin
@@ -261,6 +276,7 @@ module quaternion_mult(
         end
     endgenerate
 
+    /// PS2: 8-stage
     float16 i1;  // = doti[0] + doti[1]
     float16 i2;  // = doti[2] - doti[3]
 
@@ -287,6 +303,8 @@ module quaternion_mult(
         .m_axis_result_tdata(i2)          // output wire [15 : 0] m_axis_result_tdata
     );
 
+
+    /// PS3: 8-stage
     float16 ci;  // = i1 + i2
     float_add_sub add_ci (
         .aclk(clk),                                        // input wire aclk
@@ -303,6 +321,7 @@ module quaternion_mult(
     // j part
     float16 dotj [3:0];
     
+    /// PS1: 6-stage
     generate
         genvar j_ind;
         for (j_ind = 0; j_ind < 4; j_ind = j_ind + 1) begin
@@ -318,6 +337,8 @@ module quaternion_mult(
         end
     endgenerate
 
+
+    /// PS2: 8-stage
     float16 j1;  // = dotj[0] - dotj[1]
     float16 j2;  // = dotj[2] + dotj[3]
 
@@ -344,6 +365,8 @@ module quaternion_mult(
         .m_axis_result_tdata(j2)          // output wire [15 : 0] m_axis_result_tdata
     );
 
+
+    /// PS3: 8-stage
     float16 cj;  // = j1 + j2
     float_add_sub add_cj (
         .aclk(clk),                                        // input wire aclk
@@ -361,6 +384,7 @@ module quaternion_mult(
     // k part
     float16 dotk [3:0];
 
+    /// PS1: 6-stage
     generate
         genvar k_ind;
         for (k_ind = 0; k_ind < 4; k_ind = k_ind + 1) begin
@@ -376,6 +400,8 @@ module quaternion_mult(
         end
     endgenerate
 
+
+    /// PS2: 8-stage
     float16 k1;  // = dotk[0] + dotk[1]
     float16 k2;  // = dotk[2] - dotk[3]
 
@@ -402,6 +428,7 @@ module quaternion_mult(
         .m_axis_result_tdata(k2)          // output wire [15 : 0] m_axis_result_tdata
     );
     
+    /// PS3: 8-stage
     float16 ck;  // = k1 - k2
     float_add_sub add_ck (
         .aclk(clk),                                        // input wire aclk
@@ -423,7 +450,7 @@ module quaternion_mult(
     assign valid_out = vcr;
 endmodule
 
-// 6-stage pipeline (each quaternion_mult is 3 stage)
+// 44-stage pipeline (each quaternion_mult is 22-stage)
 module rotate(
     input wire clk,
     input wire rst,
@@ -439,6 +466,7 @@ module rotate(
     assign q_in[2] = in[1];
     assign q_in[3] = in[2];
 
+    /// PS1: 22-stage
     quaternion rot_q;
     logic vmult1;
 
@@ -452,31 +480,24 @@ module rotate(
         .c(rot_q)
     );
 
-    // 3 stage pipeline to stay in sync with first quaternion_mult
-    quaternion rot_inv_1;
-    quaternion rot_inv_2;
-    quaternion rot_inv_3;
+    localparam PS1_STAGES = 22;
+    quaternion rot_inv [PS1_STAGES-1:0];
+
+    // 22-stage pipeline to stay in sync with first quaternion_mult
     always_ff @(posedge clk) begin
-        if (rst) begin
-
-        end else begin
-            rot_inv_1[0] <= rot[0];
-            rot_inv_1[1] <= {~rot[1][15], rot[1][14:0]};
-            rot_inv_1[2] <= {~rot[2][15], rot[2][14:0]};
-            rot_inv_1[3] <= {~rot[3][15], rot[3][14:0]};
-
-            rot_inv_2[0] <= rot_inv_1[0];
-            rot_inv_2[1] <= rot_inv_1[1];
-            rot_inv_2[2] <= rot_inv_1[2];
-            rot_inv_2[3] <= rot_inv_1[3];
-
-            rot_inv_3[0] <= rot_inv_2[0];
-            rot_inv_3[1] <= rot_inv_2[1];
-            rot_inv_3[2] <= rot_inv_2[2];
-            rot_inv_3[3] <= rot_inv_2[3];
+        rot_inv[0][0] <= rot[0];
+        rot_inv[0][1] <= {~rot[1][15], rot[1][14:0]};
+        rot_inv[0][2] <= {~rot[2][15], rot[2][14:0]};
+        rot_inv[0][3] <= {~rot[3][15], rot[3][14:0]};
+        for (int i = 1; i < PS1_STAGES; i = i + 1) begin
+            rot_inv[i][0] <= rot_inv[i-1][0];
+            rot_inv[i][1] <= rot_inv[i-1][1];
+            rot_inv[i][2] <= rot_inv[i-1][2];
+            rot_inv[i][3] <= rot_inv[i-1][3];
         end
     end
 
+    // PS2: 22-stage
     quaternion rot_q_rot_inv;
     logic vmult2;
     
@@ -485,7 +506,7 @@ module rotate(
         .rst(rst),
         .valid_in(vmult1),
         .a(rot_q),
-        .b(rot_inv_3),
+        .b(rot_inv[PS1_STAGES-1]),
         .valid_out(vmult2),
         .c(rot_q_rot_inv)
     );
@@ -496,7 +517,7 @@ module rotate(
     assign valid_out = vmult2;
 endmodule
 
-// 6-stage pipeline (same as rotate)
+// 44-stage pipeline (same as rotate)
 module rotate_inv(
     input wire clk,
     input wire rst,
@@ -512,6 +533,7 @@ module rotate_inv(
     assign q_in[2] = in[1];
     assign q_in[3] = in[2];
     
+    /// PS1: 22-stage
     quaternion q_rot_inv;
     logic vmult1;
 
@@ -525,31 +547,23 @@ module rotate_inv(
         .c(q_rot_inv)
     );
     
-    // 3 stage pipeline to stay in sync with first quaternion_mult
-    quaternion rot_1;
-    quaternion rot_2;
-    quaternion rot_3;
+    // 22-stage pipeline to stay in sync with first quaternion_mult
+    localparam PS1_STAGES = 22;
+    quaternion rot [PS1_STAGES-1:0];
     always_ff @(posedge clk) begin
-        if (rst) begin
-
-        end else begin
-            rot_1[0] <= rot_inv[0];
-            rot_1[1] <= {~rot_inv[1][15], rot_inv[1][14:0]};
-            rot_1[2] <= {~rot_inv[2][15], rot_inv[2][14:0]};
-            rot_1[3] <= {~rot_inv[3][15], rot_inv[3][14:0]};
-
-            rot_2[0] <= rot_1[0];
-            rot_2[1] <= rot_1[1];
-            rot_2[2] <= rot_1[2];
-            rot_2[3] <= rot_1[3];
-
-            rot_3[0] <= rot_2[0];
-            rot_3[1] <= rot_2[1];
-            rot_3[2] <= rot_2[2];
-            rot_3[3] <= rot_2[3];
+        rot[0][0] <= rot_inv[0];
+        rot[0][1] <= {~rot_inv[1][15], rot_inv[1][14:0]};
+        rot[0][2] <= {~rot_inv[2][15], rot_inv[2][14:0]};
+        rot[0][3] <= {~rot_inv[3][15], rot_inv[3][14:0]};
+        for (int i = 1; i < PS1_STAGES; i = i+1) begin
+            rot[i][0] <= rot[i-1][0];
+            rot[i][1] <= rot[i-1][1];
+            rot[i][2] <= rot[i-1][2];
+            rot[i][3] <= rot[i-1][3];
         end
     end
 
+    /// PS2: 22-stage
     quaternion rot_q_rot_inv;
     logic vmult2;
 
@@ -569,7 +583,7 @@ module rotate_inv(
     assign valid_out = vmult2;
 endmodule
 
-// single stage pipeline
+// 8-stage pipeline
 module translate(
     input wire clk,
     input wire rst,
@@ -604,7 +618,7 @@ module translate(
     assign valid_out = vout[0];
 endmodule
 
-// single stage pipeline
+// 6-stage pipeline
 module scale(
     input wire clk,
     input wire rst,
