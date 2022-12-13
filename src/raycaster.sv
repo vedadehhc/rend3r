@@ -3,6 +3,14 @@
 
 import proctypes::*;
 
+/// FPU:
+// add_sub: 8
+// compare: 2
+// divide: 15
+// multiply: 6
+// sqrt: 15
+// float_to_fixed: 5
+
 // k-Stage pipeline - currently supports only sphere
 // TODO: add normal, support additional shapetype (change quadratic)
 // TODO: fix all pipelining
