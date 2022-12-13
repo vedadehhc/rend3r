@@ -24,15 +24,27 @@ module raycaster#(
     input wire valid_in,
     input vec3 src,
     input vec3 dir,
+    input wire ShapeAddr shape_addr_in,
     input wire ShapeType shape_type,
     input vec3 shape_trans_inv,
     input quaternion shape_rot,
     input vec3 shape_scale_inv,
     output logic valid_out,
+    output logic ShapeAddr shape_addr_out,
     output logic hit,
     output float16 sq_distance,
     output vec3 intersection
 );
+    // pipeline shape_addr
+    parameter TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES;
+    ShapeAddr pipeline_shape_addr [TOTAL_STAGES-1:0];
+    always_ff @(posedge clk) begin
+        pipeline_shape_addr[0] <= shape_addr_in;
+        for (int i = 1; i < TOTAL_STAGES; i = i+1) begin
+            pipeline_shape_addr[i] <= pipeline_shape_addr[i-1];
+        end
+    end
+    assign shape_addr_out = pipeline_shape_addr[TOTAL_STAGES-1];
 
     /// Phase 1: Transform src + dir
     // 58-stage
@@ -354,6 +366,209 @@ module raycaster#(
     assign intersection[0] = p4_intersection[0];
     assign intersection[1] = p4_intersection[1];
     assign intersection[2] = p4_intersection[2];
+endmodule
+
+
+// takes RAYCASTER_STAGES + NUM_SHAPES + O(1) cycles to produce result
+// folded design
+module all_shapes_raycaster#(
+    parameter RAYCASTER_STAGES = 155
+)(
+    input wire clk,
+    input wire rst,
+    input wire valid_in,
+    input vec3 src,
+    input vec3 dir,
+    input Shape cur_shape,
+    output ShapeAddr read_shape_addr,
+    output logic valid_out,
+    output logic hit,
+    output vec3 intersection,
+    output Shape hit_shape,
+);
+    typedef enum { IDLE, SENDING, WAITING, TABULATING } all_shape_rc_state;
+    all_shape_rc_state state;
+    logic received_while_waiting;
+
+    vec3 cur_src;
+    vec3 cur_dir;
+
+    ShapeAddr cur_shape_addr;
+    assign read_shape_addr = cur_shape_addr;
+    logic valid_final_shape;
+
+    ShapeAddr cur_shape_addr_1;
+    logic valid_shape_addr_1;
+    logic valid_final_shape_1;
+    
+    ShapeAddr cur_shape_addr_2;
+    logic valid_shape_addr_2;
+    logic valid_final_shape_2;
+
+    always_ff @( posedge clk ) begin 
+        if (rst) begin
+            state <= IDLE;
+            cur_shape_addr <= 0;
+            valid_shape_addr_1 <= 1'b0;
+            valid_shape_addr_2 <= 1'b0;
+        end else begin
+            if (state == IDLE && valid_in) begin
+                state <= SENDING;
+                cur_src <= src;
+                cur_dir <= dir;
+                cur_shape_addr <= 0;
+                valid_shape_addr_1 <= 1'b0;
+                valid_final_shape <= 1'b0;
+            end else if (state == SENDING) begin
+                if (cur_shape_addr == NUM_SHAPES - 1) begin
+                    state <= WAITING;
+                end else begin
+                    cur_shape_addr <= cur_shape_addr + 1;
+                end
+                valid_shape_addr_1 <= 1'b1;
+                valid_final_shape <= 1'b0;
+            end else if (state == WAITING ) begin
+                valid_shape_addr_1 <= 1'b0;
+                if (p_raycast_valid[COMPARE_STAGES-1]) begin
+                    received_while_waiting <= 1'b1;
+                    valid_final_shape <= 1'b0;
+                end else if (received_while_waiting) begin
+                    state <= TABULATING;
+                    cur_shape_addr <= best_shape_addr;
+                    valid_final_shape <= 1'b1;
+                end
+            end else if (state == TABULATING) begin
+                valid_shape_addr_1 <= 1'b0;
+                valid_final_shape <= 1'b0;
+                if (valid_final_shape_2) begin
+                    state <= IDLE;
+                end
+            end else begin
+                valid_final_shape <= 1'b0;
+                valid_shape_addr_1 <= 1'b0;
+            end
+
+            cur_shape_addr_1 <= cur_shape_addr;
+            cur_shape_addr_2 <= cur_shape_addr_1;
+            valid_shape_addr_2 <= valid_shape_addr_1;
+
+            valid_final_shape_1 <= valid_final_shape;
+            valid_final_shape_2 <= valid_final_shape_1;
+        end
+    end
+
+    vec3 shape_trans_inv;
+    assign shape_trans_inv[0] = negate_float(cur_shape.xloc);
+    assign shape_trans_inv[1] = negate_float(cur_shape.yloc);
+    assign shape_trans_inv[2] = negate_float(cur_shape.zloc);
+
+    quaternion shape_rot;
+    assign shape_rot[0] = cur_shape.rrot;
+    assign shape_rot[1] = cur_shape.irot;
+    assign shape_rot[2] = cur_shape.jrot;
+    assign shape_rot[3] = cur_shape.krot;
+
+    vec3 shape_scale_inv;
+    assign shape_scale_inv[0] = cur_shape.xscl;
+    assign shape_scale_inv[1] = cur_shape.yscl;
+    assign shape_scale_inv[2] = cur_shape.zscl;
+
+    logic raycast_valid;
+    ShapeAddr raycast_shape_addr;
+    logic raycast_hit;
+    float16 raycast_sq_distance;
+    vec3 raycast_intersection;
+
+    raycaster raycast (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(valid_shape_addr_2),
+        .src(cur_src),
+        .dir(cur_dir),
+        .shape_addr_in(cur_shape_addr_2),
+        .shape_type(cur_shape.sType),
+        .shape_trans_inv(shape_trans_inv),
+        .shape_rot(shape_rot),
+        .shape_scale_inv(shape_scale_inv),
+        .valid_out(raycast_valid),
+        .shape_addr_out(raycast_shape_addr),
+        .hit(raycast_hit),
+        .sq_distance(raycast_sq_distance),
+        .intersection(raycase_intersection)
+    );
+
+
+    // 2 stages for compare
+    localparam COMPARE_STAGES = 2;
+    logic p_raycast_valid [COMPARE_STAGES-1:0];
+    ShapeAddr p_raycast_shape_addr [COMPARE_STAGES-1:0];
+    logic p_raycast_hit [COMPARE_STAGES-1:0];
+    float16 p_raycast_sq_distance [COMPARE_STAGES-1:0];
+    vec3 p_raycast_intersection [COMPARE_STAGES-1:0];
+
+    always_ff @( posedge clk ) begin 
+        p_raycast_valid[0] <= raycast_valid;
+        p_raycast_shape_addr[0] <= raycast_shape_addr;
+        p_raycast_hit[0] <= raycast_hit;
+        p_raycast_sq_distance[0] <= raycast_sq_distance;
+        p_raycast_intersection[0] <= raycast_intersection;
+
+        for (int i = 1; i < COMPARE_STAGES; i = i+1) begin
+            p_raycast_valid[i] <= p_raycast_valid[i-1];
+            p_raycast_shape_addr[i] <= p_raycast_shape_addr[i-1];
+            p_raycast_hit[i] <= p_raycast_hit[i-1];
+            p_raycast_sq_distance[i] <= p_raycast_sq_distance[i-1];
+            p_raycast_intersection[i] <= p_raycast_intersection[i-1];
+        end
+    end
+
+    logic [7:0] compare_result;
+    float_compare compare_raycast_best (
+        .aclk(clk),                                        // input wire aclk
+        .s_axis_a_tvalid(raycast_valid),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(raycast_sq_distance),                    // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(raycast_valid),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(best_sq_distance),                    // input wire [15 : 0] s_axis_b_tdata
+        .s_axis_operation_tvalid(raycast_valid),  // input wire s_axis_operation_tvalid
+        .s_axis_operation_tdata(fpuOpLt),    // input wire [7 : 0] s_axis_operation_tdata
+        // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(compare_result)          // output wire [7 : 0] m_axis_result_tdata
+    );
+
+    ShapeAddr best_shape_addr;
+    logic best_valid;
+    float16 best_sq_distance;
+    vec3 best_intersection;
+
+
+    always_ff @( posedge clk ) begin
+        if (rst) begin
+            best_valid <= 1'b0;
+            best_sq_distance <= 0;
+        end else begin
+            if (state == IDLE && valid_in) begin
+                best_valid <= 1'b0;
+            end else if (state == SENDING || state == WAITING) begin
+                if (p_raycast_hit[COMPARE_STAGES-1] && p_raycast_valid[COMPARE_STAGES-1]) begin
+                    // received raycast result
+                    if (!best_valid || compare_result[0]) begin
+                        // if no best or if raycast dist < best, update best
+                        best_valid <= 1'b1;
+                        best_sq_distance <= p_raycast_sq_distance[COMPARE_STAGES-1];
+                        best_shape_addr <= p_raycast_shape_addr[COMPARE_STAGES-1];
+                        best_intersection <= p_raycast_intersection[COMPARE_STAGES-1];
+                    end
+                end
+            end
+        end
+    end
+
+    assign valid_out = valid_final_shape_2;
+    assign hit = best_valid;
+    assign sq_distance = best_sq_distance;
+    assign intersection = best_intersection;
+    assign hit_shape = cur_shape;
+
 endmodule
 
 `default_nettype wire

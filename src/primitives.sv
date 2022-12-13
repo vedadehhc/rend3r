@@ -3,6 +3,14 @@
 
 import proctypes::*;
 
+// combinational
+module negate_float (
+    input wire float16 a,
+    output logic float16 neg_a 
+);
+    assign neg_a = {~a[15], a[14:0]};
+endmodule
+
 // 6 stage
 module mult_elementwise(
     input wire clk,

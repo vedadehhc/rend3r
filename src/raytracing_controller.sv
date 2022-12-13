@@ -3,6 +3,7 @@
 
 import proctypes::*;
 
+// takes (RAYCASTER_STAGES + NUM_SHAPES + O(1)) * (NUM_LIGHTS + 1) * NUM_PIXELS + O(1) cycles 
 module raytracing_controller(
     input wire clk,
     input wire rst,
@@ -29,7 +30,7 @@ module raytracing_controller(
 );
 // camera at origin, pointing in negative z
 
-    typedef enum { WAITING, INITIAL, FINISHED_INITIAL, LIGHTING, FINISHED_LIGHTING } raytrace_state;
+    typedef enum { WAITING, INITIAL, LIGHTING, GEN_NEXT_PIXEL } raytrace_state;
     raytrace_state state;
     assign busy = (state != WAITING);
 
@@ -76,39 +77,7 @@ module raytracing_controller(
                     cur_pixel_y <= 0;
                 end
             end else if (busy && mem_ready) begin
-                if (cur_shape_addr == (NUM_SHAPES-1)) begin // finished with all shapes
-                    cur_shape_addr <= 0;
-                    if (state == INITIAL) begin // go to next state for same pixel
-                        state <= FINISHED_INITIAL;
-                    end else if (state == LIGHTING) begin // done with this pixel
-                        state <= FINISHED_LIGHTING;
-                    end
-                    shape_valid_1 <= 1'b1;
-                end else if (state == FINISHED_INITIAL) begin
-                    shape_valid_1 <= 1'b0;
-
-                    // if received all results, then go to lighting
-                        // state <= LIGHTING;
-                end else if (state == FINISHED_LIGHTING) begin
-                    shape_valid_1 <= 1'b0;
-
-                    // if received all results, then do the following:               
-                        // if (cur_pixel_y == (SCREEN_HEIGHT-1) && cur_pixel_x == (SCREEN_WIDTH-1)) begin // done with all pixels
-                        //     state <= WAITING;
-                        // end else begin // go to next pixel
-                        //     if (cur_pixel_x == SCREEN_WIDTH-1) begin // end of row
-                        //         cur_pixel_x <= 0;
-                        //         cur_pixel_y <= cur_pixel_y + 1;
-                        //     end else begin
-                        //         cur_pixel_x <= cur_pixel_x + 1;
-                        //     end
-                        //     state <= INITIAL;
-                        //     cur_shape_addr <= 0;
-                        // end
-                end else begin
-                    cur_shape_addr <= cur_shape_addr + 1;
-                    shape_valid_1 <= 1'b1;
-                end
+                
             end else begin
                 shape_valid_1 <= 1'b0;
             end
