@@ -26,16 +26,16 @@ module vga (
     output logic blank_out
 );
 
-  parameter DISPLAY_WIDTH = 800;  // display width
-  parameter DISPLAY_HEIGHT = 600;  // number of lines
+  parameter DISPLAY_WIDTH = 1024;  // display width
+  parameter DISPLAY_HEIGHT = 768;  // number of lines
 
-  parameter H_FP = 40;  // horizontal front porch
-  parameter H_SYNC_PULSE = 128;  // horizontal sync
-  parameter H_BP = 88;  // horizontal back porch
+  parameter H_FP = 24;  // horizontal front porch
+  parameter H_SYNC_PULSE = 136;  // horizontal sync
+  parameter H_BP = 160;  // horizontal back porch
 
-  parameter V_FP = 1;  // vertical front porch
-  parameter V_SYNC_PULSE = 4;  // vertical sync
-  parameter V_BP = 23;  // vertical back porch
+  parameter V_FP = 3;  // vertical front porch
+  parameter V_SYNC_PULSE = 6;  // vertical sync
+  parameter V_BP = 29;  // vertical back porch
 
   // horizontal: 1344 pixels total
   // display 1024 pixels per line
