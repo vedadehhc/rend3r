@@ -29,8 +29,8 @@ def write_triangle(f: TextIOWrapper, idx: int, vertices: list[float], color: str
 def generate_sphere(f: TextIOWrapper):
     center = [0, 0, -2.5]
     rad = 1
-    NUM_PHI = 1
-    NUM_THETA = 4
+    NUM_PHI = 20
+    NUM_THETA = 30
 
     top = [center[0], center[1], center[2] + rad]
     bot = [center[0], center[1], center[2] - rad]

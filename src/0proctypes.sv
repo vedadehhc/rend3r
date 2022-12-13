@@ -246,7 +246,7 @@ package proctypes;
     parameter INSTRUCTION_WIDTH = 32;
     typedef logic [INSTRUCTION_WIDTH-1:0] Instruction;
     parameter DECODED_INSTRUCTION_WIDTH = $bits(DecodedInst);
-    parameter NUM_INSTRUCTIONS = 1024;
+    parameter NUM_INSTRUCTIONS = 16384;
     parameter NUM_INSTRUCTIONS_WIDTH = $clog2(NUM_INSTRUCTIONS);
     typedef logic [NUM_INSTRUCTIONS_WIDTH-1:0] InstructionAddr;
 
