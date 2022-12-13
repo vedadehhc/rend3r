@@ -13,7 +13,7 @@ package proctypes;
         renderRasterization = 2'b01,
         renderRaytracing = 2'b11
     } RenderMode;
-    parameter RENDERING_MODE = renderRasterization;
+    parameter RENDERING_MODE = renderRaytracing;
 
     // Instruction Bank
     typedef enum logic {

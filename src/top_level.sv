@@ -61,9 +61,9 @@ module top_level (
       .rst(sys_rst),
       .step_mode(step_by_step),
       .next_step(next_step),
-      .light_read_addr(),
-      .geometry_read_addr(rast_tri_addr),
-      .controller_busy(rast_busy),
+      .light_read_addr(ray_light_addr),
+      .geometry_read_addr(ray_shape_addr),
+      .controller_busy(ray_busy),
       .execInst_valid(execInst_valid),
       .execInst(execInst),
       .mem_ready(mem_ready),
@@ -75,26 +75,40 @@ module top_level (
 
   // rasterization controller 
   // should iterate through all triangles and pass to rasterizer
-  logic rast_busy;
-  TriangleAddr rast_tri_addr;
+  logic ray_busy;
+  ShapeAddr ray_shape_addr;
+  LightAddr ray_light_addr;
 
-  logic controller_tri_valid;
-  Triangle controller_tri;
+  logic ray_valid_out;
+  assign pixel_write_enable = ray_valid_out;
+
+  ScreenX ray_pixel_x;
+  ScreenY ray_pixel_y;
+  assign hcount = ray_pixel_x;
+  assign vcount = ray_pixel_y;
+
+  logic [`PADDED_COLOR_WIDTH-1:0] ray_pixel_out;
+  assign pixel_write = ray_pixel_out;
 
   logic step_mem_ready;
   assign step_mem_ready = mem_ready && (!step_by_step || next_step);
 
-  rasterization_controller controller (
+  raytracing_controller controller (
       .clk(sys_clk),
       .rst(sys_rst),
       .execInst_valid(execInst_valid),
       .execInst(execInst),
       .mem_ready(step_mem_ready),
-      .cur_triangle(cur_geo),
-      .busy(rast_busy),
-      .cur_tri_addr(rast_tri_addr),
-      .next_triangle_valid(controller_tri_valid),
-      .next_triangle(controller_tri)
+      .cur_shape(cur_geo),
+      .cur_light(cur_light),
+      .cur_camera(cur_camera),
+      .busy(ray_busy),
+      .cur_shape_addr(ray_shape_addr),
+      .cur_light_addr(ray_light_addr),
+      .valid_out(ray_valid_out),
+      .pixel_x_out(ray_pixel_x),
+      .pixel_y_out(ray_pixel_y),
+      .pixel_value(ray_pixel_out)
   );
 
   assign led[15] = controller_tri_valid;
@@ -179,32 +193,9 @@ module top_level (
       .doutb(pixel_read_pix_clk)  // output wire [15 : 0] doutb
   );
 
-  tri_3d cam_tri;
-  tri_2d rast_tri, tfill_in;
-
-  vec3_i16 out_test_pt, rast_pt;
-
-  logic screen_pt_valid, ndc_pt_valid, rast_tri_valid;
-
-  vec2_f16 screen_pt, ndc_pt;
-
-  localparam ONE = 16'h3C00;
-
-  localparam FLOAT_FRAME_WIDTH = 16'h6000;  // 512
-  localparam FLOAT_FRAME_HEIGHT = 16'h5E00;  // 384
-
-  view camera;
   logic [31:0] seven_seg_val;
+  // assign seven_seg_val = {controller_tri.x3, controller_tri.col[15:14], controller_tri.col[1:0], 3'b0, pc_debug, 3'b0, rast_tri_addr};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
 
-  triangle_3d_to_2d t23 (  // 53 stages
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .camera(camera),
-      .input_valid(controller_tri_valid),
-      .triangle_3d(controller_tri_3d),
-      .triangle_2d(rast_tri),
-      .triangle_2d_valid(rast_tri_valid)
-  );
 
   seven_segment_controller mssc (
       .clk_in (sys_clk),
@@ -214,141 +205,10 @@ module top_level (
       .an_out (an)
   );
 
-  logic [2:0] vert_setting, coord_setting;
-  logic [1:0] vert_index, coord_index;
-  logic displaying_t3d;
-
-  assign coord_setting  = sw[2:0];
-  assign vert_setting   = sw[5:3];
-  assign displaying_t3d = sw[6];
-
-  always_comb begin
-    if (sys_rst) begin
-      seven_seg_val = 0;
-      coord_index = 0;
-      vert_index = 0;
-    end else begin
-
-      if (vert_setting == 'b001) begin
-        vert_index = 2'd0;
-      end else if (vert_setting == 'b010) begin
-        vert_index = 2'd1;
-      end else if (vert_setting == 'b100) begin
-        vert_index = 2'd2;
-      end else begin
-        vert_index = 2'd0;
-      end
-
-      if (coord_setting == 'b001) begin
-        coord_index = 2'd0;
-      end else if (coord_setting == 'b010) begin
-        coord_index = 2'd1;
-      end else if (coord_setting == 'b100) begin
-        coord_index = 2'd2;
-      end else begin
-        coord_index = 2'd0;
-      end
-
-      seven_seg_val = {controller_tri.x3, controller_tri.col[15:14], controller_tri.col[1:0], 3'b0, pc_debug, 3'b0, rast_tri_addr};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
-    end
-  end
-
-  localparam TEN = 'h4900;
-  localparam HUNDRED = 'h5640;
-
   logic [`PBRAM_ADDR_BITS-1:0] pixel_addr, pixel_addr_pix_clk;
 
   assign pixel_addr = `FRAME_WIDTH * vcount + hcount;
   assign pixel_addr_pix_clk = `FRAME_WIDTH * (vcount_pix_clk >> 1) + (hcount_pix_clk >> 1);
-
-  always_ff @(posedge sys_clk) begin
-    if (sys_rst) begin
-      cam_tri[0][0] <= 'hbc00;  // -1
-      cam_tri[0][1] <= 'hbc00;  // -1
-      cam_tri[0][2] <= 'hc000;  // -2
-
-      cam_tri[1][0] <= 'h3c00;  // 1
-      cam_tri[1][1] <= 'hbe00;  // -1.5
-      cam_tri[1][2] <= 'hc000;  // -2
-
-      cam_tri[2][0] <= 'h3c00;  // 1
-      cam_tri[2][1] <= 'h3c00;  // 1
-      cam_tri[2][2] <= 'hc000;  // -2
-
-      camera.near_clip <= ONE;
-
-      camera.canvas_dimensions[0] <= TEN;
-      camera.canvas_dimensions[1] <= TEN;
-
-      camera.image_dimensions[0] <= FLOAT_FRAME_WIDTH;
-      camera.image_dimensions[1] <= FLOAT_FRAME_HEIGHT;
-
-    end else begin
-
-    end
-  end
-
-  assign pixel_write_enable = 1'b1;
-  
-  logic is_within;
-
-  triangle_2d_fill tfill_a ( // 3
-      .rst(sys_rst),
-      .clk(sys_clk),
-      .hcount(hcount),
-      .vcount(vcount),
-      .triangle(tfill_in),
-      .is_within(is_within)
-  );
-
-  logic [`PADDED_COLOR_WIDTH-1:0] triangle_color_piped;
-
-  pipe #(
-      .LENGTH(57), // 53 (proj+ndc+rast) + 4 (fill)
-      .WIDTH (16)
-  ) triangle_color_pipe (
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .in (controller_tri.col),
-      .out(triangle_color_piped)
-  );
-
-  always_comb begin
-    if (sys_rst) begin
-      pixel_write = 0;
-    end else begin
-      if (is_within) begin
-        pixel_write = triangle_color_piped;
-      end else begin
-        pixel_write = 16'b0;
-      end
-
-    end
-  end
-
-  always_ff @(posedge sys_clk) begin
-    if (sys_rst) begin
-
-      hcount <= 0;
-      vcount <= 0;
-
-    end else begin
-
-      tfill_in <= rast_tri; // 1
-
-      if (hcount == `FRAME_WIDTH - 1) begin
-        hcount <= 0;
-        if (vcount == `FRAME_HEIGHT - 1) begin
-          vcount <= 0;
-        end else begin
-          vcount <= vcount + 1;
-        end
-      end else begin
-        hcount <= hcount + 1;
-      end
-
-    end
-  end
 
   assign vga_pixel = pixel_read_pix_clk;
 
