@@ -3,8 +3,9 @@
 
 import proctypes::*;
 
-// k-Stage pipeline
-// TODO: add normal, support additional shapetype
+// k-Stage pipeline - currently supports only sphere
+// TODO: add normal, support additional shapetype (change quadratic)
+// TODO: fix all pipelining
 module raycaster(
     input wire clk,
     input wire rst,
@@ -286,7 +287,6 @@ module raycaster(
     // normal = R * normal_transform (we don't care about scaling)
 
 
-    // TODO: change
     // Distance should be scaled solution
     assign valid_out = p4_intersection_valid;
     assign hit = p4_hit[P4_STAGES-1];

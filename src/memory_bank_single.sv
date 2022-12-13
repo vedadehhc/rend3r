@@ -258,7 +258,89 @@ module memory_bank_single (
                 end
             endcase
         end else if (RENDERING_MODE == renderRaytracing) begin
-            // TODO: fill in 
+            shape_3_4 = read_geometry_3;
+            case(dInst_3.prop)
+                spXLocation: begin
+                    shape_3_4.xloc = dInst_1.data;
+                end
+                spYLocation: begin
+                    shape_3_4.yloc = dInst_1.data;
+                end
+                spZLocation: begin
+                    shape_3_4.zloc = dInst_1.data;
+                end
+                spRRotation: begin
+                    shape_3_4.rrot = dInst_1.data;
+                end
+                spIRotation: begin
+                    shape_3_4.irot = dInst_1.data;
+                end
+                spJRotation: begin
+                    shape_3_4.jrot = dInst_1.data;
+                end
+                spKRotation: begin
+                    shape_3_4.krot = dInst_1.data;
+                end
+                spXScale: begin
+                    shape_3_4.xscl = dInst_1.data;
+                end
+                spYScale: begin
+                    shape_3_4.yscl = dInst_1.data;
+                end
+                spZScale: begin
+                    shape_3_4.zscl = dInst_1.data;
+                end
+                spColor: begin
+                    shape_3_4.col = dInst_1.data;
+                end
+                spMaterial: begin
+                    shape_3_4.mat = dInst_1.data[1:0];
+                end
+                spType: begin
+                    shape_3_4.sType = ShapeType'(dInst_1.data[3:0]);
+                end
+            endcase
+            case(dInst_3.prop2)
+                spXLocation: begin
+                    shape_3_4.xloc = dInst_1.data2;
+                end
+                spYLocation: begin
+                    shape_3_4.yloc = dInst_1.data2;
+                end
+                spZLocation: begin
+                    shape_3_4.zloc = dInst_1.data2;
+                end
+                spRRotation: begin
+                    shape_3_4.rrot = dInst_1.data2;
+                end
+                spIRotation: begin
+                    shape_3_4.irot = dInst_1.data2;
+                end
+                spJRotation: begin
+                    shape_3_4.jrot = dInst_1.data2;
+                end
+                spKRotation: begin
+                    shape_3_4.krot = dInst_1.data2;
+                end
+                spXScale: begin
+                    shape_3_4.xscl = dInst_1.data2;
+                end
+                spYScale: begin
+                    shape_3_4.yscl = dInst_1.data2;
+                end
+                spZScale: begin
+                    shape_3_4.zscl = dInst_1.data2;
+                end
+                spColor: begin
+                    shape_3_4.col = dInst_1.data2;
+                end
+                spMaterial: begin
+                    shape_3_4.mat = dInst_1.data2[1:0];
+                end
+                spType: begin
+                    shape_3_4.sType = ShapeType'(dInst_1.data2[3:0]);
+                end
+            endcase
         end
     end
 

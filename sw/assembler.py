@@ -145,6 +145,7 @@ shape_props = PropList([
     "zscl",
     ["col", "i"],
     ["mat", "i"],
+    ["type", "i"],
 ])
 
 
@@ -218,15 +219,6 @@ def parse_line(ln: str, ln_num: int, hex: bool) -> str:
         instr.set_range(8, 3, idx.bin)
         instr.set_range(15, 11, prop["bit_array"].bin)
         instr.set_range(31, 16, data.bin)
-    elif cmd == "spi":
-        if len(args) != 2: syntax_err()
-        idx = parse_int(args[0], length=19)
-        tp = parse_int(args[1], length=5)
-
-        instr.set_range(2, 0, "100")
-        instr.set_range(5, 3, idx.bin[::-1][2::-1])
-        instr.set_range(10, 6, tp.bin)
-        instr.set_range(31, 16, idx.bin[::-1][18:2:-1])
     elif cmd == "sp" or cmd == "tr":
         if len(args) != 5: syntax_err()
 

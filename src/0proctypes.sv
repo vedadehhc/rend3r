@@ -123,14 +123,15 @@ package proctypes;
         spYScale      = 5'd9,
         spZScale      = 5'd10,
         spColor       = 5'd11,
-        spMaterial    = 5'd12
+        spMaterial    = 5'd12,
+        spType        = 5'd13
     } ShapeProperty;
 
-    typedef enum logic[4:0] { 
-        stOff         = 5'd0,
-        stSphere      = 5'd1,
-        stCylinder    = 5'd2,
-        stCone        = 5'd3
+    typedef enum logic[3:0] { 
+        stOff         = 4'd0,
+        stSphere      = 4'd1,
+        stCylinder    = 4'd2,
+        stCone        = 4'd3
     } ShapeType;
     
     // Triangle properties
@@ -213,12 +214,14 @@ package proctypes;
         float16         z3;
     } Triangle;
     parameter TRIANGLE_WIDTH = $bits(Triangle);
-    parameter NUM_TRIANGLES = 4;
+    parameter NUM_TRIANGLES = 1024;
     parameter TRIANGLE_ADDR_WIDTH = $clog2(NUM_TRIANGLES);
-    typedef logic[2-1:0] TriangleAddr;
+    typedef logic[TRIANGLE_ADDR_WIDTH-1:0] TriangleAddr;
 
     typedef struct packed {
         ShapeType       sType;
+        logic [15:0]    col;
+        logic [1:0]     mat;
         float16         xloc;
         float16         yloc;
         float16         zloc;
@@ -229,13 +232,11 @@ package proctypes;
         float16         xscl;
         float16         yscl;
         float16         zscl;
-        logic [15:0]    col;
-        logic [1:0]     mat;
     } Shape;
     parameter SHAPE_WIDTH = $bits(Shape);
-    parameter NUM_SHAPES = 1024;
+    parameter NUM_SHAPES = 16;
     parameter SHAPE_ADDR_WIDTH = $clog2(NUM_SHAPES);
-    typedef logic[SHAPE_ADDR_WIDTH-1:0] ShapeAddr;
+    typedef logic[4-1:0] ShapeAddr;
 
     parameter GEOMETRY_WIDTH = (RENDERING_MODE == renderRasterization) ? TRIANGLE_WIDTH : SHAPE_WIDTH;
     parameter GEOMETRY_DEPTH = (RENDERING_MODE == renderRasterization) ? NUM_TRIANGLES  : NUM_SHAPES;
@@ -248,4 +249,12 @@ package proctypes;
     parameter NUM_INSTRUCTIONS = 1024;
     parameter NUM_INSTRUCTIONS_WIDTH = $clog2(NUM_INSTRUCTIONS);
     typedef logic [NUM_INSTRUCTIONS_WIDTH-1:0] InstructionAddr;
+
+    parameter SCREEN_WIDTH = 1024;
+    parameter LOG_SCREEN_WIDTH = $clog2(SCREEN_WIDTH);
+    typedef logic[LOG_SCREEN_WIDTH-1:0] ScreenX;
+    parameter SCREEN_HEIGHT = 768;
+    parameter LOG_SCREEN_HEIGHT = $clog2(SCREEN_HEIGHT);
+    typedef logic[LOG_SCREEN_HEIGHT-1:0] ScreenY;
+
 endpackage
