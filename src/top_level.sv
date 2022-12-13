@@ -82,12 +82,23 @@ module top_level (
       .next_triangle(controller_tri)
   );
 
+
+  tri_3d controller_tri_3d;
+
+  assign controller_tri_3d[0][0] = controller_tri.x1;
+  assign controller_tri_3d[0][1] = controller_tri.y1;
+  assign controller_tri_3d[0][2] = controller_tri.z1;
+  assign controller_tri_3d[1][0] = controller_tri.x2;
+  assign controller_tri_3d[1][1] = controller_tri.y2;
+  assign controller_tri_3d[1][2] = controller_tri.z2;
+  assign controller_tri_3d[2][0] = controller_tri.x3;
+  assign controller_tri_3d[2][1] = controller_tri.y3;
+  assign controller_tri_3d[2][2] = controller_tri.z3;
+
   logic sys_rst, sys_clk, clk_div_100mhz, clk_div_65mhz, pix_clk;
 
   //vga module generation signals:
-  logic [`FRAME_COORD_BITS-1:0]
-      hcount_pix_clk,
-      hcount, vcount_pix_clk, vcount;
+  logic [`FRAME_COORD_BITS-1:0] hcount_pix_clk, hcount, vcount_pix_clk, vcount;
 
   logic hsync, vsync, blank, vga_pause;  //control signals for vga
 
@@ -272,10 +283,10 @@ module top_level (
   end
 
   assign pixel_write_enable = 1'b1;
-  
+
   logic is_within;
 
-  triangle_2d_fill tfill_a ( // 3
+  triangle_2d_fill tfill_a (  // 3
       .rst(sys_rst),
       .clk(sys_clk),
       .hcount(hcount),
@@ -287,7 +298,7 @@ module top_level (
   logic [`PADDED_COLOR_WIDTH-1:0] triangle_color_piped;
 
   pipe #(
-      .LENGTH(57), // 53 (proj+ndc+rast) + 4 (fill)
+      .LENGTH(57),  // 53 (proj+ndc+rast) + 4 (fill)
       .WIDTH (16)
   ) triangle_color_pipe (
       .clk(sys_clk),
@@ -317,7 +328,7 @@ module top_level (
 
     end else begin
 
-      tfill_in <= rast_tri; // 1
+      tfill_in <= rast_tri;  // 1
 
       if (hcount == `FRAME_WIDTH - 1) begin
         hcount <= 0;
@@ -335,9 +346,9 @@ module top_level (
 
   assign vga_pixel = pixel_read_pix_clk;
 
-  assign vga_r  = ~blank ? vga_pixel[11:8] : 0;
-  assign vga_g  = ~blank ? vga_pixel[7:4] : 0;
-  assign vga_b  = ~blank ? vga_pixel[3:0] : 0;
+  assign vga_r = ~blank ? vga_pixel[11:8] : 0;
+  assign vga_g = ~blank ? vga_pixel[7:4] : 0;
+  assign vga_b = ~blank ? vga_pixel[3:0] : 0;
 
   assign vga_hs = ~hsync;
   assign vga_vs = ~vsync;
