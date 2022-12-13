@@ -103,15 +103,15 @@ module old_top_level (
   );
 
   tri_3d controller_tri_3d;
-  controller_tri_3d[0][0] = controller_tri.x1;
-  controller_tri_3d[0][1] = controller_tri.y1;
-  controller_tri_3d[0][2] = controller_tri.z1;
-  controller_tri_3d[1][0] = controller_tri.x2;
-  controller_tri_3d[1][1] = controller_tri.y2;
-  controller_tri_3d[1][2] = controller_tri.z2;
-  controller_tri_3d[2][0] = controller_tri.x3;
-  controller_tri_3d[2][1] = controller_tri.y3;
-  controller_tri_3d[2][2] = controller_tri.z3;
+  assign controller_tri_3d[0][0] = controller_tri.x1;
+  assign controller_tri_3d[0][1] = controller_tri.y1;
+  assign controller_tri_3d[0][2] = controller_tri.z1;
+  assign controller_tri_3d[1][0] = controller_tri.x2;
+  assign controller_tri_3d[1][1] = controller_tri.y2;
+  assign controller_tri_3d[1][2] = controller_tri.z2;
+  assign controller_tri_3d[2][0] = controller_tri.x3;
+  assign controller_tri_3d[2][1] = controller_tri.y3;
+  assign controller_tri_3d[2][2] = controller_tri.z3;
 
 
   logic dram_init_complete, dram_init_complete_pix_clk, dram_init_complete_dui_clk;
