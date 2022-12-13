@@ -234,7 +234,7 @@ package proctypes;
         float16         zscl;
     } Shape;
     parameter SHAPE_WIDTH = $bits(Shape);
-    parameter NUM_SHAPES = 16;
+    parameter NUM_SHAPES = 2;
     parameter SHAPE_ADDR_WIDTH = $clog2(NUM_SHAPES);
     typedef logic[SHAPE_ADDR_WIDTH-1:0] ShapeAddr;
 

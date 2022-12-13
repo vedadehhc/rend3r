@@ -1,0 +1,9 @@
+nr
+cam xloc, 0
+cam yloc, 0
+cam zloc, 0
+sp 0, xloc, yloc, 0, 0
+sp 0, zloc, type, -2, 1
+nf
+er
+er 
