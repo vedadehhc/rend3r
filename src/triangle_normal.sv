@@ -1,3 +1,5 @@
+`default_nettype none
+import types::*;
 module triangle_normal (
     input wire clk,
     input wire rst,
@@ -116,7 +118,7 @@ module multiply_sub (
       .m_axis_result_tdata (mul_a_out)     // output wire [15 : 0] m_axis_result_tdata
   );
 
-  float_multiply mul_a (
+  float_multiply mul_b (
       .aclk                (clk),          // input wire aclk
       .s_axis_a_tvalid     (input_valid),  // input wire s_axis_a_tvalid
       .s_axis_b_tvalid     (input_valid),  // input wire s_axis_b_tvalid
@@ -140,6 +142,7 @@ module multiply_sub (
 
 
 endmodule
+`default_nettype wire
 
 // Begin Function CalculateSurfaceNormal (Input Triangle) Returns Vector
 

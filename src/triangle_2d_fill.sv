@@ -1,3 +1,6 @@
+`default_nettype none
+import types::*;
+
 module triangle_2d_fill (
     input wire clk,
     input wire rst,
@@ -103,3 +106,4 @@ module planar_sign (
 
   //   assign sign = ip1 - ip2;
 endmodule
+`default_nettype wire

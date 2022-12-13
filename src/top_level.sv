@@ -10,17 +10,18 @@
 `define PIXEL_BUFFER_SIZE `CACHE_BLOCK_BITS / 16
 `define PIXEL_BUFFER_ADDR_BITS $clog2(`PIXEL_BUFFER_SIZE)
 `define DRAM_ADDR_BITS 27
-`define FRAME_WIDTH 1024
-`define FRAME_HEIGHT 768
+
+// to change res, need to change here, change in vga, change decimal vals for canvas
+`define FRAME_WIDTH 800
+`define FRAME_HEIGHT 600
 `define COLOR_WIDTH 12
 `define FRAME_WIDTH_BITS 11
 `define FRAME_HEIGHT_BITS 11
-`define MAX_HCOUNT 1344
 
 import types::*;
 import proctypes::*;
 
-module old_top_level (
+module top_level (
     input wire clk_100mhz,
     input wire [15:0] sw,
     input wire btnc,
@@ -413,16 +414,21 @@ module old_top_level (
   vec2_f16 screen_pt, ndc_pt;
 
   localparam ONE = 16'h3C00;
-  localparam TWO = 16'h4000;
-  localparam FIVE_TWELVE = 16'h6000;  // 512
+  // localparam TWO = 16'h4000;
 
-  localparam TEN_TWENTY_FOUR = 16'h6400;  // 1024
-  localparam SEVEN_SIXTY_EIGHT = 16'h6200;  // 768
+  // localparam FLOAT_FRAME_WIDTH = 16'h6400;  // 1024
+  // localparam FLOAT_FRAME_HEIGHT = 16'h6200;  // 768
+  
+  // localparam FLOAT_FRAME_WIDTH = 16'h6100;  // 640
+  // localparam FLOAT_FRAME_HEIGHT = 16'h5F80;  // 480
+  
+  localparam FLOAT_FRAME_WIDTH = 16'h6240;  // 800
+  localparam FLOAT_FRAME_HEIGHT = 16'h60B0;  // 600
 
   view camera;
   logic [31:0] seven_seg_val;
 
-  triangle_3d_to_2d t23 (
+  triangle_3d_to_2d t23 ( // 53 stages
       .clk(sys_clk),
       .rst(sys_rst),
       .camera(camera),
@@ -567,8 +573,8 @@ module old_top_level (
       camera.canvas_dimensions[0] <= TEN;
       camera.canvas_dimensions[1] <= TEN;
 
-      camera.image_dimensions[0] <= TEN_TWENTY_FOUR;
-      camera.image_dimensions[1] <= SEVEN_SIXTY_EIGHT;
+      camera.image_dimensions[0] <= FLOAT_FRAME_WIDTH;
+      camera.image_dimensions[1] <= FLOAT_FRAME_HEIGHT;
 
     end else begin
       // if (sub_small_valid) begin
