@@ -1,7 +1,7 @@
 `default_nettype none
 import types::*;
 
-module triangle_3d_to_2d (
+module triangle_3d_to_2d ( // 53
     input wire clk,
     input wire rst,
     input wire view camera,
@@ -15,7 +15,7 @@ module triangle_3d_to_2d (
 
   assign triangle_2d_valid = v1_valid && v2_valid && v3_valid;
 
-  vertex_3d_to_2d v1 (
+  vertex_3d_to_2d v1 ( // 53
       .clk(clk),
       .rst(rst),
       .camera(camera),
@@ -25,7 +25,7 @@ module triangle_3d_to_2d (
       .rast_pt_valid(v1_valid)
   );
 
-  vertex_3d_to_2d v2 (
+  vertex_3d_to_2d v2 ( // 53
       .clk(clk),
       .rst(rst),
       .camera(camera),
@@ -35,7 +35,7 @@ module triangle_3d_to_2d (
       .rast_pt_valid(v2_valid)
   );
 
-  vertex_3d_to_2d v3 (
+  vertex_3d_to_2d v3 ( // 53
       .clk(clk),
       .rst(rst),
       .camera(camera),
@@ -48,7 +48,7 @@ module triangle_3d_to_2d (
 endmodule
 
 
-module vertex_3d_to_2d (
+module vertex_3d_to_2d ( // 53
     input wire clk,
     input wire rst,
     input wire view camera,
@@ -61,7 +61,7 @@ module vertex_3d_to_2d (
   logic screen_pt_valid, ndc_pt_valid;
   vec2_f16 screen_pt, ndc_pt;
 
-  vertex_project v_p (
+  vertex_project v_p ( // 11
       .clk(clk),
       .rst(rst),
       .cam_near_clip(camera.near_clip),
@@ -71,7 +71,7 @@ module vertex_3d_to_2d (
       .screen_pt_valid(screen_pt_valid)
   );
 
-  vertex_ndc_map v_ndc_m (
+  vertex_ndc_map v_ndc_m ( // 23
       .clk(clk),
       .rst(rst),
       .screen_pt(screen_pt),
@@ -81,7 +81,7 @@ module vertex_3d_to_2d (
       .ndc_pt_valid(ndc_pt_valid)
   );
 
-  vertex_rasterize v_r (
+  vertex_rasterize v_r ( // 19
       .clk(clk),
       .rst(rst),
       .input_valid(ndc_pt_valid),

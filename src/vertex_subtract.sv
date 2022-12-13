@@ -1,3 +1,6 @@
+`default_nettype none
+import types::*;
+
 module vertex_add_sub (
     input wire clk,
     input wire rst,
@@ -24,7 +27,7 @@ module vertex_add_sub (
   assign v_out[1] = o2;
   assign v_out[2] = o3;
 
-  assign normal_valid = o1_valid && o2_valid && o3_valid;
+  assign output_valid = o1_valid && o2_valid && o3_valid;
 
   float_add_sub add_sub1 (
       .aclk(clk),  // input wire aclk
@@ -63,3 +66,4 @@ module vertex_add_sub (
   );
 
 endmodule
+`default_nettype wire

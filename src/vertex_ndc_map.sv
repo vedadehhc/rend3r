@@ -1,8 +1,8 @@
-// `default_nettype none
+`default_nettype none
 
 import types::*;
 
-module vertex_ndc_map (
+module vertex_ndc_map ( // 23
     input wire clk,
     input wire rst,
     input wire vec2_f16 screen_pt,
@@ -30,7 +30,7 @@ module vertex_ndc_map (
   assign ndc_x = map_x_out;
   assign ndc_y = map_y_out;
 
-  coord_map map_x (
+  coord_map map_x ( // 23
       .clk(clk),
       .rst(rst),
       .input_valid(input_valid),
@@ -40,7 +40,7 @@ module vertex_ndc_map (
       .output_valid(map_x_valid)
   );
 
-  coord_map map_y (
+  coord_map map_y ( // 23
       .clk(clk),
       .rst(rst),
       .input_valid(input_valid),
@@ -52,12 +52,12 @@ module vertex_ndc_map (
 
 endmodule
 
-module coord_map (
+module coord_map ( // 23
     input wire clk,
     input wire rst,
     input wire input_valid,
-    input f16 coord,
-    input f16 dimension_extent,
+    input wire f16 coord,
+    input wire f16 dimension_extent,
     output f16 ndc_coord,
     output logic output_valid
 );
@@ -70,7 +70,7 @@ module coord_map (
   assign ndc_coord = add_out;
   assign output_valid = add_valid;
 
-  float_divide f_div (
+  float_divide f_div ( // 15
       .aclk                (clk),               // input wire aclk
       .s_axis_a_tvalid     (input_valid),       // input wire s_axis_a_tvalid
       .s_axis_b_tvalid     (input_valid),       // input wire s_axis_b_tvalid
@@ -80,7 +80,7 @@ module coord_map (
       .m_axis_result_tdata (div_out)            // output wire [15 : 0] m_axis_result_tdata
   );
 
-  float_add_sub f_add (
+  float_add_sub f_add ( // 8
       .aclk(clk),  // input wire aclk
       .s_axis_a_tvalid(div_valid),  // input wire s_axis_a_tvalid
       .s_axis_a_tdata(div_out),  // input wire [15 : 0] s_axis_a_tdata
@@ -93,4 +93,4 @@ module coord_map (
   );
 
 endmodule
-// `default_nettype wire
+`default_nettype wire

@@ -1,7 +1,7 @@
 `default_nettype none
 import types::*;
 
-module vertex_rasterize (
+module vertex_rasterize ( // 19
     input wire clk,
     input wire rst,
     input wire input_valid,
@@ -17,6 +17,7 @@ module vertex_rasterize (
   f16 ndc_x, ndc_x_delayed, ndc_y, z_dist, sub_out, image_width, image_height;
   logic sub_valid, input_valid_delayed, rast_x_valid, rast_y_valid, rast_valid_delayed, fx13_valid;
   fx13 fx13_out;
+  i16 rast_x, rast_y, rast_z;
 
   assign ndc_x = ndc_pt[0];
   assign ndc_y = ndc_pt[1];
@@ -30,10 +31,9 @@ module vertex_rasterize (
   assign rast_pt[1] = rast_y;
   assign rast_pt[2] = rast_z;
 
-  i16 rast_x, rast_y, rast_z;
 
-  pipe #(
-      .LENGTH(6),
+  pipe #( // 8
+      .LENGTH(8),
       .WIDTH(16)
   ) ndc_x_pipe (
       .clk(clk),
@@ -42,8 +42,8 @@ module vertex_rasterize (
       .out(ndc_x_delayed)
   );
 
-  pipe #(
-      .LENGTH(6)
+  pipe #( // 8
+      .LENGTH(8)
   ) input_valid_pipe (
       .clk(clk),
       .rst(rst),
@@ -51,7 +51,7 @@ module vertex_rasterize (
       .out(input_valid_delayed)
   );
 
-  float_add_sub f_sub (
+  float_add_sub f_sub ( // 8
       .aclk(clk),  // input wire aclk
       .s_axis_a_tvalid(1'b1),  // input wire s_axis_a_tvalid
       .s_axis_a_tdata(ONE),  // input wire [15 : 0] s_axis_a_tdata
@@ -63,7 +63,7 @@ module vertex_rasterize (
       .m_axis_result_tdata(sub_out)  // output wire [15 : 0] m_axis_result_tdata
   );
 
-  coord_rast x_rast (
+  coord_rast x_rast ( // 11
       .clk(clk),
       .rst(rst),
       .input_valid(input_valid_delayed),
@@ -73,7 +73,7 @@ module vertex_rasterize (
       .output_valid(rast_x_valid)
   );
 
-  coord_rast y_rast (
+  coord_rast y_rast ( // 11
       .clk(clk),
       .rst(rst),
       .input_valid(sub_valid),
@@ -83,16 +83,7 @@ module vertex_rasterize (
       .output_valid(rast_y_valid)
   );
 
-//   ila_rast ila (
-//       .clk(clk),
-//       .probe0(rast_x_valid),
-//       .probe1(input_valid_delayed),
-//       .probe2(ndc_x_delayed),
-//       .probe3(ndc_x),
-//       .probe4(rast_x)
-//   );
-
-  float_to_fixed13 z_to_fx13 (
+  float_to_fixed13 z_to_fx13 ( // 5
       .aclk                (clk),          // input wire aclk
       .s_axis_a_tvalid     (input_valid),  // input wire s_axis_a_tvalid
       .s_axis_a_tdata      ({~z_dist[15], z_dist[14:0]}),       // input wire [15 : 0] s_axis_a_tdata
@@ -112,7 +103,7 @@ module vertex_rasterize (
 
 endmodule
 
-module coord_rast (
+module coord_rast ( // 11
     input wire clk,
     input wire rst,
     input wire input_valid,
@@ -134,7 +125,7 @@ module coord_rast (
   //   assign rast_coord  = fx13_out[12] ? -coord_i16 : coord_i16;
   assign rast_coord   = fx13_out;
 
-  float_multiply f_mul (
+  float_multiply f_mul ( // 6
       .aclk                (clk),               // input wire aclk
       .s_axis_a_tvalid     (input_valid),       // input wire s_axis_a_tvalid
       .s_axis_b_tvalid     (input_valid),       // input wire s_axis_b_tvalid
@@ -144,7 +135,7 @@ module coord_rast (
       .m_axis_result_tdata (mul_out)            // output wire [15 : 0] m_axis_result_tdata
   );
 
-  float_to_fixed13 f_to_fx13 (
+  float_to_fixed13 f_to_fx13 ( // 5
       .aclk                (clk),         // input wire aclk
       .s_axis_a_tvalid     (mul_valid),   // input wire s_axis_a_tvalid
       .s_axis_a_tdata      (mul_out),     // input wire [15 : 0] s_axis_a_tdata

@@ -1,7 +1,7 @@
 `default_nettype none
 import types::*;
 
-module top_level (
+module vertex_top_level (
     input wire clk_100mhz,
     input wire [15:0] sw,
     input wire btnc,

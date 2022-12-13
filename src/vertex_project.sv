@@ -1,7 +1,7 @@
 `default_nettype none
-// import types::*;
+import types::*;
 
-module vertex_project (
+module vertex_project ( // 11
     input wire clk,
     input wire rst,
     input wire f16 cam_near_clip,
@@ -28,7 +28,7 @@ module vertex_project (
   assign screen_x = zd_x_out;
   assign screen_y = zd_y_out;
 
-  z_divide zd_x (
+  z_divide zd_x ( // 11
       .clk(clk),
       .rst(rst),
       .cam_near_clip(cam_near_clip),
@@ -39,7 +39,7 @@ module vertex_project (
       .output_valid(zd_x_valid)
   );
 
-  z_divide zd_y (
+  z_divide zd_y ( // 11
       .clk(clk),
       .rst(rst),
       .cam_near_clip(cam_near_clip),
@@ -50,24 +50,10 @@ module vertex_project (
       .output_valid(zd_y_valid)
   );
 
-  // always_ff @(posedge clk) begin
-  //   if (rst) begin
-  //     screen_x <= 0;
-  //     screen_y <= 0;
-  //   end else begin
-  //     if (zd_x_valid) begin
-  //       screen_x <= zd_x_out;
-  //     end
-  //     if (zd_y_valid) begin
-  //       screen_y <= zd_y_out;
-  //     end
-  //   end
-  // end
-
 
 endmodule
 
-module z_divide (
+module z_divide ( // 11
     input  wire  clk,
     input  wire  rst,
     input  wire f16   cam_near_clip,
@@ -84,7 +70,7 @@ module z_divide (
   assign output_valid = mul_valid;
   assign screen_coord = mul_out;
 
-  float_divide f_div (
+  float_divide f_div ( // 5
       .aclk                (clk),                    // input wire aclk
       .s_axis_a_tvalid     (input_valid),                   // input wire s_axis_a_tvalid
       .s_axis_b_tvalid     (input_valid),                   // input wire s_axis_b_tvalid
@@ -94,7 +80,7 @@ module z_divide (
       .m_axis_result_tdata (div_out)                 // output wire [15 : 0] m_axis_result_tdata
   );
 
-  float_multiply f_mul (
+  float_multiply f_mul ( // 6
       .aclk                (clk),           // input wire aclk
       .s_axis_a_tvalid     (div_valid),           // input wire s_axis_a_tvalid
       .s_axis_b_tvalid     (input_valid),           // input wire s_axis_b_tvalid
@@ -104,15 +90,6 @@ module z_divide (
       .m_axis_result_tdata (mul_out)         // output wire [15 : 0] m_axis_result_tdata
   );
 
-  // always_ff @(posedge clk) begin
-  //   if (rst) begin
-  //     mul_in <= 0;
-  //   end else begin
-  //     if (div_valid) begin
-  //       mul_in <= div_out;
-  //     end
-  //   end
-  // end
 
 endmodule
 `default_nettype wire

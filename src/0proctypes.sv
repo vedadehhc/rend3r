@@ -214,7 +214,7 @@ package proctypes;
         float16         z3;
     } Triangle;
     parameter TRIANGLE_WIDTH = $bits(Triangle);
-    parameter NUM_TRIANGLES = 1024;
+    parameter NUM_TRIANGLES = 2048;
     parameter TRIANGLE_ADDR_WIDTH = $clog2(NUM_TRIANGLES);
     typedef logic[TRIANGLE_ADDR_WIDTH-1:0] TriangleAddr;
 
@@ -246,7 +246,7 @@ package proctypes;
     parameter INSTRUCTION_WIDTH = 32;
     typedef logic [INSTRUCTION_WIDTH-1:0] Instruction;
     parameter DECODED_INSTRUCTION_WIDTH = $bits(DecodedInst);
-    parameter NUM_INSTRUCTIONS = 1024;
+    parameter NUM_INSTRUCTIONS = 16384;
     parameter NUM_INSTRUCTIONS_WIDTH = $clog2(NUM_INSTRUCTIONS);
     typedef logic [NUM_INSTRUCTIONS_WIDTH-1:0] InstructionAddr;
 
