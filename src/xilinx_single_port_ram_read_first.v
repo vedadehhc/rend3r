@@ -98,5 +98,3 @@ endmodule
     .douta(douta)      // RAM output data, width determined from RAM_WIDTH
   );
 */
-						
-						

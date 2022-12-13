@@ -38,6 +38,7 @@ module iprocessor (
 
     InstructionAddr decode_pc;
     assign pc_debug = decode_pc;
+    
     parser decode (
         .clk(clk_100mhz),
         .rst(rst),
@@ -53,7 +54,6 @@ module iprocessor (
     logic exec_stall;
     logic stall;
     assign stall = exec_stall || (step_mode && !next_step);
-
 
     execute exec (
         .clk_100mhz(clk_100mhz),

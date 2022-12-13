@@ -195,7 +195,7 @@ package proctypes;
         float16         intensity;
     } Light;
     parameter LIGHT_WIDTH = $bits(Light);
-    parameter NUM_LIGHTS = 8;
+    parameter NUM_LIGHTS = 2;
     parameter LIGHT_ADDR_WIDTH = $clog2(NUM_LIGHTS);
     typedef logic[LIGHT_ADDR_WIDTH-1:0] LightAddr;
     
@@ -246,15 +246,24 @@ package proctypes;
     parameter INSTRUCTION_WIDTH = 32;
     typedef logic [INSTRUCTION_WIDTH-1:0] Instruction;
     parameter DECODED_INSTRUCTION_WIDTH = $bits(DecodedInst);
+    
     parameter NUM_INSTRUCTIONS = 32;
     parameter NUM_INSTRUCTIONS_WIDTH = $clog2(NUM_INSTRUCTIONS);
     typedef logic [NUM_INSTRUCTIONS_WIDTH-1:0] InstructionAddr;
 
-    parameter SCREEN_WIDTH = 1024;
+    parameter SCREEN_WIDTH = 512;
     parameter LOG_SCREEN_WIDTH = $clog2(SCREEN_WIDTH);
     typedef logic[LOG_SCREEN_WIDTH-1:0] ScreenX;
-    parameter SCREEN_HEIGHT = 768;
+    parameter SCREEN_HEIGHT = 384;
     parameter LOG_SCREEN_HEIGHT = $clog2(SCREEN_HEIGHT);
     typedef logic[LOG_SCREEN_HEIGHT-1:0] ScreenY;
+
+    // 10 x 7.5 camera screen in worldspace
+    parameter ONE_OVER_512 = 16'h1800;
+    parameter CAMERA_PIXEL_SIZE = 16'h2500;
+
+    parameter CAMERA_TOP_LEFT_DIR_X = 16'hC4FD;
+    parameter CAMERA_TOP_LEFT_DIR_Y = 16'hC37B;
+    parameter CAMERA_TOP_LEFT_DIR_Z = 16'h3C00;
 
 endpackage

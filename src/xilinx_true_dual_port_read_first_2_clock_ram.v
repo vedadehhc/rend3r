@@ -145,4 +145,3 @@ endmodule
     .doutb(doutb)    // Port B RAM output data, width determined from RAM_WIDTH
   );
 */
-

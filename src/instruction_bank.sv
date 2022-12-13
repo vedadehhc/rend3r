@@ -24,7 +24,6 @@ module instruction_bank (
     // all 0 = end render/invalid UNLESS it is SD. 
     // So, we need feedback from decode if the previous inst was SE
     assign canDequeue = (action == fetchDequeue) && (instruction_out != {(INSTRUCTION_WIDTH){1'b0}} || dIType == opShapeSet);
-    
     logic redirect_to_1;
     assign redirect_to_1 = (instruction_out == {21'b0, 2'b11, 6'b0, 3'b0}) && dIType != opShapeSet;
 

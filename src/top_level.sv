@@ -250,7 +250,6 @@ module top_level (
       end
 
       seven_seg_val = {controller_tri.x3, controller_tri.col[15:14], controller_tri.col[1:0], 3'b0, pc_debug, 3'b0, rast_tri_addr};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
-
     end
   end
 
