@@ -14,7 +14,7 @@ module raytracing_controller(
     input Camera cur_camera,
     input wire fin_raycast_valid,
     input wire fin_raycast_hit,
-    input float16 fin_raycast_sq_distance,
+    input wire float16 fin_raycast_sq_distance,
     input vec3 fin_raycast_intersection,
     output logic busy,
     output ShapeAddr cur_shape_addr,
