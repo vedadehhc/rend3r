@@ -27,10 +27,10 @@ def write_triangle(f: TextIOWrapper, idx: int, vertices: list[float], color: str
         f.write(f'tr {idx}, {labels[i]}, {labels[i+1]}, {vertices[i]}, {vertices[i+1]}\n')
 
 def generate_sphere(f: TextIOWrapper):
-    center = [0, 0, -2.5]
+    center = [0, 0, -1.5]
     rad = 1
-    NUM_PHI = 20
-    NUM_THETA = 30
+    NUM_PHI = 5
+    NUM_THETA = 5
 
     top = [center[0], center[1], center[2] + rad]
     bot = [center[0], center[1], center[2] - rad]
