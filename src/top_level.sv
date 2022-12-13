@@ -41,12 +41,21 @@ module top_level (
 
 );
 
+  logic step_by_step = sw[0];
+  logic btn_clk = c_btnu;
+
+  assign led[0] = btn_clk;
+  assign led[1] = mem_ready;
+  assign led[2] = rast_busy;
+
+
   logic execInst_valid;
   DecodedInst execInst;
   logic mem_ready;
   Camera cur_camera;
   Light cur_light;
   logic [GEOMETRY_WIDTH-1:0] cur_geo;
+  InstructionAddr pc_debug;
   iprocessor processor (
       .clk_100mhz(sys_clk),
       .rst(sys_rst),
@@ -58,7 +67,8 @@ module top_level (
       .mem_ready(mem_ready),
       .cur_camera(cur_camera),
       .cur_light(cur_light),
-      .cur_geo(cur_geo)
+      .cur_geo(cur_geo),
+      .pc_debug(pc_debug)
   );
 
   // rasterization controller 
@@ -82,6 +92,9 @@ module top_level (
       .next_triangle(controller_tri)
   );
 
+  assign led[15] = controller_tri_valid;
+
+
   logic sys_rst, sys_clk, clk_div_100mhz, clk_div_65mhz, pix_clk;
 
   //vga module generation signals:
@@ -100,7 +113,7 @@ module top_level (
       .clk_out_65(clk_div_65mhz)
   );
 
-  assign sys_clk = clk_div_100mhz;
+  assign sys_clk = step_by_step ? btn_clk : clk_div_100mhz;
   assign pix_clk = clk_div_65mhz;
 
   vga vga_gen (
@@ -231,7 +244,7 @@ module top_level (
         coord_index = 2'd0;
       end
 
-      seven_seg_val = rast_tri_addr;// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
+      seven_seg_val = {controller_tri.x3, controller_tri.col[15:14], controller_tri.col[1:0], 3'b0, pc_debug, 3'b0, rast_tri_addr};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
 
     end
   end
