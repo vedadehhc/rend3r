@@ -27,6 +27,7 @@ module raytracing_controller(
     output quaternion next_raycast_shape_rot,
     output vec3 next_raycast_shape_scale_inv
 );
+// camera at origin, pointing in negative z
 
     typedef enum { WAITING, INITIAL, FINISHED_INITIAL, LIGHTING, FINISHED_LIGHTING } raytrace_state;
     raytrace_state state;

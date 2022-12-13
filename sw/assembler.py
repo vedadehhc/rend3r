@@ -12,7 +12,6 @@ options:
 TODO:
     REWORK REGISTERS BASED ON NEW ISA
     generate dump file (instruction/binary side-by-side)
-    auto-sort intra-frame instructions
 """
 
 class RenderSyntaxException(Exception):
@@ -78,6 +77,8 @@ def syntax_err():
 
 # return n-bit BitArray
 def parse_int(num: str, length: int = 16) -> BitArray:
+    num = num.replace('_', '')
+    
     if len(num) > 2 and num[0:2] == "0x":
         # hex
         try: return BitArray(int=int(num, 16), length=length)
@@ -294,7 +295,7 @@ def main():
     if dst is None:
         dst = f"{src[::-1].split('.', 1)[1][::-1]}.{'hex' if hex else 'bin'}"
     
-    print("Reading from ", src)
+    print("Reading from", src)
     print("Writing to", dst)
     assemble(src, dst, hex)
 
