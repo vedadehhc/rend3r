@@ -368,7 +368,6 @@ module old_top_level (
   view camera;
   logic [31:0] seven_seg_val;
 
-
   triangle_3d_to_2d t23 (
       .clk(sys_clk),
       .rst(sys_rst),
@@ -434,53 +433,53 @@ module old_top_level (
   localparam TEN = 'h4900;
   localparam HUNDRED = 'h5640;
 
-  float_add_sub f_sub_small (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnl),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnl),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnl),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(sub_small_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(sub_small_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
+  // float_add_sub f_sub_small (
+  //     .aclk(sys_clk),  // input wire aclk
+  //     .s_axis_a_tvalid(p_btnl),  // input wire s_axis_a_tvalid
+  //     .s_axis_b_tvalid(p_btnl),  // input wire s_axis_b_tvalid
+  //     .s_axis_operation_tvalid(p_btnl),  // input wire s_axis_operation_tvalid
+  //     .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+  //     .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
+  //     .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
+  //     .m_axis_result_tvalid(sub_small_valid),  // output wire m_axis_result_tvalid
+  //     .m_axis_result_tdata(sub_small_out)  // output wire [15 : 0] m_axis_result_tdata
+  // );
 
-  float_add_sub f_sub_big (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnd),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnd),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnd),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(sub_big_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(sub_big_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
+  // float_add_sub f_sub_big (
+  //     .aclk(sys_clk),  // input wire aclk
+  //     .s_axis_a_tvalid(p_btnd),  // input wire s_axis_a_tvalid
+  //     .s_axis_b_tvalid(p_btnd),  // input wire s_axis_b_tvalid
+  //     .s_axis_operation_tvalid(p_btnd),  // input wire s_axis_operation_tvalid
+  //     .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+  //     .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
+  //     .s_axis_operation_tdata(8'b00000001),  // input wire [7 : 0] s_axis_operation_tdata
+  //     .m_axis_result_tvalid(sub_big_valid),  // output wire m_axis_result_tvalid
+  //     .m_axis_result_tdata(sub_big_out)  // output wire [15 : 0] m_axis_result_tdata
+  // );
 
-  float_add_sub f_add_small (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnr),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnr),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnr),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(add_small_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(add_small_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
+  // float_add_sub f_add_small (
+  //     .aclk(sys_clk),  // input wire aclk
+  //     .s_axis_a_tvalid(p_btnr),  // input wire s_axis_a_tvalid
+  //     .s_axis_b_tvalid(p_btnr),  // input wire s_axis_b_tvalid
+  //     .s_axis_operation_tvalid(p_btnr),  // input wire s_axis_operation_tvalid
+  //     .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+  //     .s_axis_b_tdata(ONE),  // input wire [15 : 0] s_axis_b_tdata
+  //     .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
+  //     .m_axis_result_tvalid(add_small_valid),  // output wire m_axis_result_tvalid
+  //     .m_axis_result_tdata(add_small_out)  // output wire [15 : 0] m_axis_result_tdata
+  // );
 
-  float_add_sub f_add_big (
-      .aclk(sys_clk),  // input wire aclk
-      .s_axis_a_tvalid(p_btnu),  // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid(p_btnu),  // input wire s_axis_b_tvalid
-      .s_axis_operation_tvalid(p_btnu),  // input wire s_axis_operation_tvalid
-      .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
-      .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
-      .m_axis_result_tvalid(add_big_valid),  // output wire m_axis_result_tvalid
-      .m_axis_result_tdata(add_big_out)  // output wire [15 : 0] m_axis_result_tdata
-  );
+  // float_add_sub f_add_big (
+  //     .aclk(sys_clk),  // input wire aclk
+  //     .s_axis_a_tvalid(p_btnu),  // input wire s_axis_a_tvalid
+  //     .s_axis_b_tvalid(p_btnu),  // input wire s_axis_b_tvalid
+  //     .s_axis_operation_tvalid(p_btnu),  // input wire s_axis_operation_tvalid
+  //     .s_axis_a_tdata(cam_tri[vert_index][coord_index]),  // input wire [15 : 0] s_axis_a_tdata
+  //     .s_axis_b_tdata(TWO),  // input wire [15 : 0] s_axis_b_tdata
+  //     .s_axis_operation_tdata(8'b0),  // input wire [7 : 0] s_axis_operation_tdata
+  //     .m_axis_result_tvalid(add_big_valid),  // output wire m_axis_result_tvalid
+  //     .m_axis_result_tdata(add_big_out)  // output wire [15 : 0] m_axis_result_tdata
+  // );
 
   logic [`PIXEL_BUFFER_ADDR_BITS-1:0] pixel_read_buffer_addr, pixel_read_buffer_addr_pix_clk;
   logic [`PIXEL_BUFFER_ADDR_BITS-1:0] pixel_write_buffer_addr;
@@ -490,7 +489,6 @@ module old_top_level (
   logic [`DRAM_ADDR_BITS-1:0] pixel_addr, pixel_addr_pix_clk;
 
   logic [`PIXEL_BUFFER_SIZE-1:0][15:0] pixel_write_buffer;
-
 
 
   assign pixel_addr = `FRAME_WIDTH * vcount + hcount;
@@ -519,15 +517,15 @@ module old_top_level (
       camera.image_dimensions[1] <= SEVEN_SIXTY_EIGHT;
 
     end else begin
-      if (sub_small_valid) begin
-        cam_tri[vert_index][coord_index] <= sub_small_out;
-      end else if (sub_big_valid) begin
-        cam_tri[vert_index][coord_index] <= sub_big_out;
-      end else if (add_small_valid) begin
-        cam_tri[vert_index][coord_index] <= add_small_out;
-      end else if (add_big_valid) begin
-        cam_tri[vert_index][coord_index] <= add_big_out;
-      end
+      // if (sub_small_valid) begin
+      //   cam_tri[vert_index][coord_index] <= sub_small_out;
+      // end else if (sub_big_valid) begin
+      //   cam_tri[vert_index][coord_index] <= sub_big_out;
+      // end else if (add_small_valid) begin
+      //   cam_tri[vert_index][coord_index] <= add_small_out;
+      // end else if (add_big_valid) begin
+      //   cam_tri[vert_index][coord_index] <= add_big_out;
+      // end
     end
   end
 
