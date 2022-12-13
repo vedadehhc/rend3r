@@ -42,9 +42,8 @@ module top_level (
 );
 
   logic step_by_step = sw[0];
-  logic btn_clk = c_btnu;
 
-  assign led[0] = btn_clk;
+  assign led[0] = c_btnu;
   assign led[1] = mem_ready;
   assign led[2] = rast_busy;
 
@@ -59,6 +58,8 @@ module top_level (
   iprocessor processor (
       .clk_100mhz(sys_clk),
       .rst(sys_rst),
+      .step_mode(step_by_step),
+      .next_step(p_btnu),
       .light_read_addr(),
       .geometry_read_addr(rast_tri_addr),
       .controller_busy(rast_busy),
@@ -79,12 +80,15 @@ module top_level (
   logic controller_tri_valid;
   Triangle controller_tri;
 
+  logic step_mem_ready;
+  assign step_mem_ready = mem_ready && (!step_by_step || next_step);
+
   rasterization_controller controller (
       .clk(sys_clk),
       .rst(sys_rst),
       .execInst_valid(execInst_valid),
       .execInst(execInst),
-      .mem_ready(mem_ready),
+      .mem_ready(step_mem_ready),
       .cur_triangle(cur_geo),
       .busy(rast_busy),
       .cur_tri_addr(rast_tri_addr),
@@ -113,7 +117,7 @@ module top_level (
       .clk_out_65(clk_div_65mhz)
   );
 
-  assign sys_clk = step_by_step ? btn_clk : clk_div_100mhz;
+  assign sys_clk = clk_div_100mhz;
   assign pix_clk = clk_div_65mhz;
 
   vga vga_gen (

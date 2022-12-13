@@ -6,6 +6,8 @@ import proctypes::*;
 module iprocessor (
     input wire clk_100mhz,
     input wire rst,
+    input wire step_mode,
+    input wire next_step,
     input wire LightAddr light_read_addr,
     input wire GeometryAddr geometry_read_addr,
     input wire controller_busy,
@@ -48,7 +50,10 @@ module iprocessor (
         .pc_out(decode_pc)
     );
 
+    logic exec_stall;
     logic stall;
+    assign stall = exec_stall || (step_mode && !next_step);
+
 
     execute exec (
         .clk_100mhz(clk_100mhz),
@@ -59,7 +64,7 @@ module iprocessor (
         .controller_busy(controller_busy),
         .light_read_addr(light_read_addr),
         .geometry_read_addr(geometry_read_addr),
-        .stall(stall),
+        .stall(exec_stall),
         .dInst_valid_out(execInst_valid),
         .dInst_out(execInst),
         .memory_ready(mem_ready),
