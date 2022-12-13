@@ -8,3 +8,4 @@
   - multiply: 6
   - sqrt: 15
   - float_to_fixed: 5
+- Replace doubling logic with multiplies
