@@ -14,6 +14,7 @@ module raytracing_controller(
     input Shape cur_shape,
     input Light cur_light,
     input Camera cur_camera,
+    input logic [15:0] pixel_background,
     output logic busy,
     output ShapeAddr cur_shape_addr,
     output LightAddr cur_light_addr,
@@ -36,11 +37,17 @@ module raytracing_controller(
     // send all raycasts for single pixel (all initial, then NUM_LIGHTS sets of lighting)
     // pipeline shape along with raycast
 
+    float16 hit_color;
+    vec3 hit_normal;
+
     vec3 light_dir;
     assign light_dir[0] = {~cur_light.xfor[15], cur_light.xfor[14:0]};
     assign light_dir[1] = {~cur_light.yfor[15], cur_light.yfor[14:0]};
     assign light_dir[2] = {~cur_light.zfor[15], cur_light.zfor[14:0]};
     // TODO: light_dir is different for point sources. for now, just assume directional
+
+    // assume only 1 light for now
+    assign cur_light_addr = 0;
     
     vec3 light_src;
 
@@ -107,28 +114,36 @@ module raytracing_controller(
                         shape_cast_valid_in <= 1'b1;
                     end else begin
                         if (shape_cast_valid_out) begin
-                            // TODO: instead move to LIGHTING state when hit
                             if (shape_cast_hit) begin
+                                // move to lighting when hit
                                 light_src[0] <= shape_cast_intersection[0];
                                 light_src[1] <= shape_cast_intersection[1];
                                 light_src[2] <= shape_cast_intersection[2];
-                                cur_light_addr <= 0;
+                                // cur_light_addr <= 0;
                                 sent_command <= 1'b0;
+                                state <= LIGHTING;
+                                hit_color <= shape_cast_hit_shape.col;
+                                hit_normal <= shape_cast_normal;
+                            end else begin
+                                state <= GIVE_OUTPUT;
+                                pixel_value <= pixel_background;
                             end
-                            state <= GIVE_OUTPUT;
-                            pixel_value <= shape_cast_hit ? shape_cast_hit_shape.col : 16'b0;
                         end
                         shape_cast_valid_in <= 1'b0;
                     end
                 end else if (state == LIGHTING) begin
-                    if (valid_light_2 && !sent_command) begin
+                    if (valid_light_1 && !sent_command) begin
                         sent_command <= 1'b1;
                         shape_cast_valid_in <= 1'b1;
                     end else begin
                         shape_cast_valid_in <= 1'b0;
                         if (sent_command) begin
                             if (shape_cast_valid_out) begin
-                                
+                                if (shape_cast_hit) begin
+                                    // no lighting
+                                end else begin
+                                    // yes lighting!
+                                end
                             end
                         end else begin
                             valid_light_1 <= 1'b1;
@@ -180,6 +195,7 @@ module raytracing_controller(
     logic shape_cast_hit;
     vec3 shape_cast_intersection;
     Shape shape_cast_hit_shape;
+    vec3 shape_cast_normal;
 
 
     // calculate raycast direction based on pixel values
@@ -189,14 +205,15 @@ module raytracing_controller(
         .clk(clk),
         .rst(rst),
         .valid_in(shape_cast_valid_in),
-        .src(camera_src),
-        .dir(camera_dir),
+        .src(state == LIGHTING ? light_src : camera_src),
+        .dir(state == LIGHTING ? light_dir : camera_dir),
         .cur_shape(cur_shape),
         .read_shape_addr(cur_shape_addr),
         .valid_out(shape_cast_valid_out),
         .hit(shape_cast_hit),
         .intersection(shape_cast_intersection),
         .hit_shape(shape_cast_hit_shape),
+        .intersection_normal(shape_cast_normal),
         .debug_state(shape_cast_debug_state)
     );
 

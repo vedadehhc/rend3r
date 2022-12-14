@@ -34,7 +34,8 @@ module raycaster#(
     output ShapeAddr shape_addr_out,
     output logic hit,
     output float16 sq_distance,
-    output vec3 intersection
+    output vec3 intersection,
+    output vec3 normal
 );
     // pipeline shape_addr
     parameter TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES + P5_STAGES;
@@ -436,7 +437,6 @@ module raycaster#(
     );
 
     
-    // TODO: normal computation
     /// Phase 5: normal computation
     // 51-stage
     // normal_transform = f(intersection transform) (combinational for conic sections) (1-stage)
@@ -487,55 +487,61 @@ module raycaster#(
         endcase
     end
 
-    // vec3 p5_scale_inv;
-    // generate
-    //     genvar p5_pipe_scale_inv_i;
-    //     for (p5_pipe_scale_inv_i = 0; p5_pipe_scale_inv_i < 3; p5_pipe_scale_inv_i = p5_pipe_scale_inv_i+1) begin
-    //         pipe#(
-    //             .LENGTH(1),
-    //             .WIDTH(16)
-    //         ) pipe_p5_scale_inv (
-    //             .clk(clk),
-    //             .rst(rst),
-    //             .in(p1234_shape_scale_inv[p5_pipe_scale_inv_i]),
-    //             .out(p5_scale_inv[p5_pipe_scale_inv_i])
-    //         )
-    //     end
-    // endgenerate
+    vec3 p5_scale_inv;
+    generate
+        genvar p5_pipe_scale_inv_i;
+        for (p5_pipe_scale_inv_i = 0; p5_pipe_scale_inv_i < 3; p5_pipe_scale_inv_i = p5_pipe_scale_inv_i+1) begin
+            pipe#(
+                .LENGTH(1),
+                .WIDTH(16)
+            ) pipe_p5_scale_inv (
+                .clk(clk),
+                .rst(rst),
+                .in(p1234_shape_scale_inv[p5_pipe_scale_inv_i]),
+                .out(p5_scale_inv[p5_pipe_scale_inv_i])
+            );
+        end
+    endgenerate
 
-    // // Scale - 6 stages    
-    // vec3 p5_scale_normal_transform;
-    // // logic scale_normal_transform_valid;
-    // scale scl_src(
-    //     .clk(clk),
-    //     .rst(rst),
-    //     .valid_in(1'b1),
-    //     .in(p5_normal_transform),
-    //     .scale(p5_scale_inv),
-    //     // .valid_out(scale_rot_trans_src_valid),
-    //     .out(p5_scale_normal_transform)
-    // );
+    // Scale - 6 stages    
+    vec3 p5_scale_normal_transform;
+    // logic scale_normal_transform_valid;
+    scale p5_scl_normal (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(1'b1),
+        .in(p5_normal_transform),
+        .scale(p5_scale_inv),
+        // .valid_out(scale_rot_trans_src_valid),
+        .out(p5_scale_normal_transform)
+    );
 
-    // generate
-    // pipe#(
-    //     .LENGTH(7),
-    //     .WIDTH(64)
-    // ) pipe_p5_rot (
-    //     .clk(clk),
-    //     .rst(rst),
-    //     .in({p4_rot[P4_STAGES-1][0], p4_rot[P4_STAGES-1][1], p4_rot[P4_STAGES-1][2], p4_rot[P4_STAGES-1][3]}),
+    quaternion p5_rot;
+    generate
+        genvar p5_pipe_rot_i;
+        for (p5_pipe_rot_i = 0; p5_pipe_rot_i < 4; p5_pipe_rot_i = p5_pipe_rot_i+1) begin
+            pipe#(
+                .LENGTH(7),
+                .WIDTH(16)
+            ) pipe_p5_rot (
+                .clk(clk),
+                .rst(rst),
+                .in(p4_rot[P4_STAGES-1][p5_pipe_rot_i]),
+                .out(p5_rot[p5_pipe_rot_i])
+            );
+        end
+    endgenerate
 
-    // )
-
-    // // rotate - 44-stages
-    // rotate p5_rotate_normal (
-    //     .clk(clk),
-    //     .rst(rst),
-    //     .valid_in(1'b1),
-    //     .in()
-    //     .rot(),
-
-    // )
+    vec3 p5_normal;
+    // rotate - 44-stages
+    rotate p5_rotate_normal (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(1'b1),
+        .in(p5_scale_normal_transform),
+        .rot(p5_rot),
+        .out(p5_normal)
+    );
 
     logic p5_intersection_valid;
     pipe#(
@@ -601,6 +607,10 @@ module raycaster#(
 
     // Distance should be scaled solution
     // assign valid_out = p5_intersection_valid;
+    assign normal[0] = p5_normal[0];
+    assign normal[1] = p5_normal[1];
+    assign normal[2] = p5_normal[2];
+
     assign hit = p5_hit && (p5_shape_type != stOff);
     assign sq_distance = p5_sq_distance;
 
@@ -624,6 +634,7 @@ module all_shapes_raycaster (
     output logic hit,
     output vec3 intersection,
     output Shape hit_shape,
+    output vec3 intersection_normal,
     output logic[1:0] debug_state
 );
     typedef enum logic[1:0] { IDLE, SENDING, WAITING, TABULATING } all_shape_rc_state;
@@ -723,6 +734,7 @@ module all_shapes_raycaster (
     logic raycast_hit;
     float16 raycast_sq_distance;
     vec3 raycast_intersection;
+    vec3 raycast_normal;
 
     raycaster raycast (
         .clk(clk),
@@ -739,9 +751,9 @@ module all_shapes_raycaster (
         .shape_addr_out(raycast_shape_addr),
         .hit(raycast_hit),
         .sq_distance(raycast_sq_distance),
-        .intersection(raycast_intersection)
+        .intersection(raycast_intersection),
+        .normal(raycast_normal)
     );
-
 
     // 2 stages for compare
     localparam COMPARE_STAGES = 2;
@@ -750,6 +762,7 @@ module all_shapes_raycaster (
     logic p_raycast_hit [COMPARE_STAGES-1:0];
     float16 p_raycast_sq_distance [COMPARE_STAGES-1:0];
     vec3 p_raycast_intersection [COMPARE_STAGES-1:0];
+    vec3 p_raycast_normal [COMPARE_STAGES-1:0];
 
     always_ff @( posedge clk ) begin 
         p_raycast_valid[0] <= raycast_valid;
@@ -757,6 +770,7 @@ module all_shapes_raycaster (
         p_raycast_hit[0] <= raycast_hit;
         p_raycast_sq_distance[0] <= raycast_sq_distance;
         p_raycast_intersection[0] <= raycast_intersection;
+        p_raycast_normal[0] <= raycast_normal;
 
         for (int i = 1; i < COMPARE_STAGES; i = i+1) begin
             p_raycast_valid[i] <= p_raycast_valid[i-1];
@@ -764,6 +778,7 @@ module all_shapes_raycaster (
             p_raycast_hit[i] <= p_raycast_hit[i-1];
             p_raycast_sq_distance[i] <= p_raycast_sq_distance[i-1];
             p_raycast_intersection[i] <= p_raycast_intersection[i-1];
+            p_raycast_normal[i] <= p_raycast_normal[i-1];
         end
     end
 
@@ -784,6 +799,7 @@ module all_shapes_raycaster (
     logic best_valid;
     float16 best_sq_distance;
     vec3 best_intersection;
+    vec3 best_normal;
 
 
     always_ff @( posedge clk ) begin
@@ -802,6 +818,7 @@ module all_shapes_raycaster (
                         best_sq_distance <= p_raycast_sq_distance[COMPARE_STAGES-1];
                         best_shape_addr <= p_raycast_shape_addr[COMPARE_STAGES-1];
                         best_intersection <= p_raycast_intersection[COMPARE_STAGES-1];
+                        best_normal <= p_raycast_normal[COMPARE_STAGES-1];
                     end
                 end
             end
@@ -813,6 +830,7 @@ module all_shapes_raycaster (
     // assign sq_distance = best_sq_distance;
     assign intersection = best_intersection;
     assign hit_shape = cur_shape;
+    assign intersection_normal = best_normal;
 
 endmodule
 

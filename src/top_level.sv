@@ -104,6 +104,7 @@ module top_level (
       .cur_shape(cur_geo),
       .cur_light(cur_light),
       .cur_camera(cur_camera),
+      .pixel_background(sw),
       .busy(ray_busy),
       .cur_shape_addr(ray_shape_addr),
       .cur_light_addr(ray_light_addr),
