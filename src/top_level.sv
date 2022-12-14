@@ -46,7 +46,7 @@ module top_level (
 
   assign led[0] = c_btnu;
   assign led[1] = mem_ready;
-  assign led[2] = rast_busy;
+  assign led[2] = ray_busy;
 
 
   logic execInst_valid;
@@ -111,7 +111,7 @@ module top_level (
       .pixel_value(ray_pixel_out)
   );
 
-  assign led[15] = controller_tri_valid;
+  assign led[15] = ray_valid_out;
 
 
   logic sys_rst, sys_clk, clk_div_100mhz, clk_div_65mhz, pix_clk;
@@ -194,7 +194,7 @@ module top_level (
   );
 
   logic [31:0] seven_seg_val;
-  // assign seven_seg_val = {controller_tri.x3, controller_tri.col[15:14], controller_tri.col[1:0], 3'b0, pc_debug, 3'b0, rast_tri_addr};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
+  assign seven_seg_val = {ray_pixel_out, ray_pixel_y[7:0], ray_pixel_x[3:0], pc_debug};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
 
 
   seven_segment_controller mssc (
