@@ -35,6 +35,14 @@ module raytracing_controller(
     // send all raycasts for single pixel (all initial, then NUM_LIGHTS sets of lighting)
     // pipeline shape along with raycast
 
+    vec3 light_dir;
+    assign light_dir[0] = {~cur_light.xfor[15], cur_light.xfor[14:0]};
+    assign light_dir[1] = {~cur_light.yfor[15], cur_light.yfor[14:0]};
+    assign light_dir[2] = {~cur_light.zfor[15], cur_light.zfor[14:0]};
+
+    logic valid_light_1;
+    logic valid_light_2;
+
     ScreenX pixel_x;
     ScreenY pixel_y;
 
@@ -96,6 +104,13 @@ module raytracing_controller(
                             state <= GIVE_OUTPUT;
                             pixel_value <= shape_cast_hit ? shape_cast_hit_shape.col : 16'b0;
                         end
+                        shape_cast_valid_in <= 1'b0;
+                    end
+                end else if (state == LIGHTING) begin
+                    if (valid_light_2 && !sent_command) begin
+                        sent_command <= 1'b1;
+                        shape_cast_valid_in <= 1'b1;
+                    end else begin
                         shape_cast_valid_in <= 1'b0;
                     end
                 end else if (state == GIVE_OUTPUT) begin

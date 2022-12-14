@@ -154,12 +154,10 @@ module memory_bank_single (
             cpXLocation:    camera_3_4.xloc = dInst_3.data;
             cpYLocation:    camera_3_4.yloc = dInst_3.data;
             cpZLocation:    camera_3_4.zloc = dInst_3.data;
-            cpXForward:     camera_3_4.xfor = dInst_3.data;
-            cpYForward:     camera_3_4.yfor = dInst_3.data;
-            cpZForward:     camera_3_4.zfor = dInst_3.data;
-            cpXUp:          camera_3_4.xup  = dInst_3.data;
-            cpYUp:          camera_3_4.yup  = dInst_3.data;
-            cpZUp:          camera_3_4.zup  = dInst_3.data;
+            cpRRotation:    camera_3_4.rrot = dInst_3.data;
+            cpIRotation:    camera_3_4.irot = dInst_3.data;
+            cpJRotation:    camera_3_4.jrot = dInst_3.data;
+            cpKRotation:    camera_3_4.krot = dInst_3.data;
             cpNearClip:     camera_3_4.nclip= dInst_3.data;
             cpFarClip:      camera_3_4.fclip= dInst_3.data;
             cpFovHor:       camera_3_4.hfov = dInst_3.data;

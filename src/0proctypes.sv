@@ -70,16 +70,14 @@ package proctypes;
         cpXLocation   = 5'd1,
         cpYLocation   = 5'd2,
         cpZLocation   = 5'd3,
-        cpXForward    = 5'd4,
-        cpYForward    = 5'd5,
-        cpZForward    = 5'd6,
-        cpXUp         = 5'd7,
-        cpYUp         = 5'd8,
-        cpZUp         = 5'd9,
-        cpNearClip    = 5'd10,
-        cpFarClip     = 5'd11,
-        cpFovHor      = 5'd12,
-        cpFovVer      = 5'd13
+        cpRRotation   = 5'd4,
+        cpIRotation   = 5'd5,
+        cpJRotation   = 5'd6,
+        cpKRotation   = 5'd7,
+        cpNearClip    = 5'd8,
+        cpFarClip     = 5'd9,
+        cpFovHor      = 5'd10,
+        cpFovVer      = 5'd11
     } CameraProperty;
 
 
@@ -170,12 +168,10 @@ package proctypes;
         float16 xloc;
         float16 yloc;
         float16 zloc;
-        float16 xfor;
-        float16 yfor;
-        float16 zfor;
-        float16 xup;
-        float16 yup;
-        float16 zup;
+        float16 rrot;
+        float16 irot;
+        float16 jrot;
+        float16 krot;
         float16 nclip;
         float16 fclip;
         float16 hfov;
