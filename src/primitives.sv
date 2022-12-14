@@ -781,32 +781,93 @@ module scale(
 endmodule
 
 
-
+// returns float * 2^14
 module unit_float_to_fixed (
     input wire clk,
     input wire rst,
     input wire valid_in,
     input wire float16 flt,
     output logic valid_out,
-    output logic [15:0] fx
+    output logic [15:0] fx,
+    output logic fx_sign
 );
+    // localparam TWO_TO_15 = 16'h7400;
+    // localparam FLOAT_ONE = 16'h3C00;
 
     float16 abs_flt;
     assign abs_flt = {1'b0, flt[14:0]};
 
-    // 2-stage for comparator (if > 1, cap to 1)
+    // 2-stage for comparator (if |flt| > 1, cap to 1)
+    logic [7:0] compare_result;
+    float_compare compare_raycast_best (
+        .aclk(clk),                                        // input wire aclk
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(abs_flt),                    // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(16'h3C00),                    // input wire [15 : 0] s_axis_b_tdata
+        .s_axis_operation_tvalid(1'b1),  // input wire s_axis_operation_tvalid
+        .s_axis_operation_tdata(fpuOpGt),    // input wire [7 : 0] s_axis_operation_tdata
+        // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(compare_result)          // output wire [7 : 0] m_axis_result_tdata
+    );
+
 
     // 6-stage for mul
-
+    float16 flt_2_14;
+    float_multiply mult_flt_2_15 (
+        .aclk(clk),                                  // input wire aclk
+        .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(abs_flt),              // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(1'b1),            // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(16'h7400),              // input wire [15 : 0] s_axis_b_tdata
+        // .m_axis_result_tvalid(1'b1),  // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(flt_2_14)    // output wire [15 : 0] m_axis_result_tdata
+    );
 
     // 5-stage
-    // float_to_fixed13 z_to_fx13 (
-    //     .aclk                (clk),          // input wire aclk
-    //     .s_axis_a_tvalid     (input_valid),  // input wire s_axis_a_tvalid
-    //     .s_axis_a_tdata      ({~z_dist[15], z_dist[14:0]}),       // input wire [15 : 0] s_axis_a_tdata
-    //     .m_axis_result_tvalid(fx13_valid),   // output wire m_axis_result_tvalid
-    //     .m_axis_result_tdata (fx13_out)      // output wire [15 : 0] m_axis_result_tdata
-    // );
+    logic [15:0] fx_2_14;
+    float_to_fixed13 z_to_fx13 (
+        .aclk                (clk),          // input wire aclk
+        .s_axis_a_tvalid     (1'b1),  // input wire s_axis_a_tvalid
+        .s_axis_a_tdata      (flt_2_14),       // input wire [15 : 0] s_axis_a_tdata
+        // .m_axis_result_tvalid(fx13_valid),   // output wire m_axis_result_tvalid
+        .m_axis_result_tdata (fx_2_14)      // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    logic p3_sign_flt;
+    pipe#(
+        .LENGTH(11),
+        .WIDTH(1)
+    ) pipe_flt_sign (
+        .clk(clk),
+        .rst(rst),
+        .in(flt[15]),
+        .out(p3_sign_flt)
+    );
+
+    logic p3_compare;
+    pipe#(
+        .LENGTH(9),
+        .WIDTH(1)
+    ) pipe_compare (
+        .clk(clk),
+        .rst(rst),
+        .in(compare_result[0]),
+        .out(p3_compare)
+    );
+
+    pipe#(
+        .LENGTH(11),
+        .WIDTH(1)
+    ) pipe_valid (
+        .clk(clk),
+        .rst(rst),
+        .in(valid_in),
+        .out(valid_out)
+    );
+
+    assign fx = p3_compare ? (16'd16384) : fx_2_14;
+    assign fx_sign = p3_sign_flt;
 
 endmodule
 
