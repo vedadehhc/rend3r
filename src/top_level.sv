@@ -56,6 +56,8 @@ module top_level (
   Light cur_light;
   logic [GEOMETRY_WIDTH-1:0] cur_geo;
   InstructionAddr pc_debug;
+
+
   iprocessor processor (
       .clk_100mhz(sys_clk),
       .rst(sys_rst),
@@ -84,12 +86,15 @@ module top_level (
   logic step_mem_ready;
   assign step_mem_ready = mem_ready && (!step_by_step || next_step);
 
+  logic pause_rast_controller;
+
   rasterization_controller controller (
       .clk(sys_clk),
       .rst(sys_rst),
       .execInst_valid(execInst_valid),
       .execInst(execInst),
       .mem_ready(step_mem_ready),
+      .pause(pause_rast_controller),
       .cur_triangle(cur_geo),
       .busy(rast_busy),
       .cur_tri_addr(rast_tri_addr),
@@ -190,8 +195,8 @@ module top_level (
       .doutb(pixel_read_pix_clk)  // output wire [15 : 0] doutb
   );
 
-  tri_3d cam_tri_a, cam_tri_b;
-  tri_2d rast_tri, rast_tri_a, rast_tri_b;
+  tri_3d cam_tri;
+  tri_2d rast_tri, tfill_in;
 
   vec3_i16 out_test_pt, rast_pt;
 
@@ -207,34 +212,22 @@ module top_level (
   view camera;
   logic [31:0] seven_seg_val;
 
-  // triangle_3d_to_2d t23 (  // 63 stages
-  //     .clk(sys_clk),
-  //     .rst(sys_rst),
-  //     .camera(camera),
-  //     .input_valid(controller_tri_valid),
-  //     .triangle_3d(controller_tri_3d),
-  //     .triangle_2d(rast_tri),
-  //     .triangle_2d_valid(rast_tri_valid)
-  // );
+  enum {
+    Idle,  // while !rast_busy
+    RequestingTriangle,  // set pause low (1 cycle)
+    WaitingForController,  // waiting for controller_tri_valid
+    CalculatingTriangle,  // waiting for rast_tri_valid
+    TriangleFilling  // while <-> hcount, vcount
+  } rast_state;
 
-  triangle_3d_to_2d t23_a (  // 63 stages
+  triangle_3d_to_2d t23 (  // 63 stages
       .clk(sys_clk),
       .rst(sys_rst),
       .camera(camera),
-      .input_valid(1'b1),
-      .triangle_3d(cam_tri_a),
-      .triangle_2d(rast_tri_a),
-      .triangle_2d_valid()
-  );
-
-  triangle_3d_to_2d t23_b (  // 63 stages
-      .clk(sys_clk),
-      .rst(sys_rst),
-      .camera(camera),
-      .input_valid(1'b1),
-      .triangle_3d(cam_tri_b),
-      .triangle_2d(rast_tri_b),
-      .triangle_2d_valid()
+      .input_valid(controller_tri_valid),
+      .triangle_3d(controller_tri_3d),
+      .triangle_2d(rast_tri),
+      .triangle_2d_valid(rast_tri_valid)
   );
 
   seven_segment_controller mssc (
@@ -245,7 +238,6 @@ module top_level (
       .an_out (an)
   );
 
-
   assign seven_seg_val = {
     controller_tri.x3,
     controller_tri.col[15:14],
@@ -254,7 +246,7 @@ module top_level (
     pc_debug,
     3'b0,
     rast_tri_addr
-  }; 
+  };
 
   localparam TEN = 'h4900;
   localparam SEVEN_FIVE = 'h4780;  // 7.5
@@ -265,31 +257,21 @@ module top_level (
   assign pixel_addr = `FRAME_WIDTH * vcount + hcount;
   assign pixel_addr_pix_clk = `FRAME_WIDTH * (vcount_pix_clk >> 1) + (hcount_pix_clk >> 1);
 
+  assign pause_rast_controller = rast_state != RequestingTriangle;
+
   always_ff @(posedge sys_clk) begin
     if (sys_rst) begin
-      cam_tri_a[0][0] <= 'hbc00;  // -1
-      cam_tri_a[0][1] <= 'hbc00;  // -1
-      cam_tri_a[0][2] <= 'hc000;  // -2
+      cam_tri[0][0] <= 'hbc00;  // -1
+      cam_tri[0][1] <= 'hbc00;  // -1
+      cam_tri[0][2] <= 'hc000;  // -2
 
-      cam_tri_a[1][0] <= 'h3c00;  // 1
-      cam_tri_a[1][1] <= 'hbe00;  // -1.5
-      cam_tri_a[1][2] <= 'hc000;  // -2
+      cam_tri[1][0] <= 'h3c00;  // 1
+      cam_tri[1][1] <= 'hbe00;  // -1.5
+      cam_tri[1][2] <= 'hc000;  // -2
 
-      cam_tri_a[2][0] <= 'h3c00;  // 1
-      cam_tri_a[2][1] <= 'h3c00;  // 1
-      cam_tri_a[2][2] <= 'hc000;  // -2
-
-      cam_tri_b[0][0] <= 'hC200;  // -3
-      cam_tri_b[0][1] <= 'hC200;  // -3
-      cam_tri_b[0][2] <= 'hC400;  // -4
-
-      cam_tri_b[1][0] <= 'hC400;  // -4
-      cam_tri_b[1][1] <= 'h4200;  // 3
-      cam_tri_b[1][2] <= 'hc000;  // -2
-
-      cam_tri_b[2][0] <= 'h3c00;  // 1
-      cam_tri_b[2][1] <= 'h4400;  // 1
-      cam_tri_b[2][2] <= 'hC400;  // -4
+      cam_tri[2][0] <= 'h3c00;  // 1
+      cam_tri[2][1] <= 'h3c00;  // 1
+      cam_tri[2][2] <= 'hc000;  // -2
 
       camera.near_clip <= ONE;
 
@@ -299,65 +281,66 @@ module top_level (
       camera.image_dimensions[0] <= FLOAT_FRAME_WIDTH;
       camera.image_dimensions[1] <= FLOAT_FRAME_HEIGHT;
 
+      rast_state <= Idle;
+      hcount <= 0;
+      vcount <= 0;
+      rast_tri_was_valid <= 0;
+
     end else begin
+      rast_tri_was_valid <= rast_tri_valid | rast_tri_valid;
+
+      if (rast_state == Idle) begin
+        if (rast_busy) begin
+          rast_state <= RequestingTriangle;
+        end
+      end else if (rast_state == RequestingTriangle) begin
+        rast_state <= WaitingForController;
+      end else if (rast_state == WaitingForController) begin
+        if (controller_tri_valid) begin
+          rast_state <= CalculatingTriangle;
+        end
+      end else if (rast_state == CalculatingTriangle) begin
+        if (rast_tri_valid) begin
+          rast_state <= TriangleFilling;
+        end
+      end else if (rast_state == TriangleFilling) begin
+        if ((hcount == `FRAME_WIDTH - 1) && (vcount == `FRAME_HEIGHT - 1)) begin
+          rast_state <= Idle;
+          hcount <= 0;
+          vcount <= 0;
+        end else begin
+          if (hcount == `FRAME_WIDTH - 1) begin
+            hcount <= 0;
+            vcount <= vcount + 1;
+          end else begin
+            hcount <= hcount + 1;
+          end
+        end
+      end
 
     end
   end
 
-  assign pixel_write_enable = sw[15] | is_within_a | is_within_b;
+  assign pixel_write_enable = sw[15] | is_within;
 
-  logic is_within, is_within_a, is_within_b;
-  
-  logic rast_tri_was_valid, is_within_valid;
+  logic is_within, rast_tri_was_valid, is_within_valid;
 
-  // triangle_2d_fill tfill (  // 3
-  //     .rst(sys_rst),
-  //     .clk(sys_clk),
-  //     .hcount(hcount),
-  //     .triangle_valid(rast_tri_valid),
-  //     .vcount(vcount),
-  //     .output_valid(is_within_valid),
-  //     .triangle(rast_tri),
-  //     .is_within(is_within)
-  // );
-  triangle_2d_fill tfill_a (  // 3
+  triangle_2d_fill tfill (  // 3
       .rst(sys_rst),
       .clk(sys_clk),
       .hcount(hcount),
-      .triangle_valid(1'b1),
+      .triangle_valid(rast_tri_valid),
       .vcount(vcount),
-      .output_valid(),
-      .triangle(rast_tri_a),
-      .is_within(is_within_a)
+      .output_valid(is_within_valid),
+      .triangle(rast_tri),
+      .is_within(is_within)
   );
-  triangle_2d_fill tfill_b (  // 3
-      .rst(sys_rst),
-      .clk(sys_clk),
-      .hcount(hcount),
-      .triangle_valid(1'b1),
-      .vcount(vcount),
-      .output_valid(),
-      .triangle(rast_tri_b),
-      .is_within(is_within_b)
-  );
-
-  // ila my_ila(
-  //   .clk(sys_clk),
-  //   .probe0(is_within),
-  //   .probe1(is_within_valid),
-  //   .probe2(rast_tri_valid_pipe),
-  //   .probe3(rast_tri[0][0]),
-  //   .probe4(hcount),
-  //   .probe5(vcount),
-  //   .probe6(controller_tri_3d[0][0]),
-  //   .probe7(controller_tri_valid)
-  // );
 
   logic [`PADDED_COLOR_WIDTH-1:0] triangle_color_piped;
 
   pipe #(
       .LENGTH(67),  // 53 (proj+ndc+rast) + 4 (fill)
-      .WIDTH (`PADDED_COLOR_WIDTH)
+      .WIDTH(`PADDED_COLOR_WIDTH)
   ) triangle_color_pipe (
       .clk(sys_clk),
       .rst(sys_rst),
@@ -365,34 +348,7 @@ module top_level (
       .out(triangle_color_piped)
   );
 
-  assign pixel_write = sw[15] ? 16'b0 : 16'hf0f;//triangle_color_piped;
-
-  always_ff @(posedge sys_clk) begin
-    if (sys_rst) begin
-
-      hcount <= 0;
-      vcount <= 0;
-      rast_tri_was_valid <= 0;
-
-    end else begin
-      rast_tri_was_valid <= rast_tri_valid | rast_tri_valid;
-      // rast_tri_valid_pipe <= rast_tri_valid;
-      // tfill_in <= rast_tri;  // 1
-
-      if (hcount == `FRAME_WIDTH - 1) begin
-        hcount <= 0;
-        if (vcount == `FRAME_HEIGHT - 1) begin
-          vcount <= 0;
-        end else begin
-          vcount <= vcount + 1;
-        end
-      end else begin
-        hcount <= hcount + 1;
-      end
-
-    end
-  end
-
+  assign pixel_write = sw[15] ? 16'b0 : triangle_color_piped;
   assign vga_pixel = pixel_read_pix_clk;
 
   assign vga_r = ~blank ? vga_pixel[11:8] : 0;
