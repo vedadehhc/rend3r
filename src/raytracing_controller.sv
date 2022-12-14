@@ -161,7 +161,7 @@ module raytracing_controller(
     // send all raycasts for single pixel (all initial, then NUM_LIGHTS sets of lighting)
     // pipeline shape along with raycast
 
-    float16 hit_color;
+    logic [15:0] hit_color;
     vec3 hit_normal;
 
     vec3 light_dir;
@@ -270,6 +270,7 @@ module raytracing_controller(
                                 end else begin
                                     // yes lighting!
                                     state <= LIGHTING_NORMAL;
+                                    sent_command <= 1'b0;
                                 end
                             end
                         end else begin
@@ -277,7 +278,13 @@ module raytracing_controller(
                         end
                     end
                 end else if (state == LIGHTING_NORMAL) begin
-                    
+                    sent_command <= 1'b1;
+                    shape_cast_valid_in <= 1'b0;
+                    if (lighting_valid_out) begin
+                        // TODO: multiply with pixel value to get result
+                        state <= GEN_NEXT_PIXEL;
+                        pixel_value <= lighting_intensity[15] ? 16'b0 : hit_color;
+                    end
                 end else if (state == GIVE_OUTPUT) begin
                     shape_cast_valid_in <= 1'b0;
                     state <= GEN_NEXT_PIXEL;
@@ -294,7 +301,7 @@ module raytracing_controller(
     lighting light (
         .clk(clk),
         .rst(rst),
-        .valid_in(),
+        .valid_in(state == LIGHTING_NORMAL && !sent_command),
         .normal(hit_normal),
         .dir(light_dir),
         .valid_out(lighting_valid_out),
