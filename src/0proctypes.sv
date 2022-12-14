@@ -247,7 +247,7 @@ package proctypes;
     typedef logic [INSTRUCTION_WIDTH-1:0] Instruction;
     parameter DECODED_INSTRUCTION_WIDTH = $bits(DecodedInst);
     
-    parameter NUM_INSTRUCTIONS = 32;
+    parameter NUM_INSTRUCTIONS = 16;
     parameter NUM_INSTRUCTIONS_WIDTH = $clog2(NUM_INSTRUCTIONS);
     typedef logic [NUM_INSTRUCTIONS_WIDTH-1:0] InstructionAddr;
 
@@ -264,6 +264,6 @@ package proctypes;
 
     parameter CAMERA_TOP_LEFT_DIR_X = 16'hC4FD;
     parameter CAMERA_TOP_LEFT_DIR_Y = 16'hC37B;
-    parameter CAMERA_TOP_LEFT_DIR_Z = 16'h3C00;
+    parameter CAMERA_TOP_LEFT_DIR_Z = 16'hBC00;
 
 endpackage
