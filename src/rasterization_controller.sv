@@ -10,6 +10,7 @@ module rasterization_controller(
     input wire DecodedInst execInst,
     input wire mem_ready,
     input Triangle cur_triangle,
+    input wire pause,
     output logic busy,
     output TriangleAddr cur_tri_addr,
     output logic next_triangle_valid,
@@ -45,7 +46,7 @@ module rasterization_controller(
                     completed_frame <= 1'b1;
                     tri_valid_1 <= 1'b0;
                 end
-            end else if (!completed_frame && mem_ready) begin
+            end else if (!completed_frame && mem_ready && !pause) begin
                 if (cur_tri_addr == NUM_TRIANGLES - 1) begin
                     completed_frame <= 1'b1;
                 end
