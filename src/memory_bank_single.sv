@@ -358,7 +358,7 @@ module memory_bank_single (
         we_geometry = 1'b0;
         we_light = 1'b0;
         we_camera = 1'b0;
-        if (pc_1 != pc_2 && valid_1) begin
+        if (pc_1 != pc_2 && valid_1 && state == WRITING) begin
             // inst: A, B, B, C
             // new instruction - read A in stage 1
             we_geometry = 1'b0;

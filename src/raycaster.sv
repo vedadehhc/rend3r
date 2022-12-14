@@ -280,12 +280,8 @@ module raycaster#(
     // Pipeline stages for hit
     logic p4_hit [P4_STAGES-1:0];
 
-    vec3 p4_src [P3_STAGES-1:0];
-    vec3 p4_dir [P3_STAGES-1:0];
-    vec3 p4_src_transform [P3_STAGES-1:0];
-    vec3 p4_dir_transform [P3_STAGES-1:0];
-    quaternion p4_rot [P3_STAGES-1:0];
-    ShapeType p4_shape_type [P3_STAGES-1:0];
+    quaternion p4_rot [P4_STAGES-1:0];
+    ShapeType p4_shape_type [P4_STAGES-1:0];
 
     always_ff @( posedge clk ) begin
         p4_hit[0] <= quad_sol_real_pos;
@@ -449,7 +445,7 @@ module raycaster#(
         end
     endgenerate
 
-    // 1-stage: decide 
+    // 1-stage: decide normal_transform based on shape type
     vec3 p5_normal_transform;
 
     always_ff @( posedge clk ) begin
@@ -477,6 +473,56 @@ module raycaster#(
             end
         endcase
     end
+
+    // vec3 p5_scale_inv;
+    // generate
+    //     genvar p5_pipe_scale_inv_i;
+    //     for (p5_pipe_scale_inv_i = 0; p5_pipe_scale_inv_i < 3; p5_pipe_scale_inv_i = p5_pipe_scale_inv_i+1) begin
+    //         pipe#(
+    //             .LENGTH(1),
+    //             .WIDTH(16)
+    //         ) pipe_p5_scale_inv (
+    //             .clk(clk),
+    //             .rst(rst),
+    //             .in(p1234_shape_scale_inv[p5_pipe_scale_inv_i]),
+    //             .out(p5_scale_inv[p5_pipe_scale_inv_i])
+    //         )
+    //     end
+    // endgenerate
+
+    // // Scale - 6 stages    
+    // vec3 p5_scale_normal_transform;
+    // // logic scale_normal_transform_valid;
+    // scale scl_src(
+    //     .clk(clk),
+    //     .rst(rst),
+    //     .valid_in(1'b1),
+    //     .in(p5_normal_transform),
+    //     .scale(p5_scale_inv),
+    //     // .valid_out(scale_rot_trans_src_valid),
+    //     .out(p5_scale_normal_transform)
+    // );
+
+    // generate
+    // pipe#(
+    //     .LENGTH(7),
+    //     .WIDTH(64)
+    // ) pipe_p5_rot (
+    //     .clk(clk),
+    //     .rst(rst),
+    //     .in({p4_rot[P4_STAGES-1][0], p4_rot[P4_STAGES-1][1], p4_rot[P4_STAGES-1][2], p4_rot[P4_STAGES-1][3]}),
+
+    // )
+
+    // // rotate - 44-stages
+    // rotate p5_rotate_normal (
+    //     .clk(clk),
+    //     .rst(rst),
+    //     .valid_in(1'b1),
+    //     .in()
+    //     .rot(),
+
+    // )
 
     logic p5_intersection_valid;
     pipe#(
