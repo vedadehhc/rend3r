@@ -3,7 +3,7 @@
 
 import proctypes::*;
 
-// k-stage
+// 58-stage
 module lighting(
     input wire clk,
     input wire rst,
@@ -66,7 +66,7 @@ module lighting(
 
     
     float16 p2_mag_d;
-    float_sqrt p2_sqrt_n (
+    float_sqrt p2_sqrt_d (
         .aclk(clk),                                  // input wire aclk
         .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
         .s_axis_a_tdata(d_dot_d),              // input wire [15 : 0] s_axis_a_tdata
@@ -80,7 +80,7 @@ module lighting(
 
     float16 p3_mag_n_d;
     float_multiply p3_mult_n_d (
-        .aclk(aclk),                                  // input wire aclk
+        .aclk(clk),                                  // input wire aclk
         .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
         .s_axis_a_tdata(p2_mag_n),              // input wire [15 : 0] s_axis_a_tdata
         .s_axis_b_tvalid(1'b1),            // input wire s_axis_b_tvalid
@@ -124,7 +124,6 @@ module lighting(
         .in(valid_in),
         .out(valid_out)
     );
-
 
 endmodule
 
@@ -270,23 +269,37 @@ module raytracing_controller(
                                     pixel_value <= 16'b0;
                                 end else begin
                                     // yes lighting!
+                                    state <= LIGHTING_NORMAL;
                                 end
                             end
                         end else begin
                             valid_light_1 <= 1'b1;
                         end
                     end
+                end else if (state == LIGHTING_NORMAL) begin
+                    
                 end else if (state == GIVE_OUTPUT) begin
                     shape_cast_valid_in <= 1'b0;
                     state <= GEN_NEXT_PIXEL;
-                end
+                end 
             end else begin
                 shape_cast_valid_in <= 1'b0;
             end
         end
     end
 
+    float16 lighting_intensity;
+    logic lighting_valid_out;
 
+    lighting light (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(),
+        .normal(hit_normal),
+        .dir(light_dir),
+        .valid_out(lighting_valid_out),
+        .intensity(lighting_intensity)
+    );
 
 
     logic valid_inc_ray_x;
