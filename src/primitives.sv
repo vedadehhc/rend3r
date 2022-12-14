@@ -782,6 +782,7 @@ endmodule
 
 
 // returns float * 2^14
+// 11-stage
 module unit_float_to_fixed (
     input wire clk,
     input wire rst,

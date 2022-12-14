@@ -3,15 +3,16 @@
 
 import proctypes::*;
 
-// 58-stage
+// 71-stage
 module lighting(
     input wire clk,
     input wire rst,
     input wire valid_in,
     input vec3 normal,
     input vec3 dir,
+    input wire [15:0] pixel_in,
     output logic valid_out,
-    output float16 intensity
+    output logic[15:0] pixel_out
 );
 
     // P1: 22-stage
@@ -104,6 +105,7 @@ module lighting(
         .out(p4_n_dot_d)
     );
 
+    float16 p4_intensity;
     float_divide p4_divide_n_d (
         .aclk(clk),                                  // input wire aclk
         .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
@@ -111,10 +113,70 @@ module lighting(
         .s_axis_b_tvalid(1'b1),            // input wire s_axis_b_tvalid
         .s_axis_b_tdata(p3_mag_n_d),              // input wire [15 : 0] s_axis_b_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),  // output wire m_axis_result_tvalid
-        .m_axis_result_tdata(intensity)    // output wire [15 : 0] m_axis_result_tdata
+        .m_axis_result_tdata(p4_intensity)    // output wire [15 : 0] m_axis_result_tdata
     );
 
-    localparam TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES;
+    // P5: 13-stage
+    localparam P5_STAGES = 13;
+
+    // 11-stage
+    logic [15:0] p5_fx_intensity;
+    logic p5_fx_sign;
+
+    unit_float_to_fixed uff (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(1'b1),
+        .flt(p4_intensity),
+        // .valid_out(),
+        .fx(p5_fx_intensity),
+        .fx_sign(p5_fx_sign)
+    );
+
+    logic[15:0] p5_pixel;
+    pipe#(
+        .LENGTH(P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES + 11),
+        .WIDTH(16)
+    ) pipe_p5_color (
+        .clk(clk),
+        .rst(rst),
+        .in(pixel_in),
+        .out(p5_pixel)
+    );
+
+    // 1-stage for mult
+    logic [20:0] p5_mult_r;
+    logic [21:0] p5_mult_g;
+    logic [20:0] p5_mult_b;
+    logic p5_fx_sign_2;
+
+    always_ff @( posedge clk ) begin
+        p5_mult_r <= (p5_fx_intensity * p5_pixel[15:11]);
+        p5_mult_g <= (p5_fx_intensity * p5_pixel[10:5]);
+        p5_mult_b <= (p5_fx_intensity * p5_pixel[4:0]);
+        p5_fx_sign_2 <= p5_fx_sign;
+    end
+
+    // 1-stage for final checks
+    logic [4:0] r_out;
+    logic [5:0] g_out;
+    logic [4:0] b_out;
+
+    always_ff @(posedge clk) begin
+        if (p5_fx_sign_2) begin
+            r_out <= 5'b0;
+            g_out <= 6'b0;
+            b_out <= 5'b0;
+        end else begin
+            r_out <= p5_mult_r[18:14];
+            g_out <= p5_mult_g[19:14];
+            b_out <= p5_mult_b[18:14];
+        end
+    end
+
+    assign pixel_out = {r_out, g_out, b_out};
+
+    localparam TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES + P5_STAGES;
     pipe #(
         .LENGTH(TOTAL_STAGES),
         .WIDTH(1)
@@ -282,8 +344,8 @@ module raytracing_controller(
                     shape_cast_valid_in <= 1'b0;
                     if (lighting_valid_out) begin
                         // TODO: multiply with pixel value to get result
-                        state <= GEN_NEXT_PIXEL;
-                        pixel_value <= lighting_intensity[15] ? 16'b0 : hit_color;
+                        state <= GIVE_OUTPUT;
+                        pixel_value <= lighting_pixel_out;
                     end
                 end else if (state == GIVE_OUTPUT) begin
                     shape_cast_valid_in <= 1'b0;
@@ -295,7 +357,7 @@ module raytracing_controller(
         end
     end
 
-    float16 lighting_intensity;
+    logic [15:0] lighting_pixel_out;
     logic lighting_valid_out;
 
     lighting light (
@@ -304,8 +366,9 @@ module raytracing_controller(
         .valid_in(state == LIGHTING_NORMAL && !sent_command),
         .normal(hit_normal),
         .dir(light_dir),
+        .pixel_in(hit_color),
         .valid_out(lighting_valid_out),
-        .intensity(lighting_intensity)
+        .pixel_out(lighting_pixel_out)
     );
 
 
