@@ -1,9 +1,9 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2022.1 (lin64) Build 3526262 Mon Apr 18 15:47:01 MDT 2022
-| Date         : Tue Dec 13 23:31:40 2022
-| Host         : EECS-DIGITAL-11 running 64-bit Ubuntu 20.04.5 LTS
-| Command      : report_drc -file /tmp/tmp.7oPvEh/obj/routerpt_report_drc.rpt
+| Date         : Wed Dec 14 13:40:20 2022
+| Host         : EECS-DIGITAL-44 running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_drc -file /tmp/tmp.3464zh/obj/routerpt_report_drc.rpt
 | Design       : top_level
 | Device       : xc7a100tcsg324-1
 | Speed File   : -1
@@ -24,12 +24,12 @@ Table of Contents
       Design limits: <entire design considered>
            Ruledeck: default
              Max violations: <unlimited>
-             Violations found: 5
+             Violations found: 6
 +----------+----------+-----------------------------------------------------+------------+
 | Rule     | Severity | Description                                         | Violations |
 +----------+----------+-----------------------------------------------------+------------+
 | CFGBVS-1 | Warning  | Missing CFGBVS and CONFIG_VOLTAGE Design Properties | 1          |
-| PDRC-153 | Warning  | Gated clock check                                   | 4          |
+| PDRC-153 | Warning  | Gated clock check                                   | 5          |
 +----------+----------+-----------------------------------------------------+------------+
 
 2. REPORT DETAILS
@@ -49,22 +49,27 @@ Related violations: <none>
 
 PDRC-153#1 Warning
 Gated clock check  
-Net processor/fetch/inst_bank/E[0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[sIndex][18]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[sIndex][18]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net controller/shape_cast/raycast/quad_solver/s5_s6_t_reg[15]_i_2_n_0 is a gated clock net sourced by a combinational pin controller/shape_cast/raycast/quad_solver/s5_s6_t_reg[15]_i_2/O, cell controller/shape_cast/raycast/quad_solver/s5_s6_t_reg[15]_i_2. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 PDRC-153#2 Warning
 Gated clock check  
-Net processor/fetch/inst_bank/output_register.douta_reg_reg[0]_0[0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[prop][3]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[prop][3]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net processor/fetch/inst_bank/E[0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[sIndex][18]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[sIndex][18]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 PDRC-153#3 Warning
 Gated clock check  
-Net processor/fetch/inst_bank/state_reg[1][0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[data][15]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[data][15]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net processor/fetch/inst_bank/output_register.douta_reg_reg[0]_0[0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[prop2][4]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[prop2][4]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 PDRC-153#4 Warning
 Gated clock check  
-Net processor/fetch/inst_bank/state_reg[1]_0[0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[prop2][4]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[prop2][4]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Net processor/fetch/inst_bank/output_register.douta_reg_reg[0]_1[0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[prop][3]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[prop][3]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
+Related violations: <none>
+
+PDRC-153#5 Warning
+Gated clock check  
+Net processor/fetch/inst_bank/state_reg[1][0] is a gated clock net sourced by a combinational pin processor/fetch/inst_bank/nextDInst_reg[data][15]_i_1/O, cell processor/fetch/inst_bank/nextDInst_reg[data][15]_i_1. This is not good design practice and will likely impact performance. For SLICE registers, for example, use the CE pin to control the loading of data.
 Related violations: <none>
 
 

@@ -331,11 +331,11 @@ module quaternion_mult(
         for (r_ind = 0; r_ind < 4; r_ind = r_ind + 1) begin
             float_multiply multr (
                 .aclk(clk),                                  // input wire aclk
-                .s_axis_a_tvalid(valid_in),            // input wire s_axis_a_tvalid
+                .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
                 .s_axis_a_tdata(a[r_ind]),              // input wire [15 : 0] s_axis_a_tdata
-                .s_axis_b_tvalid(valid_in),          // input wire s_axis_b_tvalid
+                .s_axis_b_tvalid(1'b1),          // input wire s_axis_b_tvalid
                 .s_axis_b_tdata(b[r_ind]),              // input wire [15 : 0] s_axis_b_tdata
-                .m_axis_result_tvalid(vdotr[r_ind]),  // output wire m_axis_result_tvalid
+                // .m_axis_result_tvalid(vdotr[r_ind]),  // output wire m_axis_result_tvalid
                 .m_axis_result_tdata(dotr[r_ind])          // output wire [15 : 0] m_axis_result_tdata
             );
         end
@@ -349,20 +349,20 @@ module quaternion_mult(
     /// PS2: 8-stage
     float_add_sub add_r1 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(vdotr[0]),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(dotr[0]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(vdotr[0]),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(dotr[1]),                    // input wire [15 : 0] s_axis_b_tdata
         .s_axis_operation_tvalid(vdotr[0]),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpSub}),                      // input wire [7 : 0] s_axis_operation_tdata
-        .m_axis_result_tvalid(vr1r2),        // output wire m_axis_result_tvalid
+        // .m_axis_result_tvalid(vr1r2),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(r1)          // output wire [15 : 0] m_axis_result_tdata
     );
     float_add_sub add_r2 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(vdotr[0]),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(dotr[2]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(vdotr[0]),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(dotr[3]),                    // input wire [15 : 0] s_axis_b_tdata
         .s_axis_operation_tvalid(vdotr[0]),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpAdd}),                      // input wire [7 : 0] s_axis_operation_tdata
@@ -376,14 +376,14 @@ module quaternion_mult(
 
     float_add_sub add_cr (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(vr1r2),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(r1),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(vr1r2),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(r2),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(vr1r2),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpSub}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
-        .m_axis_result_tdata(vcr)          // output wire [15 : 0] m_axis_result_tdata
+        .m_axis_result_tdata(cr)          // output wire [15 : 0] m_axis_result_tdata
     );
 
     // i part
@@ -395,9 +395,9 @@ module quaternion_mult(
         for (i_ind = 0; i_ind < 4; i_ind = i_ind + 1) begin
             float_multiply multi (
                 .aclk(clk),                                  // input wire aclk
-                .s_axis_a_tvalid(valid_in),            // input wire s_axis_a_tvalid
+                .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
                 .s_axis_a_tdata(a[i_ind]),              // input wire [15 : 0] s_axis_a_tdata
-                .s_axis_b_tvalid(valid_in),          // input wire s_axis_b_tvalid
+                .s_axis_b_tvalid(1'b1),          // input wire s_axis_b_tvalid
                 .s_axis_b_tdata(bi[i_ind]),              // input wire [15 : 0] s_axis_b_tdata
                 // .m_axis_result_tvalid(a0b0_valid),  // output wire m_axis_result_tvalid
                 .m_axis_result_tdata(doti[i_ind])          // output wire [15 : 0] m_axis_result_tdata
@@ -411,22 +411,22 @@ module quaternion_mult(
 
     float_add_sub add_i1 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(doti[0]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(doti[1]),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpAdd}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(i1)          // output wire [15 : 0] m_axis_result_tdata
     );
     float_add_sub add_i2 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(doti[2]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(doti[3]),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpSub}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(i2)          // output wire [15 : 0] m_axis_result_tdata
@@ -437,11 +437,11 @@ module quaternion_mult(
     float16 ci;  // = i1 + i2
     float_add_sub add_ci (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(i1),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(i2),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpAdd}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(ci)          // output wire [15 : 0] m_axis_result_tdata
@@ -456,9 +456,9 @@ module quaternion_mult(
         for (j_ind = 0; j_ind < 4; j_ind = j_ind + 1) begin
             float_multiply multj (
                 .aclk(clk),                                  // input wire aclk
-                .s_axis_a_tvalid(valid_in),            // input wire s_axis_a_tvalid
+                .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
                 .s_axis_a_tdata(a[j_ind]),              // input wire [15 : 0] s_axis_a_tdata
-                .s_axis_b_tvalid(valid_in),          // input wire s_axis_b_tvalid
+                .s_axis_b_tvalid(1'b1),          // input wire s_axis_b_tvalid
                 .s_axis_b_tdata(bj[j_ind]),              // input wire [15 : 0] s_axis_b_tdata
                 // .m_axis_result_tvalid(a0b0_valid),  // output wire m_axis_result_tvalid
                 .m_axis_result_tdata(dotj[j_ind])          // output wire [15 : 0] m_axis_result_tdata
@@ -473,22 +473,22 @@ module quaternion_mult(
 
     float_add_sub add_j1 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(dotj[0]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(dotj[1]),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpSub}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(j1)          // output wire [15 : 0] m_axis_result_tdata
     );
     float_add_sub add_j2 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(dotj[2]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(dotj[3]),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpAdd}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(j2)          // output wire [15 : 0] m_axis_result_tdata
@@ -499,11 +499,11 @@ module quaternion_mult(
     float16 cj;  // = j1 + j2
     float_add_sub add_cj (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(j1),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(j2),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpAdd}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(cj)          // output wire [15 : 0] m_axis_result_tdata
@@ -519,9 +519,9 @@ module quaternion_mult(
         for (k_ind = 0; k_ind < 4; k_ind = k_ind + 1) begin
             float_multiply multk (
                 .aclk(clk),                                  // input wire aclk
-                .s_axis_a_tvalid(valid_in),            // input wire s_axis_a_tvalid
+                .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
                 .s_axis_a_tdata(a[k_ind]),              // input wire [15 : 0] s_axis_a_tdata
-                .s_axis_b_tvalid(valid_in),          // input wire s_axis_b_tvalid
+                .s_axis_b_tvalid(1'b1),          // input wire s_axis_b_tvalid
                 .s_axis_b_tdata(bk[k_ind]),              // input wire [15 : 0] s_axis_b_tdata
                 // .m_axis_result_tvalid(a0b0_valid),  // output wire m_axis_result_tvalid
                 .m_axis_result_tdata(dotk[k_ind])          // output wire [15 : 0] m_axis_result_tdata
@@ -536,22 +536,22 @@ module quaternion_mult(
 
     float_add_sub add_k1 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(dotk[0]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(dotk[1]),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpAdd}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(k1)          // output wire [15 : 0] m_axis_result_tdata
     );
     float_add_sub add_k2 (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(dotk[2]),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(dotk[3]),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpSub}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(k2)          // output wire [15 : 0] m_axis_result_tdata
@@ -561,11 +561,11 @@ module quaternion_mult(
     float16 ck;  // = k1 - k2
     float_add_sub add_ck (
         .aclk(clk),                                        // input wire aclk
-        .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(k1),                    // input wire [15 : 0] s_axis_a_tdata
-        .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
         .s_axis_b_tdata(k2),                    // input wire [15 : 0] s_axis_b_tdata
-        .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+        .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpSub}),                      // input wire [7 : 0] s_axis_operation_tdata
         // .m_axis_result_tvalid(m_axis_result_tvalid),        // output wire m_axis_result_tvalid
         .m_axis_result_tdata(ck)          // output wire [15 : 0] m_axis_result_tdata
@@ -576,7 +576,7 @@ module quaternion_mult(
     assign c[1] = ci;
     assign c[2] = cj;
     assign c[3] = ck;
-    assign valid_out = vcr;
+    assign valid_out = 1'b1;
 endmodule
 
 // 44-stage pipeline (each quaternion_mult is 22-stage)
@@ -602,10 +602,10 @@ module rotate(
     quaternion_mult mult_rot_q (
         .clk(clk),
         .rst(rst),
-        .valid_in(valid_in),
+        .valid_in(1'b1),
         .a(rot),
         .b(q_in),
-        .valid_out(vmult1),
+        // .valid_out(vmult1),
         .c(rot_q)
     );
 
@@ -633,17 +633,17 @@ module rotate(
     quaternion_mult mult_rot_q_rot_inv (
         .clk(clk),
         .rst(rst),
-        .valid_in(vmult1),
+        .valid_in(1'b1),
         .a(rot_q),
         .b(rot_inv[PS1_STAGES-1]),
-        .valid_out(vmult2),
+        // .valid_out(vmult2),
         .c(rot_q_rot_inv)
     );
 
     assign out[0] = rot_q_rot_inv[1];
     assign out[1] = rot_q_rot_inv[2];
     assign out[2] = rot_q_rot_inv[3];
-    assign valid_out = vmult2;
+    assign valid_out = 1'b1;
 endmodule
 
 // 44-stage pipeline (same as rotate)
@@ -669,10 +669,10 @@ module rotate_inv(
     quaternion_mult mult_q_rot_inv (
         .clk(clk),
         .rst(rst),
-        .valid_in(valid_in),
+        .valid_in(1'b1),
         .a(q_in),
         .b(rot_inv),
-        .valid_out(vmult1),
+        // .valid_out(vmult1),
         .c(q_rot_inv)
     );
     
@@ -699,17 +699,17 @@ module rotate_inv(
     quaternion_mult mult_rot_q_rot_inv (
         .clk(clk),
         .rst(rst),
-        .valid_in(vmult1),
+        .valid_in(1'b1),
         .a(rot[PS1_STAGES-1]),
         .b(q_rot_inv),
-        .valid_out(vmult2),
+        // .valid_out(vmult2),
         .c(rot_q_rot_inv)
     );
 
     assign out[0] = rot_q_rot_inv[1];
     assign out[1] = rot_q_rot_inv[2];
     assign out[2] = rot_q_rot_inv[3];
-    assign valid_out = vmult2;
+    assign valid_out = 1'b1;
 endmodule
 
 // 8-stage pipeline
@@ -729,13 +729,13 @@ module translate(
         for (genvar coord = 0; coord < 3; coord = coord + 1) begin
             float_add_sub add_x (
                 .aclk(clk),                                        // input wire aclk
-                .s_axis_a_tvalid(valid_in),                  // input wire s_axis_a_tvalid
+                .s_axis_a_tvalid(1'b1),                  // input wire s_axis_a_tvalid
                 .s_axis_a_tdata(in[coord]),                    // input wire [15 : 0] s_axis_a_tdata
-                .s_axis_b_tvalid(valid_in),                  // input wire s_axis_b_tvalid
+                .s_axis_b_tvalid(1'b1),                  // input wire s_axis_b_tvalid
                 .s_axis_b_tdata(trans[coord]),                    // input wire [15 : 0] s_axis_b_tdata
-                .s_axis_operation_tvalid(valid_in),                 // input wire s_axis_operation_tvalid
+                .s_axis_operation_tvalid(1'b1),                 // input wire s_axis_operation_tvalid
                 .s_axis_operation_tdata({2'b0, fpuOpAdd}),                      // input wire [7 : 0] s_axis_operation_tdata
-                .m_axis_result_tvalid(vout[coord]),        // output wire m_axis_result_tvalid
+                // .m_axis_result_tvalid(vout[coord]),        // output wire m_axis_result_tvalid
                 .m_axis_result_tdata(sum[coord])          // output wire [15 : 0] m_axis_result_tdata
             );
         end
@@ -744,7 +744,7 @@ module translate(
     assign out[0] = sum[0];
     assign out[1] = sum[1];
     assign out[2] = sum[2];
-    assign valid_out = vout[0];
+    assign valid_out = 1'b1;
 endmodule
 
 // 6-stage pipeline
@@ -764,11 +764,11 @@ module scale(
         for (genvar coord = 0; coord < 3; coord = coord + 1) begin
             float_multiply mult (
                 .aclk(clk),                                  // input wire aclk
-                .s_axis_a_tvalid(valid_in),            // input wire s_axis_a_tvalid
+                .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
                 .s_axis_a_tdata(in[coord]),              // input wire [15 : 0] s_axis_a_tdata
-                .s_axis_b_tvalid(valid_in),          // input wire s_axis_b_tvalid
+                .s_axis_b_tvalid(1'b1),          // input wire s_axis_b_tvalid
                 .s_axis_b_tdata(scale[coord]),              // input wire [15 : 0] s_axis_b_tdata
-                .m_axis_result_tvalid(vout[coord]),  // output wire m_axis_result_tvalid
+                // .m_axis_result_tvalid(vout[coord]),  // output wire m_axis_result_tvalid
                 .m_axis_result_tdata(prod[coord])          // output wire [15 : 0] m_axis_result_tdata
             );
         end
@@ -777,7 +777,7 @@ module scale(
     assign out[0] = prod[0];
     assign out[1] = prod[1];
     assign out[2] = prod[2];
-    assign valid_out = vout[0];
+    assign valid_out = 1'b1;
 endmodule
 
 `default_nettype wire

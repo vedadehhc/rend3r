@@ -256,7 +256,6 @@ module quadratic_solver_smallest_positive(
 
 endmodule
 
-// TODO: support other shape types
 // returns 2*a, b, and 2*c for use by a quadratic solver
 // 30-stage pipeline
 module sphere_quadratic(
@@ -292,7 +291,7 @@ module sphere_quadratic(
 
         case (shape_type)
             stOff: begin
-                a2_vec_in[0] = 16'b0;
+                a2_vec_in[0] = 16'h3C00;
                 a2_vec_in[1] = 16'b0;
                 a2_vec_in[2] = 16'b0;
             end
@@ -311,6 +310,7 @@ module sphere_quadratic(
         endcase
     end
 
+    // 30-stage
     signed_double_dot_product ddp_dir (
         .clk(clk),
         .rst(rst),
@@ -412,7 +412,7 @@ module sphere_quadratic(
 
         case (shape_type)
             stOff: begin
-                c_src_in[0] = 16'b0;
+                c_src_in[0] = 16'h3C00;
                 c_src_in[1] = 16'b0;
                 c_src_in[2] = 16'b0;
             end

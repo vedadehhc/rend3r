@@ -38,14 +38,26 @@ module raycaster#(
 );
     // pipeline shape_addr
     parameter TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES + P5_STAGES;
-    ShapeAddr pipeline_shape_addr [TOTAL_STAGES-1:0];
-    always_ff @(posedge clk) begin
-        pipeline_shape_addr[0] <= shape_addr_in;
-        for (int i = 1; i < TOTAL_STAGES; i = i+1) begin
-            pipeline_shape_addr[i] <= pipeline_shape_addr[i-1];
-        end
-    end
-    assign shape_addr_out = pipeline_shape_addr[TOTAL_STAGES-1];
+
+    pipe #(
+        .LENGTH(TOTAL_STAGES),
+        .WIDTH(SHAPE_ADDR_WIDTH)
+    ) pipe_addr_all (
+        .clk(clk),
+        .rst(rst),
+        .in(shape_addr_in),
+        .out(shape_addr_out)
+    );
+    
+    pipe #(
+        .LENGTH(TOTAL_STAGES),
+        .WIDTH(1)
+    ) pipe_valid_all (
+        .clk(clk),
+        .rst(rst),
+        .in(valid_in),
+        .out(valid_out)
+    );
 
     /// Phase 1: Transform src + dir
     // 58-stage
@@ -198,6 +210,7 @@ module raycaster#(
         .valid_in(scale_rot_trans_src_valid),
         .src(scale_rot_trans_src),
         .dir(scale_rot_dir),
+        .shape_type(p1_shape_type[P1_STAGES-1]),
         .valid_out(sphere_quad_valid),
         .a2(sphere_quad_2a),
         .b(sphere_quad_b),
@@ -246,8 +259,8 @@ module raycaster#(
         .clk(clk),
         .rst(rst),
         .valid_in(1'b1),
-        .a(p2_dir[P3_STAGES-22-1]),
-        .b(p2_dir[P3_STAGES-22-1]),
+        .a(p3_dir[P3_STAGES-22-1]),
+        .b(p3_dir[P3_STAGES-22-1]),
         .valid_out(),
         .a_dot_b(p3_dir_sq_mag)
     );
@@ -576,7 +589,7 @@ module raycaster#(
 
 
     // Distance should be scaled solution
-    assign valid_out = p5_intersection_valid;
+    // assign valid_out = p5_intersection_valid;
     assign hit = p5_hit;
     assign sq_distance = p5_sq_distance;
 
@@ -599,11 +612,12 @@ module all_shapes_raycaster (
     output logic valid_out,
     output logic hit,
     output vec3 intersection,
-    output Shape hit_shape
+    output Shape hit_shape,
+    output logic[1:0] debug_state
 );
-    typedef enum { IDLE, SENDING, WAITING, TABULATING } all_shape_rc_state;
+    typedef enum logic[1:0] { IDLE, SENDING, WAITING, TABULATING } all_shape_rc_state;
     all_shape_rc_state state;
-    logic received_while_waiting;
+    assign debug_state = state;
 
     vec3 cur_src;
     vec3 cur_dir;
@@ -624,6 +638,9 @@ module all_shapes_raycaster (
         if (rst) begin
             state <= IDLE;
             cur_shape_addr <= 0;
+            valid_final_shape <= 1'b0;
+            valid_final_shape_1 <= 1'b0;
+            valid_final_shape_2 <= 1'b0;
             valid_shape_addr_1 <= 1'b0;
             valid_shape_addr_2 <= 1'b0;
         end else begin
@@ -645,19 +662,21 @@ module all_shapes_raycaster (
             end else if (state == WAITING ) begin
                 valid_shape_addr_1 <= 1'b0;
                 if (p_raycast_valid[COMPARE_STAGES-1]) begin
-                    received_while_waiting <= 1'b1;
-                    valid_final_shape <= 1'b0;
-                end else if (received_while_waiting) begin
-                    state <= TABULATING;
-                    cur_shape_addr <= best_shape_addr;
-                    valid_final_shape <= 1'b1;
+                    if (p_raycast_shape_addr[COMPARE_STAGES-1] == NUM_SHAPES - 1) begin
+                        state <= TABULATING;
+                    end
                 end
-            end else if (state == TABULATING) begin
-                valid_shape_addr_1 <= 1'b0;
                 valid_final_shape <= 1'b0;
+            end else if (state == TABULATING) begin
                 if (valid_final_shape_2) begin
                     state <= IDLE;
+                end else if (!valid_final_shape && !valid_final_shape_1) begin
+                    valid_final_shape <= 1'b1;
+                    cur_shape_addr <= best_shape_addr;
+                end else begin
+                    valid_final_shape <= 1'b0;
                 end
+                valid_shape_addr_1 <= 1'b0;
             end else begin
                 valid_final_shape <= 1'b0;
                 valid_shape_addr_1 <= 1'b0;

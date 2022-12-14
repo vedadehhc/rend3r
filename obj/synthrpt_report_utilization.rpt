@@ -1,9 +1,9 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2022.1 (lin64) Build 3526262 Mon Apr 18 15:47:01 MDT 2022
-| Date         : Tue Dec 13 23:29:38 2022
-| Host         : EECS-DIGITAL-11 running 64-bit Ubuntu 20.04.5 LTS
-| Command      : report_utilization -file /tmp/tmp.7oPvEh/obj/synthrpt_report_utilization.rpt
+| Date         : Wed Dec 14 13:37:03 2022
+| Host         : EECS-DIGITAL-44 running 64-bit Ubuntu 20.04.5 LTS
+| Command      : report_utilization -file /tmp/tmp.3464zh/obj/synthrpt_report_utilization.rpt
 | Design       : top_level
 | Device       : xc7a100tcsg324-1
 | Speed File   : -1
@@ -31,13 +31,13 @@ Table of Contents
 +----------------------------+-------+-------+------------+-----------+-------+
 |          Site Type         |  Used | Fixed | Prohibited | Available | Util% |
 +----------------------------+-------+-------+------------+-----------+-------+
-| Slice LUTs*                | 30437 |     0 |          0 |     63400 | 48.01 |
-|   LUT as Logic             | 27763 |     0 |          0 |     63400 | 43.79 |
-|   LUT as Memory            |  2674 |     0 |          0 |     19000 | 14.07 |
+| Slice LUTs*                | 30546 |     0 |          0 |     63400 | 48.18 |
+|   LUT as Logic             | 27859 |     0 |          0 |     63400 | 43.94 |
+|   LUT as Memory            |  2687 |     0 |          0 |     19000 | 14.14 |
 |     LUT as Distributed RAM |    22 |     0 |            |           |       |
-|     LUT as Shift Register  |  2652 |     0 |            |           |       |
-| Slice Registers            | 39701 |     0 |          0 |    126800 | 31.31 |
-|   Register as Flip Flop    | 39639 |     0 |          0 |    126800 | 31.26 |
+|     LUT as Shift Register  |  2665 |     0 |            |           |       |
+| Slice Registers            | 39920 |     0 |          0 |    126800 | 31.48 |
+|   Register as Flip Flop    | 39858 |     0 |          0 |    126800 | 31.43 |
 |   Register as Latch        |    62 |     0 |          0 |    126800 |  0.05 |
 | F7 Muxes                   |   202 |     0 |          0 |     31700 |  0.64 |
 | F8 Muxes                   |   101 |     0 |          0 |     15850 |  0.64 |
@@ -60,7 +60,7 @@ Table of Contents
 | 2     |          Yes |           - |          Set |
 | 60    |          Yes |           - |        Reset |
 | 37    |          Yes |         Set |            - |
-| 39602 |          Yes |       Reset |            - |
+| 39821 |          Yes |       Reset |            - |
 +-------+--------------+-------------+--------------+
 
 
@@ -70,10 +70,11 @@ Table of Contents
 +-------------------+------+-------+------------+-----------+-------+
 |     Site Type     | Used | Fixed | Prohibited | Available | Util% |
 +-------------------+------+-------+------------+-----------+-------+
-| Block RAM Tile    |   97 |     0 |          0 |       135 | 71.85 |
+| Block RAM Tile    | 97.5 |     0 |          0 |       135 | 72.22 |
 |   RAMB36/FIFO*    |   97 |     0 |          0 |       135 | 71.85 |
 |     RAMB36E1 only |   97 |       |            |           |       |
-|   RAMB18          |    0 |     0 |          0 |       270 |  0.00 |
+|   RAMB18          |    1 |     0 |          0 |       270 |  0.37 |
+|     RAMB18E1 only |    1 |       |            |           |       |
 +-------------------+------+-------+------------+-----------+-------+
 * Note: Each Block RAM Tile only has one FIFO logic available and therefore can accommodate only one FIFO36E1 or one FIFO18E1. However, if a FIFO18E1 occupies a Block RAM Tile, that tile can still accommodate a RAMB18E1
 
@@ -94,9 +95,9 @@ Table of Contents
 +-----------------------------+------+-------+------------+-----------+-------+
 |          Site Type          | Used | Fixed | Prohibited | Available | Util% |
 +-----------------------------+------+-------+------------+-----------+-------+
-| Bonded IOB                  |   49 |    49 |          0 |       210 | 23.33 |
+| Bonded IOB                  |   50 |    50 |          0 |       210 | 23.81 |
 |   IOB Master Pads           |   25 |       |            |           |       |
-|   IOB Slave Pads            |   22 |       |            |           |       |
+|   IOB Slave Pads            |   23 |       |            |           |       |
 | Bonded IPADs                |    0 |     0 |          0 |         2 |  0.00 |
 | PHY_CONTROL                 |    0 |     0 |          0 |         6 |  0.00 |
 | PHASER_REF                  |    0 |     0 |          0 |         6 |  0.00 |
@@ -152,16 +153,16 @@ Table of Contents
 +------------+-------+---------------------+
 |  Ref Name  |  Used | Functional Category |
 +------------+-------+---------------------+
-| FDRE       | 39602 |        Flop & Latch |
-| LUT4       |  9605 |                 LUT |
-| LUT3       |  9019 |                 LUT |
+| FDRE       | 39821 |        Flop & Latch |
+| LUT4       |  9637 |                 LUT |
+| LUT3       |  9024 |                 LUT |
 | LUT2       |  7618 |                 LUT |
-| LUT6       |  5676 |                 LUT |
-| CARRY4     |  4889 |          CarryLogic |
-| LUT5       |  2826 |                 LUT |
+| LUT6       |  5685 |                 LUT |
+| CARRY4     |  4902 |          CarryLogic |
+| LUT5       |  2897 |                 LUT |
 | SRL16E     |  1686 |  Distributed Memory |
-| SRLC32E    |   966 |  Distributed Memory |
-| LUT1       |   306 |                 LUT |
+| SRLC32E    |   979 |  Distributed Memory |
+| LUT1       |   307 |                 LUT |
 | MUXF7      |   202 |               MuxFx |
 | MUXF8      |   101 |               MuxFx |
 | RAMB36E1   |    97 |        Block Memory |
@@ -170,9 +171,10 @@ Table of Contents
 | OBUF       |    33 |                  IO |
 | RAMS32     |    22 |  Distributed Memory |
 | OBUFT      |    12 |                  IO |
-| IBUF       |     4 |                  IO |
+| IBUF       |     5 |                  IO |
 | BUFG       |     3 |               Clock |
 | LDPE       |     2 |        Flop & Latch |
+| RAMB18E1   |     1 |        Block Memory |
 | MMCME2_ADV |     1 |               Clock |
 +------------+-------+---------------------+
 

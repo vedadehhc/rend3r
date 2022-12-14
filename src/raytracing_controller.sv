@@ -20,7 +20,8 @@ module raytracing_controller(
     output logic valid_out,
     output ScreenX pixel_x_out,
     output ScreenY pixel_y_out,
-    output logic[15:0] pixel_value
+    output logic[15:0] pixel_value,
+    output logic [1:0] shape_cast_debug_state
 );
 // camera at origin, pointing in negative z
 
@@ -90,10 +91,12 @@ module raytracing_controller(
                         pixel_y <= pixel_y + 1;
                         camera_dir[0] <= CAMERA_TOP_LEFT_DIR_X;
                         camera_dir[1] <= inc_ray_y;
+                        sent_command <= 1'b0;
                         state <= INITIAL;
                     end else if (valid_inc_ray_x) begin
                         pixel_x <= pixel_x + 1;
                         camera_dir[0] <= inc_ray_x;
+                        sent_command <= 1'b0;
                         state <= INITIAL;
                     end else begin
                         state <= GEN_NEXT_PIXEL;
@@ -193,7 +196,8 @@ module raytracing_controller(
         .valid_out(shape_cast_valid_out),
         .hit(shape_cast_hit),
         .intersection(shape_cast_intersection),
-        .hit_shape(shape_cast_hit_shape)
+        .hit_shape(shape_cast_hit_shape),
+        .debug_state(shape_cast_debug_state)
     );
 
 endmodule

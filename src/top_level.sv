@@ -93,6 +93,8 @@ module top_level (
   logic step_mem_ready;
   // assign step_mem_ready = mem_ready && (!step_by_step || next_step);
 
+  logic[1:0] shape_cast_debug_state;
+
   raytracing_controller controller (
       .clk(sys_clk),
       .rst(sys_rst),
@@ -108,7 +110,8 @@ module top_level (
       .valid_out(ray_valid_out),
       .pixel_x_out(ray_pixel_x),
       .pixel_y_out(ray_pixel_y),
-      .pixel_value(ray_pixel_out)
+      .pixel_value(ray_pixel_out),
+      .shape_cast_debug_state(shape_cast_debug_state)
   );
 
   assign led[15] = ray_valid_out;
@@ -193,8 +196,19 @@ module top_level (
       .doutb(pixel_read_pix_clk)  // output wire [15 : 0] doutb
   );
 
+  logic [31:0] valid_count;
+  always_ff @( posedge sys_clk ) begin 
+    if (sys_rst) begin
+      valid_count <= 16'b0;
+    end else begin
+      if (pixel_write_enable) begin
+        valid_count <= valid_count + 1;
+      end
+    end
+  end
+
   logic [31:0] seven_seg_val;
-  assign seven_seg_val = {ray_pixel_out, ray_pixel_y[7:0], ray_pixel_x[3:0], pc_debug};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
+  assign seven_seg_val = c_btnd ? valid_count : {ray_pixel_out, ray_pixel_y[3:0], ray_pixel_x[3:0], 1'b0, ray_shape_addr[0], shape_cast_debug_state, pc_debug};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
 
 
   seven_segment_controller mssc (
