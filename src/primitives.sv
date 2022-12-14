@@ -780,4 +780,34 @@ module scale(
     assign valid_out = 1'b1;
 endmodule
 
+
+
+module unit_float_to_fixed (
+    input wire clk,
+    input wire rst,
+    input wire valid_in,
+    input wire float16 flt,
+    output logic valid_out,
+    output logic [15:0] fx
+);
+
+    float16 abs_flt;
+    assign abs_flt = {1'b0, flt[14:0]};
+
+    // 2-stage for comparator (if > 1, cap to 1)
+
+    // 6-stage for mul
+
+
+    // 5-stage
+    // float_to_fixed13 z_to_fx13 (
+    //     .aclk                (clk),          // input wire aclk
+    //     .s_axis_a_tvalid     (input_valid),  // input wire s_axis_a_tvalid
+    //     .s_axis_a_tdata      ({~z_dist[15], z_dist[14:0]}),       // input wire [15 : 0] s_axis_a_tdata
+    //     .m_axis_result_tvalid(fx13_valid),   // output wire m_axis_result_tvalid
+    //     .m_axis_result_tdata (fx13_out)      // output wire [15 : 0] m_axis_result_tdata
+    // );
+
+endmodule
+
 `default_nettype wire
