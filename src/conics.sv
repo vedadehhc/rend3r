@@ -265,22 +265,59 @@ module sphere_quadratic(
     input wire valid_in,
     input vec3 src,
     input vec3 dir,
+    input wire ShapeType shape_type,
     output logic valid_out,
     output float16 a2,
     output float16 b,
     output float16 c2
 );  
     /// a2: 30-stage
-    // 2*a = 2*(xD^2 + yD^2 + zD^2) = 2 * (D . D)
+    // sphere:      2*a = 2*(xD^2 + yD^2 + zD^2) = 2 * (D . D)
+    // cylinder:    2*a = 2*(xD^2 + yD^2)
+    // cone:        2*a = 2*(xD^2 + yD^2 - zD^2)
+
     float16 dir_dot_2;
     logic dir_dot_2_valid;
 
-    double_dot_product ddp_dir (
+    vec3 a2_vec_in;
+    logic [2:0] a2_sign_in;
+    always @(*) begin
+        a2_vec_in[0] = dir[0];
+        a2_vec_in[1] = dir[1];
+        a2_vec_in[2] = dir[2];
+
+        a2_sign_in[0] = 1'b0;
+        a2_sign_in[1] = 1'b0;
+        a2_sign_in[2] = 1'b0;
+
+        case (shape_type)
+            stOff: begin
+                a2_vec_in[0] = 16'b0;
+                a2_vec_in[1] = 16'b0;
+                a2_vec_in[2] = 16'b0;
+            end
+            stSphere: begin
+
+            end
+            stCylinder: begin
+                a2_vec_in[2] = 16'b0;
+            end
+            stCone: begin
+                a2_sign_in[2] = 1'b1;
+            end
+            default: begin
+
+            end
+        endcase
+    end
+
+    signed_double_dot_product ddp_dir (
         .clk(clk),
         .rst(rst),
         .valid_in(valid_in),
-        .a(dir),
-        .b(dir),
+        .a(a2_vec_in),
+        .b(a2_vec_in),
+        .sign(a2_sign_in),
         .valid_out(dir_dot_2_valid),
         .a_dot_b_2(dir_dot_2)
     );
@@ -289,17 +326,52 @@ module sphere_quadratic(
     assign valid_out = dir_dot_2_valid;
 
     /// b: 30-stage
-    // b = 2*(xS*xD + yS*yD + zS*zD) = 2 * (D . S)
+    // sphere:      b = 2*(xS*xD + yS*yD + zS*zD) = 2 * (D . S)
+    // cylinder:    b = 2*(xS*xD + yS*yD)
+    // cone:        b = 2*(xS*xD + yS*yD - zS*zD)
 
     float16 dir_src_2;
     logic dir_src_2_valid;
 
-    double_dot_product ddp_src (
+    vec3 b_src_in;
+    logic [2:0] b_sign_in;
+    always @(*) begin
+        b_src_in[0] = src[0];
+        b_src_in[1] = src[1];
+        b_src_in[2] = src[2];
+
+        b_sign_in[0] = 1'b0;
+        b_sign_in[1] = 1'b0;
+        b_sign_in[2] = 1'b0;
+
+        case (shape_type)
+            stOff: begin
+                b_src_in[0] = 16'b0;
+                b_src_in[1] = 16'b0;
+                b_src_in[2] = 16'b0;
+            end
+            stSphere: begin
+
+            end
+            stCylinder: begin
+                b_src_in[2] = 16'b0;
+            end
+            stCone: begin
+                b_sign_in[2] = 1'b1;
+            end
+            default: begin
+
+            end
+        endcase
+    end
+
+    signed_double_dot_product ddp_src_dir (
         .clk(clk),
         .rst(rst),
         .valid_in(valid_in),
         .a(dir),
-        .b(src),
+        .b(b_src_in),
+        .sign(b_sign_in),
         .valid_out(dir_src_2_valid),
         .a_dot_b_2(dir_src_2)
     );
@@ -307,17 +379,73 @@ module sphere_quadratic(
     assign b = dir_src_2;
 
     /// c2: 30-stage
-    // 2*c = 2*(xS^2 + yS^2 + zS^2 - 1)
+    // sphere:      2*c = 2*(xS^2 + yS^2 + zS^2 - 1)
+    // cylinder:    2*c = 2*(xS^2 + yS^2 - 1)
+    // cone:        2*c = 2*(xS^2 + yS^2 - zS^2)
+
+    vec3 c_src_in;
+    vec3 c_signed_src_in;
+    logic [2:0] c_sign_in;
+    logic c_include_minus_1;
+    logic c_include_minus_1_piped;
+
+    pipe#(
+        .LENGTH(6),
+        .WIDTH(1)
+    ) (
+        .clk(clk),
+        .rst(rst),
+        .in(c_include_minus_1),
+        .out(c_include_minus_1_piped)
+    );
+
+    always @(*) begin
+        c_src_in[0] = src[0];
+        c_src_in[1] = src[1];
+        c_src_in[2] = src[2];
+
+        c_sign_in[0] = 1'b0;
+        c_sign_in[1] = 1'b0;
+        c_sign_in[2] = 1'b0;
+
+        c_include_minus_1 = 1'b1;
+
+        case (shape_type)
+            stOff: begin
+                c_src_in[0] = 16'b0;
+                c_src_in[1] = 16'b0;
+                c_src_in[2] = 16'b0;
+            end
+            stSphere: begin
+
+            end
+            stCylinder: begin
+                c_src_in[2] = 16'b0;
+            end
+            stCone: begin
+                c_sign_in[2] = 1'b1;
+                c_include_minus_1 = 1'b0;
+            end
+            default: begin
+
+            end
+        endcase
+
+        c_signed_src_in[0] = c_sign_in[0] ? negate_float(c_src_in[0]) : c_src_in[0];
+        c_signed_src_in[1] = c_sign_in[1] ? negate_float(c_src_in[1]) : c_src_in[1];
+        c_signed_src_in[2] = c_sign_in[2] ? negate_float(c_src_in[2]) : c_src_in[2];
+    end
+
     vec3 src_src;
     logic src_src_valid;
 
-    // 6-stages: (xS^2, yS^2, zS^2)
+    // 6-stages: (xS^2, yS^2, +-zS^2)
     mult_elementwise mult_src_src(
         .clk(clk),
         .rst(rst),
         .valid_in(valid_in),
-        .a(src),
-        .b(src),
+        .a(c_src_in),
+        .b(c_signed_src_in),
         .valid_out(src_src_valid),
         .a_times_b(src_src)
     );
@@ -344,7 +472,7 @@ module sphere_quadratic(
         .s_axis_a_tvalid(src_src_valid),                  // input wire s_axis_a_tvalid
         .s_axis_a_tdata(src_src[2]),                    // input wire [15 : 0] s_axis_a_tdata
         .s_axis_b_tvalid(src_src_valid),                  // input wire s_axis_b_tvalid
-        .s_axis_b_tdata(16'h3C00),                    // input wire [15 : 0] s_axis_b_tdata
+        .s_axis_b_tdata(c_include_minus_1_piped ? 16'h3C00 : 16'h0000),                    // input wire [15 : 0] s_axis_b_tdata
         .s_axis_operation_tvalid(src_src_valid),  // input wire s_axis_operation_tvalid
         .s_axis_operation_tdata({2'b0, fpuOpSub}),    // input wire [7 : 0] s_axis_operation_tdata
         .m_axis_result_tvalid(src_src_z_1_valid),        // output wire m_axis_result_tvalid
