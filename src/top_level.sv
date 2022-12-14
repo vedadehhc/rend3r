@@ -207,7 +207,7 @@ module top_level (
   view camera;
   logic [31:0] seven_seg_val;
 
-  triangle_3d_to_2d t23 (  // 53 stages
+  triangle_3d_to_2d t23 (  // 63 stages
       .clk(sys_clk),
       .rst(sys_rst),
       .camera(camera),
@@ -225,47 +225,19 @@ module top_level (
       .an_out (an)
   );
 
-  logic [2:0] vert_setting, coord_setting;
-  logic [1:0] vert_index, coord_index;
-  logic displaying_t3d;
 
-  assign coord_setting  = sw[2:0];
-  assign vert_setting   = sw[5:3];
-  assign displaying_t3d = sw[6];
-
-  always_comb begin
-    if (sys_rst) begin
-      seven_seg_val = 0;
-      coord_index = 0;
-      vert_index = 0;
-    end else begin
-
-      if (vert_setting == 'b001) begin
-        vert_index = 2'd0;
-      end else if (vert_setting == 'b010) begin
-        vert_index = 2'd1;
-      end else if (vert_setting == 'b100) begin
-        vert_index = 2'd2;
-      end else begin
-        vert_index = 2'd0;
-      end
-
-      if (coord_setting == 'b001) begin
-        coord_index = 2'd0;
-      end else if (coord_setting == 'b010) begin
-        coord_index = 2'd1;
-      end else if (coord_setting == 'b100) begin
-        coord_index = 2'd2;
-      end else begin
-        coord_index = 2'd0;
-      end
-
-      seven_seg_val = {controller_tri.x3, controller_tri.col[15:14], controller_tri.col[1:0], 3'b0, pc_debug, 3'b0, rast_tri_addr};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
-
-    end
-  end
+  assign seven_seg_val = {
+    controller_tri.x3,
+    controller_tri.col[15:14],
+    controller_tri.col[1:0],
+    3'b0,
+    pc_debug,
+    3'b0,
+    rast_tri_addr
+  }; 
 
   localparam TEN = 'h4900;
+  localparam SEVEN_FIVE = 'h4780;  // 7.5
   localparam HUNDRED = 'h5640;
 
   logic [`PBRAM_ADDR_BITS-1:0] pixel_addr, pixel_addr_pix_clk;
@@ -290,7 +262,7 @@ module top_level (
       camera.near_clip <= ONE;
 
       camera.canvas_dimensions[0] <= TEN;
-      camera.canvas_dimensions[1] <= TEN;
+      camera.canvas_dimensions[1] <= SEVEN_FIVE;
 
       camera.image_dimensions[0] <= FLOAT_FRAME_WIDTH;
       camera.image_dimensions[1] <= FLOAT_FRAME_HEIGHT;
@@ -302,22 +274,36 @@ module top_level (
 
   assign pixel_write_enable = is_within;
 
-  logic is_within;
+  logic is_within, rast_tri_valid_pipe, is_within_valid;
 
   triangle_2d_fill tfill_a (  // 3
       .rst(sys_rst),
       .clk(sys_clk),
       .hcount(hcount),
+      .triangle_valid(rast_tri_valid_pipe),
       .vcount(vcount),
+      .output_valid(is_within_valid),
       .triangle(tfill_in),
       .is_within(is_within)
+  );
+
+  ila my_ila(
+    .clk(sys_clk),
+    .probe0(is_within),
+    .probe1(is_within_valid),
+    .probe2(rast_tri_valid_pipe),
+    .probe3(tfill_in[0][0]),
+    .probe4(hcount),
+    .probe5(vcount),
+    .probe6(controller_tri_3d[0][0]),
+    .probe7(controller_tri_valid)
   );
 
   logic [`PADDED_COLOR_WIDTH-1:0] triangle_color_piped;
 
   pipe #(
-      .LENGTH(57),  // 53 (proj+ndc+rast) + 4 (fill)
-      .WIDTH (16)
+      .LENGTH(67),  // 53 (proj+ndc+rast) + 4 (fill)
+      .WIDTH (`PADDED_COLOR_WIDTH)
   ) triangle_color_pipe (
       .clk(sys_clk),
       .rst(sys_rst),
@@ -325,18 +311,7 @@ module top_level (
       .out(triangle_color_piped)
   );
 
-  always_comb begin
-    if (sys_rst) begin
-      pixel_write = 0;
-    end else begin
-      if (is_within) begin
-        pixel_write = triangle_color_piped;
-      end else begin
-        pixel_write = 16'b0;
-      end
-
-    end
-  end
+  assign pixel_write = triangle_color_piped;
 
   always_ff @(posedge sys_clk) begin
     if (sys_rst) begin
@@ -345,7 +320,7 @@ module top_level (
       vcount <= 0;
 
     end else begin
-
+      rast_tri_valid_pipe <= rast_tri_valid;
       tfill_in <= rast_tri;  // 1
 
       if (hcount == `FRAME_WIDTH - 1) begin

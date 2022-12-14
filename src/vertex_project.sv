@@ -1,7 +1,7 @@
 `default_nettype none
 import types::*;
 
-module vertex_project ( // 11
+module vertex_project ( // 21
     input wire clk,
     input wire rst,
     input wire f16 cam_near_clip,
@@ -28,7 +28,7 @@ module vertex_project ( // 11
   assign screen_x = zd_x_out;
   assign screen_y = zd_y_out;
 
-  z_divide zd_x ( // 11
+  z_divide zd_x ( // 21
       .clk(clk),
       .rst(rst),
       .cam_near_clip(cam_near_clip),
@@ -39,7 +39,7 @@ module vertex_project ( // 11
       .output_valid(zd_x_valid)
   );
 
-  z_divide zd_y ( // 11
+  z_divide zd_y ( // 21
       .clk(clk),
       .rst(rst),
       .cam_near_clip(cam_near_clip),
@@ -53,7 +53,7 @@ module vertex_project ( // 11
 
 endmodule
 
-module z_divide ( // 11
+module z_divide ( // 21
     input  wire  clk,
     input  wire  rst,
     input  wire f16   cam_near_clip,
@@ -70,7 +70,7 @@ module z_divide ( // 11
   assign output_valid = mul_valid;
   assign screen_coord = mul_out;
 
-  float_divide f_div ( // 5
+  float_divide f_div ( // 15
       .aclk                (clk),                    // input wire aclk
       .s_axis_a_tvalid     (input_valid),                   // input wire s_axis_a_tvalid
       .s_axis_b_tvalid     (input_valid),                   // input wire s_axis_b_tvalid

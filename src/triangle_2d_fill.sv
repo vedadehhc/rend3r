@@ -7,6 +7,8 @@ module triangle_2d_fill (
     input wire [11:0] hcount,
     input wire [11:0] vcount,
     input wire tri_2d triangle,
+    input wire triangle_valid,
+    output logic output_valid,
     output logic is_within
 );
 
@@ -16,11 +18,18 @@ module triangle_2d_fill (
   assign point[0] = hcount;
   assign point[1] = vcount;
   assign point[2] = 'b0;
-  // assign point = {vcount, hcount};
 
+
+  pipe #(.LENGTH(3)) valid_pipe (
+    .clk(clk),
+    .rst(rst),
+    .in(triangle_valid),
+    .out(output_valid)
+  );
+  
   logic has_neg, has_pos;
 
-  planar_sign pd0 (
+  planar_sign pd0 ( // 3
       .clk(clk),
       .rst(rst),
       .point(point),
@@ -28,7 +37,7 @@ module triangle_2d_fill (
       .vertex_b(triangle[1]),
       .sign(d0)
   );
-  planar_sign pd1 (
+  planar_sign pd1 ( // 3
       .clk(clk),
       .rst(rst),
       .point(point),
@@ -36,7 +45,7 @@ module triangle_2d_fill (
       .vertex_b(triangle[2]),
       .sign(d1)
   );
-  planar_sign pd2 (
+  planar_sign pd2 ( // 3
       .clk(clk),
       .rst(rst),
       .point(point),
