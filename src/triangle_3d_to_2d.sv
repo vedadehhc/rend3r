@@ -73,13 +73,13 @@ module vertex_3d_to_2d ( // 63
   logic screen_pt_valid, ndc_pt_valid;
   vec2_f16 screen_pt, ndc_pt;
 
-  ila my_ila (
-    .clk(clk),
-    .probe0(input_valid),
-    .probe1(screen_pt_valid),
-    .probe2(ndc_pt_valid),
-    .probe3(rast_pt_valid)
-  );
+//   ila my_ila (
+//     .clk(clk),
+//     .probe0(input_valid),
+//     .probe1(screen_pt_valid),
+//     .probe2(ndc_pt_valid),
+//     .probe3(rast_pt_valid)
+//   );
 
   vertex_project v_p ( // 21
       .clk(clk),

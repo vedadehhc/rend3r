@@ -191,7 +191,7 @@ module top_level (
   );
 
   tri_3d cam_tri_a, cam_tri_b;
-  tri_2d rast_tri, tfill_in;
+  tri_2d rast_tri, rast_tri_a, rast_tri_b;
 
   vec3_i16 out_test_pt, rast_pt;
 
@@ -207,14 +207,34 @@ module top_level (
   view camera;
   logic [31:0] seven_seg_val;
 
-  triangle_3d_to_2d t23 (  // 63 stages
+  // triangle_3d_to_2d t23 (  // 63 stages
+  //     .clk(sys_clk),
+  //     .rst(sys_rst),
+  //     .camera(camera),
+  //     .input_valid(controller_tri_valid),
+  //     .triangle_3d(controller_tri_3d),
+  //     .triangle_2d(rast_tri),
+  //     .triangle_2d_valid(rast_tri_valid)
+  // );
+
+  triangle_3d_to_2d t23_a (  // 63 stages
       .clk(sys_clk),
       .rst(sys_rst),
       .camera(camera),
-      .input_valid(controller_tri_valid),
-      .triangle_3d(controller_tri_3d),
-      .triangle_2d(rast_tri),
-      .triangle_2d_valid(rast_tri_valid)
+      .input_valid(1'b1),
+      .triangle_3d(cam_tri_a),
+      .triangle_2d(rast_tri_a),
+      .triangle_2d_valid()
+  );
+
+  triangle_3d_to_2d t23_b (  // 63 stages
+      .clk(sys_clk),
+      .rst(sys_rst),
+      .camera(camera),
+      .input_valid(1'b1),
+      .triangle_3d(cam_tri_b),
+      .triangle_2d(rast_tri_b),
+      .triangle_2d_valid()
   );
 
   seven_segment_controller mssc (
@@ -259,17 +279,17 @@ module top_level (
       cam_tri_a[2][1] <= 'h3c00;  // 1
       cam_tri_a[2][2] <= 'hc000;  // -2
 
-      cam_tri_b[0][0] <= 'hbc00;  // -1
-      cam_tri_b[0][1] <= 'hbc00;  // -1
-      cam_tri_b[0][2] <= 'hc000;  // -2
+      cam_tri_b[0][0] <= 'hC200;  // -3
+      cam_tri_b[0][1] <= 'hC200;  // -3
+      cam_tri_b[0][2] <= 'hC400;  // -4
 
-      cam_tri_b[1][0] <= 'h3c00;  // 1
-      cam_tri_b[1][1] <= 'hbe00;  // -1.5
+      cam_tri_b[1][0] <= 'hC400;  // -4
+      cam_tri_b[1][1] <= 'h4200;  // 3
       cam_tri_b[1][2] <= 'hc000;  // -2
 
       cam_tri_b[2][0] <= 'h3c00;  // 1
-      cam_tri_b[2][1] <= 'h3c00;  // 1
-      cam_tri_b[2][2] <= 'hc000;  // -2
+      cam_tri_b[2][1] <= 'h4400;  // 1
+      cam_tri_b[2][2] <= 'hC400;  // -4
 
       camera.near_clip <= ONE;
 
@@ -284,19 +304,41 @@ module top_level (
     end
   end
 
-  assign pixel_write_enable = sw[15] | is_within;
+  assign pixel_write_enable = sw[15] | is_within_a | is_within_b;
 
-  logic is_within, rast_tri_was_valid, is_within_valid;
+  logic is_within, is_within_a, is_within_b;
+  
+  logic rast_tri_was_valid, is_within_valid;
 
+  // triangle_2d_fill tfill (  // 3
+  //     .rst(sys_rst),
+  //     .clk(sys_clk),
+  //     .hcount(hcount),
+  //     .triangle_valid(rast_tri_valid),
+  //     .vcount(vcount),
+  //     .output_valid(is_within_valid),
+  //     .triangle(rast_tri),
+  //     .is_within(is_within)
+  // );
   triangle_2d_fill tfill_a (  // 3
       .rst(sys_rst),
       .clk(sys_clk),
       .hcount(hcount),
-      .triangle_valid(rast_tri_valid),
+      .triangle_valid(1'b1),
       .vcount(vcount),
-      .output_valid(is_within_valid),
-      .triangle(rast_tri),
-      .is_within(is_within)
+      .output_valid(),
+      .triangle(rast_tri_a),
+      .is_within(is_within_a)
+  );
+  triangle_2d_fill tfill_b (  // 3
+      .rst(sys_rst),
+      .clk(sys_clk),
+      .hcount(hcount),
+      .triangle_valid(1'b1),
+      .vcount(vcount),
+      .output_valid(),
+      .triangle(rast_tri_b),
+      .is_within(is_within_b)
   );
 
   // ila my_ila(
@@ -323,7 +365,7 @@ module top_level (
       .out(triangle_color_piped)
   );
 
-  assign pixel_write = sw[15] ? 16'b0 : triangle_color_piped;
+  assign pixel_write = sw[15] ? 16'b0 : 16'hf0f;//triangle_color_piped;
 
   always_ff @(posedge sys_clk) begin
     if (sys_rst) begin
