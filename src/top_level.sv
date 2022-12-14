@@ -208,7 +208,7 @@ module top_level (
   end
 
   logic [31:0] seven_seg_val;
-  assign seven_seg_val = c_btnd ? valid_count : {ray_pixel_out, ray_pixel_y[3:0], ray_pixel_x[3:0], 1'b0, ray_shape_addr[0], shape_cast_debug_state, pc_debug};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
+  assign seven_seg_val = c_btnd ? valid_count : {ray_pixel_out, ray_pixel_y[3:0], ray_pixel_x[3:0], 1'b0, ray_shape_addr[0], shape_cast_debug_state, pc_debug[3:0]};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
 
 
   seven_segment_controller mssc (
