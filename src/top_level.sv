@@ -190,7 +190,7 @@ module top_level (
       .doutb(pixel_read_pix_clk)  // output wire [15 : 0] doutb
   );
 
-  tri_3d cam_tri;
+  tri_3d cam_tri_a, cam_tri_b;
   tri_2d rast_tri, tfill_in;
 
   vec3_i16 out_test_pt, rast_pt;
@@ -247,17 +247,29 @@ module top_level (
 
   always_ff @(posedge sys_clk) begin
     if (sys_rst) begin
-      cam_tri[0][0] <= 'hbc00;  // -1
-      cam_tri[0][1] <= 'hbc00;  // -1
-      cam_tri[0][2] <= 'hc000;  // -2
+      cam_tri_a[0][0] <= 'hbc00;  // -1
+      cam_tri_a[0][1] <= 'hbc00;  // -1
+      cam_tri_a[0][2] <= 'hc000;  // -2
 
-      cam_tri[1][0] <= 'h3c00;  // 1
-      cam_tri[1][1] <= 'hbe00;  // -1.5
-      cam_tri[1][2] <= 'hc000;  // -2
+      cam_tri_a[1][0] <= 'h3c00;  // 1
+      cam_tri_a[1][1] <= 'hbe00;  // -1.5
+      cam_tri_a[1][2] <= 'hc000;  // -2
 
-      cam_tri[2][0] <= 'h3c00;  // 1
-      cam_tri[2][1] <= 'h3c00;  // 1
-      cam_tri[2][2] <= 'hc000;  // -2
+      cam_tri_a[2][0] <= 'h3c00;  // 1
+      cam_tri_a[2][1] <= 'h3c00;  // 1
+      cam_tri_a[2][2] <= 'hc000;  // -2
+
+      cam_tri_b[0][0] <= 'hbc00;  // -1
+      cam_tri_b[0][1] <= 'hbc00;  // -1
+      cam_tri_b[0][2] <= 'hc000;  // -2
+
+      cam_tri_b[1][0] <= 'h3c00;  // 1
+      cam_tri_b[1][1] <= 'hbe00;  // -1.5
+      cam_tri_b[1][2] <= 'hc000;  // -2
+
+      cam_tri_b[2][0] <= 'h3c00;  // 1
+      cam_tri_b[2][1] <= 'h3c00;  // 1
+      cam_tri_b[2][2] <= 'hc000;  // -2
 
       camera.near_clip <= ONE;
 

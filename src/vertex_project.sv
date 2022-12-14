@@ -1,7 +1,7 @@
 `default_nettype none
 import types::*;
 
-module vertex_project ( // 21
+module vertex_project (  // 21
     input wire clk,
     input wire rst,
     input wire f16 cam_near_clip,
@@ -28,7 +28,7 @@ module vertex_project ( // 21
   assign screen_x = zd_x_out;
   assign screen_y = zd_y_out;
 
-  z_divide zd_x ( // 21
+  z_divide zd_x (  // 21
       .clk(clk),
       .rst(rst),
       .cam_near_clip(cam_near_clip),
@@ -39,7 +39,7 @@ module vertex_project ( // 21
       .output_valid(zd_x_valid)
   );
 
-  z_divide zd_y ( // 21
+  z_divide zd_y (  // 21
       .clk(clk),
       .rst(rst),
       .cam_near_clip(cam_near_clip),
@@ -53,41 +53,50 @@ module vertex_project ( // 21
 
 endmodule
 
-module z_divide ( // 21
-    input  wire  clk,
-    input  wire  rst,
-    input  wire f16   cam_near_clip,
-    input  wire f16   coord,
-    input  wire f16   z_coord,
-    input  wire  input_valid,
-    output f16   screen_coord,
+module z_divide (  // 21
+    input wire clk,
+    input wire rst,
+    input wire f16 cam_near_clip,
+    input wire f16 coord,
+    input wire f16 z_coord,
+    input wire input_valid,
+    output f16 screen_coord,
     output logic output_valid
 );
 
   f16 div_out, mul_out, mul_in;
-  logic div_valid, mul_valid;
+  logic div_valid, mul_valid, input_valid_delayed;
 
   assign output_valid = mul_valid;
   assign screen_coord = mul_out;
 
-  float_divide f_div ( // 15
-      .aclk                (clk),                    // input wire aclk
-      .s_axis_a_tvalid     (input_valid),                   // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid     (input_valid),                   // input wire s_axis_b_tvalid
-      .s_axis_a_tdata      (coord),                  // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata      ({~z_coord[15], z_coord[14:0]}),  // input wire [15 : 0] s_axis_b_tdata
-      .m_axis_result_tvalid(div_valid),              // output wire m_axis_result_tvalid
-      .m_axis_result_tdata (div_out)                 // output wire [15 : 0] m_axis_result_tdata
+  float_divide f_div (  // 15
+      .aclk(clk),  // input wire aclk
+      .s_axis_a_tvalid(input_valid),  // input wire s_axis_a_tvalid
+      .s_axis_b_tvalid(input_valid),  // input wire s_axis_b_tvalid
+      .s_axis_a_tdata(coord),  // input wire [15 : 0] s_axis_a_tdata
+      .s_axis_b_tdata({~z_coord[15], z_coord[14:0]}),  // input wire [15 : 0] s_axis_b_tdata
+      .m_axis_result_tvalid(div_valid),  // output wire m_axis_result_tvalid
+      .m_axis_result_tdata(div_out)  // output wire [15 : 0] m_axis_result_tdata
   );
 
-  float_multiply f_mul ( // 6
-      .aclk                (clk),           // input wire aclk
-      .s_axis_a_tvalid     (div_valid),           // input wire s_axis_a_tvalid
-      .s_axis_b_tvalid     (input_valid),           // input wire s_axis_b_tvalid
-      .s_axis_a_tdata      (div_out),         // input wire [15 : 0] s_axis_a_tdata
-      .s_axis_b_tdata      (cam_near_clip),  // input wire [15 : 0] s_axis_b_tdata
-      .m_axis_result_tvalid(mul_valid),      // output wire m_axis_result_tvalid
-      .m_axis_result_tdata (mul_out)         // output wire [15 : 0] m_axis_result_tdata
+  pipe #( // 15
+      .LENGTH(15)
+  ) input_valid_pipe (
+      .clk(clk),
+      .rst(rst),
+      .in (input_valid),
+      .out(input_valid_delayed)
+  );
+
+  float_multiply f_mul (  // 6
+      .aclk                (clk),                  // input wire aclk
+      .s_axis_a_tvalid     (div_valid),            // input wire s_axis_a_tvalid
+      .s_axis_b_tvalid     (input_valid_delayed),  // input wire s_axis_b_tvalid
+      .s_axis_a_tdata      (div_out),              // input wire [15 : 0] s_axis_a_tdata
+      .s_axis_b_tdata      (cam_near_clip),        // input wire [15 : 0] s_axis_b_tdata
+      .m_axis_result_tvalid(mul_valid),            // output wire m_axis_result_tvalid
+      .m_axis_result_tdata (mul_out)               // output wire [15 : 0] m_axis_result_tdata
   );
 
 
