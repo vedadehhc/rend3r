@@ -20,16 +20,18 @@ module triangle_2d_fill (
   assign point[2] = 'b0;
 
 
-  pipe #(.LENGTH(3)) valid_pipe (
-    .clk(clk),
-    .rst(rst),
-    .in(triangle_valid),
-    .out(output_valid)
+  pipe #(
+      .LENGTH(3)
+  ) valid_pipe (
+      .clk(clk),
+      .rst(rst),
+      .in (triangle_valid),
+      .out(output_valid)
   );
-  
+
   logic has_neg, has_pos;
 
-  planar_sign pd0 ( // 3
+  planar_sign pd0 (  // 3
       .clk(clk),
       .rst(rst),
       .point(point),
@@ -37,7 +39,7 @@ module triangle_2d_fill (
       .vertex_b(triangle[1]),
       .sign(d0)
   );
-  planar_sign pd1 ( // 3
+  planar_sign pd1 (  // 3
       .clk(clk),
       .rst(rst),
       .point(point),
@@ -45,7 +47,7 @@ module triangle_2d_fill (
       .vertex_b(triangle[2]),
       .sign(d1)
   );
-  planar_sign pd2 ( // 3
+  planar_sign pd2 (  // 3
       .clk(clk),
       .rst(rst),
       .point(point),

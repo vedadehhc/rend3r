@@ -15,6 +15,18 @@ module triangle_3d_to_2d ( // 63
 
   assign triangle_2d_valid = v1_valid && v2_valid && v3_valid;
 
+//   ila my_ila2 (
+//     .clk(clk),
+//     .probe0(v1_valid),
+//     .probe1(v2_valid),
+//     .probe2(v3_valid),
+//     .probe3(16'b0),
+//     .probe4(16'b0),
+//     .probe5(16'b0),
+//     .probe6(16'b0),
+//     .probe7(1'b0)
+//   );
+
   vertex_3d_to_2d v1 ( // 63
       .clk(clk),
       .rst(rst),
@@ -60,6 +72,14 @@ module vertex_3d_to_2d ( // 63
 
   logic screen_pt_valid, ndc_pt_valid;
   vec2_f16 screen_pt, ndc_pt;
+
+  ila my_ila (
+    .clk(clk),
+    .probe0(input_valid),
+    .probe1(screen_pt_valid),
+    .probe2(ndc_pt_valid),
+    .probe3(rast_pt_valid)
+  );
 
   vertex_project v_p ( // 21
       .clk(clk),

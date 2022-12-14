@@ -111,7 +111,7 @@ module top_level (
   assign controller_tri_3d[2][2] = controller_tri.z3;
 
   assign led[15] = controller_tri_valid;
-
+  assign led[14] = rast_tri_was_valid;
 
   logic sys_rst, sys_clk, clk_div_100mhz, clk_div_65mhz, pix_clk;
 
@@ -272,32 +272,32 @@ module top_level (
     end
   end
 
-  assign pixel_write_enable = is_within;
+  assign pixel_write_enable = sw[15] | is_within;
 
-  logic is_within, rast_tri_valid_pipe, is_within_valid;
+  logic is_within, rast_tri_was_valid, is_within_valid;
 
   triangle_2d_fill tfill_a (  // 3
       .rst(sys_rst),
       .clk(sys_clk),
       .hcount(hcount),
-      .triangle_valid(rast_tri_valid_pipe),
+      .triangle_valid(rast_tri_valid),
       .vcount(vcount),
       .output_valid(is_within_valid),
-      .triangle(tfill_in),
+      .triangle(rast_tri),
       .is_within(is_within)
   );
 
-  ila my_ila(
-    .clk(sys_clk),
-    .probe0(is_within),
-    .probe1(is_within_valid),
-    .probe2(rast_tri_valid_pipe),
-    .probe3(tfill_in[0][0]),
-    .probe4(hcount),
-    .probe5(vcount),
-    .probe6(controller_tri_3d[0][0]),
-    .probe7(controller_tri_valid)
-  );
+  // ila my_ila(
+  //   .clk(sys_clk),
+  //   .probe0(is_within),
+  //   .probe1(is_within_valid),
+  //   .probe2(rast_tri_valid_pipe),
+  //   .probe3(rast_tri[0][0]),
+  //   .probe4(hcount),
+  //   .probe5(vcount),
+  //   .probe6(controller_tri_3d[0][0]),
+  //   .probe7(controller_tri_valid)
+  // );
 
   logic [`PADDED_COLOR_WIDTH-1:0] triangle_color_piped;
 
@@ -311,17 +311,19 @@ module top_level (
       .out(triangle_color_piped)
   );
 
-  assign pixel_write = triangle_color_piped;
+  assign pixel_write = sw[15] ? 16'b0 : triangle_color_piped;
 
   always_ff @(posedge sys_clk) begin
     if (sys_rst) begin
 
       hcount <= 0;
       vcount <= 0;
+      rast_tri_was_valid <= 0;
 
     end else begin
-      rast_tri_valid_pipe <= rast_tri_valid;
-      tfill_in <= rast_tri;  // 1
+      rast_tri_was_valid <= rast_tri_valid | rast_tri_valid;
+      // rast_tri_valid_pipe <= rast_tri_valid;
+      // tfill_in <= rast_tri;  // 1
 
       if (hcount == `FRAME_WIDTH - 1) begin
         hcount <= 0;

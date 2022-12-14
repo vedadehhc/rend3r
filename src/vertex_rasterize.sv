@@ -42,8 +42,8 @@ module vertex_rasterize ( // 19
       .out(ndc_x_delayed)
   );
 
-  pipe #( // 19
-      .LENGTH(19)
+  pipe #( // 8
+      .LENGTH(8)
   ) input_valid_pipe (
       .clk(clk),
       .rst(rst),
@@ -100,17 +100,6 @@ module vertex_rasterize ( // 19
       .out(rast_z)
   );
 
-  
-
-  // always_ff @(posedge clk) begin
-  //   if (rst) begin
-  //     rast_z <= 0;
-  //   end else begin
-  //     if (fx13_valid) begin
-  //       rast_z <= fx13_out; //fx13_out[12] ? -$signed({4'b0, fx13_out[11:0]}) : $signed({4'b0, fx13_out[11:0]});
-  //     end
-  //   end
-  // end
 
 endmodule
 
@@ -130,10 +119,7 @@ module coord_rast ( // 11
 
   i16 coord_i16;  // $signed({1'b0, rast_coord[11:0]});
 
-
   assign output_valid = fx13_valid;
-  //   assign coord_i16   = $signed({1'b0, fx13_out[11:0]});
-  //   assign rast_coord  = fx13_out[12] ? -coord_i16 : coord_i16;
   assign rast_coord   = fx13_out;
 
   float_multiply f_mul ( // 6
