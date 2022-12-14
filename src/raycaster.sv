@@ -299,8 +299,8 @@ module raycaster#(
     always_ff @( posedge clk ) begin
         p4_hit[0] <= quad_sol_real_pos;
 
-        p4_rot[0] <= p3_rot[P2_STAGES-1];
-        p4_shape_type[0] <= p3_shape_type[P2_STAGES-1];
+        p4_rot[0] <= p3_rot[P3_STAGES-1];
+        p4_shape_type[0] <= p3_shape_type[P3_STAGES-1];
 
         for (int i = 1; i < P4_STAGES; i = i+1) begin
             p4_hit[i] <= p4_hit[i-1];
@@ -559,6 +559,17 @@ module raycaster#(
         .out(p5_hit)
     );
 
+    ShapeType p5_shape_type;
+    pip#(
+        .LENGTH(P5_STAGES),
+        .WIDTH(4)
+    ) p5_pipe_shape_type (
+        .clk(clk),
+        .rst(rst),
+        .in(p4_shape_type[P4_STAGES-1]),
+        .out(p5_shape_type)
+    );
+
     float16 p5_sq_distance;
     pipe#(
         .LENGTH(P5_STAGES),
@@ -590,7 +601,7 @@ module raycaster#(
 
     // Distance should be scaled solution
     // assign valid_out = p5_intersection_valid;
-    assign hit = p5_hit;
+    assign hit = p5_hit && (p5_shape_type != stOff);
     assign sq_distance = p5_sq_distance;
 
     assign intersection[0] = p5_intersection[0];
