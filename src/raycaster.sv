@@ -560,7 +560,7 @@ module raycaster#(
     );
 
     ShapeType p5_shape_type;
-    pip#(
+    pipe #(
         .LENGTH(P5_STAGES),
         .WIDTH(4)
     ) p5_pipe_shape_type (
