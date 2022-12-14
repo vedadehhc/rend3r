@@ -41,7 +41,7 @@ module top_level (
 
 );
 
-  logic step_by_step = sw[0];
+  logic step_by_step = 1'b0;
   logic next_step = p_btnu;
 
   assign led[0] = c_btnu;

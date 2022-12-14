@@ -14,7 +14,7 @@ module raytracing_controller(
     input Shape cur_shape,
     input Light cur_light,
     input Camera cur_camera,
-    input logic [15:0] pixel_background,
+    input wire [15:0] pixel_background,
     output logic busy,
     output ShapeAddr cur_shape_addr,
     output LightAddr cur_light_addr,
@@ -26,7 +26,7 @@ module raytracing_controller(
 );
 // camera at origin, pointing in negative z
 
-    typedef enum { WAITING, INITIAL, LIGHTING, GIVE_OUTPUT, GEN_NEXT_PIXEL } raytrace_state;
+    typedef enum { WAITING, INITIAL, LIGHTING, LIGHTING_NORMAL, GIVE_OUTPUT, GEN_NEXT_PIXEL } raytrace_state;
     raytrace_state state;
     logic sent_command;
     assign busy = (state != WAITING);
@@ -140,7 +140,9 @@ module raytracing_controller(
                         if (sent_command) begin
                             if (shape_cast_valid_out) begin
                                 if (shape_cast_hit) begin
-                                    // no lighting
+                                    // no lighting - give black
+                                    state <= GIVE_OUTPUT;
+                                    pixel_value <= 16'b0;
                                 end else begin
                                     // yes lighting!
                                 end
@@ -158,6 +160,9 @@ module raytracing_controller(
             end
         end
     end
+
+
+
 
     logic valid_inc_ray_x;
     float16 inc_ray_x;
