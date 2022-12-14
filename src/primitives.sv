@@ -3,14 +3,6 @@
 
 import proctypes::*;
 
-// combinational
-module negate_float (
-    input wire float16 a,
-    output float16 neg_a 
-);
-    assign neg_a = {~a[15], a[14:0]};
-endmodule
-
 // 6 stage
 module mult_elementwise(
     input wire clk,
@@ -194,7 +186,7 @@ module signed_dot_product(
                 .s_axis_a_tvalid(valid_in),                         // input wire s_axis_a_tvalid
                 .s_axis_a_tdata(a[a_b_ind]),                   // input wire [15 : 0] s_axis_a_tdata
                 .s_axis_b_tvalid(valid_in),                         // input wire s_axis_b_tvalid
-                .s_axis_b_tdata(sign[a_b_ind] ? negate_float(b[a_b_ind]) : b[a_b_ind]),                   // input wire [15 : 0] s_axis_b_tdata
+                .s_axis_b_tdata(sign[a_b_ind] ? {~b[a_b_ind][15], b[a_b_ind][14:0]} : b[a_b_ind]),                   // input wire [15 : 0] s_axis_b_tdata
                 .m_axis_result_tvalid(a_b_valid[a_b_ind]),    // output wire m_axis_result_tvalid
                 .m_axis_result_tdata(a_b[a_b_ind])            // output wire [15 : 0] m_axis_result_tdata
             );

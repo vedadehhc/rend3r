@@ -431,9 +431,9 @@ module sphere_quadratic(
             end
         endcase
 
-        c_signed_src_in[0] = c_sign_in[0] ? negate_float(c_src_in[0]) : c_src_in[0];
-        c_signed_src_in[1] = c_sign_in[1] ? negate_float(c_src_in[1]) : c_src_in[1];
-        c_signed_src_in[2] = c_sign_in[2] ? negate_float(c_src_in[2]) : c_src_in[2];
+        c_signed_src_in[0] = c_sign_in[0] ? {~c_src_in[0][15], c_src_in[0][14:0]} : c_src_in[0];
+        c_signed_src_in[1] = c_sign_in[1] ? {~c_src_in[1][15], c_src_in[1][14:0]} : c_src_in[1];
+        c_signed_src_in[2] = c_sign_in[2] ? {~c_src_in[2][15], c_src_in[2][14:0]} : c_src_in[2];
     end
 
     vec3 src_src;

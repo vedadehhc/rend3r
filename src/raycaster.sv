@@ -371,9 +371,7 @@ endmodule
 
 // takes RAYCASTER_STAGES + NUM_SHAPES + O(1) cycles to produce result
 // folded design
-module all_shapes_raycaster#(
-    parameter RAYCASTER_STAGES = 155
-)(
+module all_shapes_raycaster (
     input wire clk,
     input wire rst,
     input wire valid_in,
@@ -458,9 +456,9 @@ module all_shapes_raycaster#(
     end
 
     vec3 shape_trans_inv;
-    assign shape_trans_inv[0] = negate_float(cur_shape.xloc);
-    assign shape_trans_inv[1] = negate_float(cur_shape.yloc);
-    assign shape_trans_inv[2] = negate_float(cur_shape.zloc);
+    assign shape_trans_inv[0] = {~cur_shape.xloc[15], cur_shape.xloc[14:0]};
+    assign shape_trans_inv[1] = {~cur_shape.yloc[15], cur_shape.yloc[14:0]};
+    assign shape_trans_inv[2] = {~cur_shape.zloc[15], cur_shape.zloc[14:0]};
 
     quaternion shape_rot;
     assign shape_rot[0] = cur_shape.rrot;
