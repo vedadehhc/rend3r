@@ -30,7 +30,7 @@ module raycaster#(
     input quaternion shape_rot,
     input vec3 shape_scale_inv,
     output logic valid_out,
-    output logic ShapeAddr shape_addr_out,
+    output ShapeAddr shape_addr_out,
     output logic hit,
     output float16 sq_distance,
     output vec3 intersection
@@ -54,7 +54,7 @@ module raycaster#(
     // Pipeline src, dir for later stages
     vec3 p1_src [P1_STAGES-1:0];
     vec3 p1_dir [P1_STAGES-1:0];
-    vec3 p1_scale_inv [P1_STAGES-1:0]
+    vec3 p1_scale_inv [P1_STAGES-1:0];
     quaternion p1_rot [P1_STAGES-1:0];
     ShapeType p1_shape_type [P1_STAGES-1:0];
 
@@ -494,7 +494,7 @@ module all_shapes_raycaster#(
         .shape_addr_out(raycast_shape_addr),
         .hit(raycast_hit),
         .sq_distance(raycast_sq_distance),
-        .intersection(raycase_intersection)
+        .intersection(raycast_intersection)
     );
 
 
@@ -565,7 +565,7 @@ module all_shapes_raycaster#(
 
     assign valid_out = valid_final_shape_2;
     assign hit = best_valid;
-    assign sq_distance = best_sq_distance;
+    // assign sq_distance = best_sq_distance;
     assign intersection = best_intersection;
     assign hit_shape = cur_shape;
 

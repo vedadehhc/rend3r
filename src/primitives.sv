@@ -6,7 +6,7 @@ import proctypes::*;
 // combinational
 module negate_float (
     input wire float16 a,
-    output logic float16 neg_a 
+    output float16 neg_a 
 );
     assign neg_a = {~a[15], a[14:0]};
 endmodule
@@ -145,6 +145,135 @@ module double_dot_product(
         .valid_in(valid_in),
         .a(a),
         .b(b),
+        .valid_out(a_dot_b_valid),
+        .a_dot_b(a_dot_b)
+    );
+
+    // 8 stages
+    float16 a_dot_b_double;
+    logic a_dot_b_double_valid;
+    float_add_sub add_dir_sq_x_y_z (
+        .aclk(clk),                                        // input wire aclk
+        .s_axis_a_tvalid(a_dot_b_valid),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(a_dot_b),                    // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(a_dot_b_valid),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(a_dot_b),                    // input wire [15 : 0] s_axis_b_tdata
+        .s_axis_operation_tvalid(a_dot_b_valid),  // input wire s_axis_operation_tvalid
+        .s_axis_operation_tdata({2'b0, fpuOpAdd}),    // input wire [7 : 0] s_axis_operation_tdata
+        .m_axis_result_tvalid(a_dot_b_double_valid),        // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(a_dot_b_double)          // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    assign a_dot_b_2 = a_dot_b_double;
+    assign valid_out = a_dot_b_double_valid;
+endmodule
+
+
+
+// 22-stage pipeline
+// (a, b) --[6]--> (ax * bx, ay * by, az * bz) --[8]-->  (ax * bx + ay * by, az * bz)  --[8]--> (ax * bx + ay * by + az * bz) 
+module signed_dot_product(
+    input wire clk,
+    input wire rst,
+    input wire valid_in,
+    input vec3 a,
+    input vec3 b,
+    input wire [2:0] sign,
+    output logic valid_out,
+    output float16 a_dot_b
+);
+    vec3 a_b;
+    logic a_b_valid [2:0];
+
+    // PS1: 6 stages
+    generate
+        genvar a_b_ind;
+        for (a_b_ind = 0; a_b_ind < 3; a_b_ind = a_b_ind + 1) begin
+            float_multiply mult_a_b (
+                .aclk(clk),                                         // input wire aclk
+                .s_axis_a_tvalid(valid_in),                         // input wire s_axis_a_tvalid
+                .s_axis_a_tdata(a[a_b_ind]),                   // input wire [15 : 0] s_axis_a_tdata
+                .s_axis_b_tvalid(valid_in),                         // input wire s_axis_b_tvalid
+                .s_axis_b_tdata(sign[a_b_ind] ? negate_float(b[a_b_ind]) : b[a_b_ind]),                   // input wire [15 : 0] s_axis_b_tdata
+                .m_axis_result_tvalid(a_b_valid[a_b_ind]),    // output wire m_axis_result_tvalid
+                .m_axis_result_tdata(a_b[a_b_ind])            // output wire [15 : 0] m_axis_result_tdata
+            );
+        end
+    endgenerate
+
+    float16 a_b_x_y;
+    logic a_b_x_y_valid;
+
+    // PS2: 8 stages
+    float_add_sub add_a_b_x_y (
+        .aclk(clk),                                        // input wire aclk
+        .s_axis_a_tvalid(a_b_valid[0]),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(a_b[0]),                    // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(a_b_valid[1]),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(a_b[1]),                    // input wire [15 : 0] s_axis_b_tdata
+        .s_axis_operation_tvalid(a_b_valid[0]),  // input wire s_axis_operation_tvalid
+        .s_axis_operation_tdata({2'b0, fpuOpAdd}),    // input wire [7 : 0] s_axis_operation_tdata
+        .m_axis_result_tvalid(a_b_x_y_valid),        // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(a_b_x_y)          // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    // Pipeline stage
+    localparam PS2_STAGES = 8;
+    float16 a_b_z [PS2_STAGES-1:0];
+    always_ff @( posedge clk ) begin
+        a_b_z[0] <= a_b[2];
+        for (int i = 1; i < PS2_STAGES; i = i+1) begin
+            a_b_z[i] <= a_b_z[i-1];
+        end
+    end
+
+
+    // PS3: 8 stages
+    float16 a_b_x_y_z;
+    logic a_b_x_y_z_valid;
+
+    float_add_sub add_dir_sq_x_y_z (
+        .aclk(clk),                                        // input wire aclk
+        .s_axis_a_tvalid(a_b_x_y_valid),                  // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(a_b_x_y),                    // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(a_b_x_y_valid),                  // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(a_b_z[PS2_STAGES-1]),                    // input wire [15 : 0] s_axis_b_tdata
+        .s_axis_operation_tvalid(a_b_x_y_valid),  // input wire s_axis_operation_tvalid
+        .s_axis_operation_tdata({2'b0, fpuOpAdd}),    // input wire [7 : 0] s_axis_operation_tdata
+        .m_axis_result_tvalid(a_b_x_y_z_valid),        // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(a_b_x_y_z)          // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    assign a_dot_b = a_b_x_y_z;
+    assign valid_out = a_b_x_y_z_valid;
+
+endmodule
+
+
+// 30-stage pipeline
+// (a, b) --[22]--> (a.b) --[8]--> (a.b + a.b)
+module signed_double_dot_product(
+    input wire clk,
+    input wire rst,
+    input wire valid_in,
+    input vec3 a,
+    input vec3 b,
+    input wire [2:0] sign,
+    output logic valid_out,
+    output float16 a_dot_b_2
+);
+
+    float16 a_dot_b;
+    logic a_dot_b_valid;
+
+    // 22-stages
+    signed_dot_product dp(
+        .clk(clk),
+        .rst(rst),
+        .valid_in(valid_in),
+        .a(a),
+        .b(b),
+        .sign(sign),
         .valid_out(a_dot_b_valid),
         .a_dot_b(a_dot_b)
     );
@@ -579,7 +708,7 @@ module rotate_inv(
         .clk(clk),
         .rst(rst),
         .valid_in(vmult1),
-        .a(rot_3),
+        .a(rot[PS1_STAGES-1]),
         .b(q_rot_inv),
         .valid_out(vmult2),
         .c(rot_q_rot_inv)
