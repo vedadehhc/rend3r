@@ -3,6 +3,131 @@
 
 import proctypes::*;
 
+// k-stage
+module lighting(
+    input wire clk,
+    input wire rst,
+    input wire valid_in,
+    input vec3 normal,
+    input vec3 dir,
+    output logic valid_out,
+    output float16 intensity
+);
+
+    // P1: 22-stage
+    // n . n
+    // d . d
+    // n . d
+    localparam P1_STAGES = 22;
+
+    float16 n_dot_n;
+    dot_product dp_n_n (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(1'b1),
+        .a(normal),
+        .b(normal),
+        .a_dot_b(n_dot_n)
+    );
+    
+    float16 d_dot_d;
+    dot_product dp_d_d (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(1'b1),
+        .a(dir),
+        .b(dir),
+        .a_dot_b(d_dot_d)
+    );
+
+    float16 n_dot_d;
+    dot_product dp_n_d (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(1'b1),
+        .a(normal),
+        .b(dir),
+        .a_dot_b(n_dot_d)
+    );
+
+
+    // P2: 15-stage
+    // sqrt(n.n), sqrt(d.d), n.d
+    localparam P2_STAGES = 15;
+    
+    float16 p2_mag_n;
+    float_sqrt p2_sqrt_n (
+        .aclk(clk),                                  // input wire aclk
+        .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(n_dot_n),              // input wire [15 : 0] s_axis_a_tdata
+        // .m_axis_result_tvalid(m_axis_result_tvalid),  // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(p2_mag_n)    // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    
+    float16 p2_mag_d;
+    float_sqrt p2_sqrt_n (
+        .aclk(clk),                                  // input wire aclk
+        .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(d_dot_d),              // input wire [15 : 0] s_axis_a_tdata
+        // .m_axis_result_tvalid(m_axis_result_tvalid),  // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(p2_mag_d)    // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    // P3: 6-stage 
+    // sqrt(n.n) * sqrt(d.d), n.d
+    localparam P3_STAGES = 6;
+
+    float16 p3_mag_n_d;
+    float_multiply p3_mult_n_d (
+        .aclk(aclk),                                  // input wire aclk
+        .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(p2_mag_n),              // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(1'b1),            // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(p2_mag_d),              // input wire [15 : 0] s_axis_b_tdata
+        // .m_axis_result_tvalid(m_axis_result_tvalid),  // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(p3_mag_n_d)    // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    // P4: 15-stage
+    // n.d / (sqrt(n.n) * sqrt(d.d))
+    localparam P4_STAGES = 15;
+
+    float16 p4_n_dot_d;
+    pipe #(
+        .LENGTH(P2_STAGES + P3_STAGES),
+        .WIDTH(16)
+    ) pipe_p2_n_dot_d (
+        .clk(clk),
+        .rst(rst),
+        .in(n_dot_d),
+        .out(p4_n_dot_d)
+    );
+
+    float_divide p4_divide_n_d (
+        .aclk(clk),                                  // input wire aclk
+        .s_axis_a_tvalid(1'b1),            // input wire s_axis_a_tvalid
+        .s_axis_a_tdata(p4_n_dot_d),              // input wire [15 : 0] s_axis_a_tdata
+        .s_axis_b_tvalid(1'b1),            // input wire s_axis_b_tvalid
+        .s_axis_b_tdata(p3_mag_n_d),              // input wire [15 : 0] s_axis_b_tdata
+        // .m_axis_result_tvalid(m_axis_result_tvalid),  // output wire m_axis_result_tvalid
+        .m_axis_result_tdata(intensity)    // output wire [15 : 0] m_axis_result_tdata
+    );
+
+    localparam TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES;
+    pipe #(
+        .LENGTH(TOTAL_STAGES),
+        .WIDTH(1)
+    ) pipe_valid (
+        .clk(clk),
+        .rst(rst),
+        .in(valid_in),
+        .out(valid_out)
+    );
+
+
+endmodule
+
 // takes (RAYCASTER_STAGES + NUM_SHAPES + O(1)) * (NUM_LIGHTS + 1) * NUM_PIXELS + O(1) cycles 
 // TODO: add lighting
 module raytracing_controller(
