@@ -91,14 +91,14 @@ module top_level (
   assign pixel_write = ray_pixel_out;
 
   logic step_mem_ready;
-  assign step_mem_ready = mem_ready && (!step_by_step || next_step);
+  // assign step_mem_ready = mem_ready && (!step_by_step || next_step);
 
   raytracing_controller controller (
       .clk(sys_clk),
       .rst(sys_rst),
       .execInst_valid(execInst_valid),
       .execInst(execInst),
-      .mem_ready(step_mem_ready),
+      .mem_ready(mem_ready),
       .cur_shape(cur_geo),
       .cur_light(cur_light),
       .cur_camera(cur_camera),

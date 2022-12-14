@@ -4,7 +4,8 @@ cam yloc, 0
 cam zloc, 0
 sp 0, xloc, yloc, 0, 0
 sp 0, zloc, type, -2, 1
-sp 0, col, zero, 0b00000_000000_11111, 0
+sp 0, col, zscl, 0b00000_000000_11111, 1
+sp 0, xscl, yscl, 1, 1
 nf
 er
 er 

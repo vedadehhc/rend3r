@@ -11,13 +11,14 @@ import proctypes::*;
 // sqrt: 15
 // float_to_fixed: 5
 
-// 155-Stage pipeline - currently supports only sphere
+// 206-Stage pipeline - currently supports only sphere
 // TODO: add normal, support additional shapetype (change quadratic)
 module raycaster#(
     parameter P1_STAGES = 58,
     parameter P2_STAGES = 30,
     parameter P3_STAGES = 53,
-    parameter P4_STAGES = 14
+    parameter P4_STAGES = 14,
+    parameter P5_STAGES = 51
 )(
     input wire clk,
     input wire rst,
@@ -36,7 +37,7 @@ module raycaster#(
     output vec3 intersection
 );
     // pipeline shape_addr
-    parameter TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES;
+    parameter TOTAL_STAGES = P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES + P5_STAGES;
     ShapeAddr pipeline_shape_addr [TOTAL_STAGES-1:0];
     always_ff @(posedge clk) begin
         pipeline_shape_addr[0] <= shape_addr_in;
@@ -159,18 +160,28 @@ module raycaster#(
     // Pipeline src, dir for later stages
     vec3 p2_src [P2_STAGES-1:0];
     vec3 p2_dir [P2_STAGES-1:0];
+    vec3 p2_src_transform [P2_STAGES-1:0];
+    vec3 p2_dir_transform [P2_STAGES-1:0];
     quaternion p2_rot [P2_STAGES-1:0];
     ShapeType p2_shape_type [P2_STAGES-1:0];
 
     always_ff @( posedge clk ) begin
         p2_src[0] <= p1_src[P1_STAGES-1];
         p2_dir[0] <= p1_dir[P1_STAGES-1];
+
+        p2_src_transform[0] <= scale_rot_trans_src;
+        p2_dir_transform[0] <= scale_rot_dir;
+
         p2_rot[0] <= p1_rot[P1_STAGES-1];
         p2_shape_type[0] <= p1_shape_type[P1_STAGES-1];
 
         for (int i = 1; i < P2_STAGES; i = i+1) begin
             p2_src[i] <= p2_src[i-1];
             p2_dir[i] <= p2_dir[i-1];
+            
+            p2_src_transform[i] <= p2_src_transform[i-1];
+            p2_dir_transform[i] <= p2_dir_transform[i-1];
+
             p2_rot[i] <= p2_rot[i-1];
             p2_shape_type[i] <= p2_shape_type[i-1];
         end
@@ -200,18 +211,28 @@ module raycaster#(
     // Pipeline src, dir for later stages
     vec3 p3_src [P3_STAGES-1:0];
     vec3 p3_dir [P3_STAGES-1:0];
+    vec3 p3_src_transform [P3_STAGES-1:0];
+    vec3 p3_dir_transform [P3_STAGES-1:0];
     quaternion p3_rot [P3_STAGES-1:0];
     ShapeType p3_shape_type [P3_STAGES-1:0];
 
     always_ff @( posedge clk ) begin
         p3_src[0] <= p2_src[P2_STAGES-1];
         p3_dir[0] <= p2_dir[P2_STAGES-1];
+
+        p3_src_transform[0] <= p2_src_transform[P2_STAGES-1];
+        p3_dir_transform[0] <= p2_dir_transform[P2_STAGES-1];
+
         p3_rot[0] <= p2_rot[P2_STAGES-1];
         p3_shape_type[0] <= p2_shape_type[P2_STAGES-1];
 
         for (int i = 1; i < P3_STAGES; i = i+1) begin
             p3_src[i] <= p3_src[i-1];
             p3_dir[i] <= p3_dir[i-1];
+            
+            p3_src_transform[i] <= p3_src_transform[i-1];
+            p3_dir_transform[i] <= p3_dir_transform[i-1];
+
             p3_rot[i] <= p3_rot[i-1];
             p3_shape_type[i] <= p3_shape_type[i-1];
         end
@@ -250,18 +271,33 @@ module raycaster#(
         .sol(quad_sol)
     );
 
-    /// Phase 4: Final computations
+    /// Phase 4: Intersection + distance
     // 14-stages
     // sq_distance = t * t * || dir ||^2 (2*6 = 12 stages + 2 pipelining)
     // intersection = src + t * dir (8+6 = 14 stages)
+    // intersection_transform = src_transform + t * dir_transform (8+6 = 14 stages)
 
     // Pipeline stages for hit
     logic p4_hit [P4_STAGES-1:0];
 
+    vec3 p4_src [P3_STAGES-1:0];
+    vec3 p4_dir [P3_STAGES-1:0];
+    vec3 p4_src_transform [P3_STAGES-1:0];
+    vec3 p4_dir_transform [P3_STAGES-1:0];
+    quaternion p4_rot [P3_STAGES-1:0];
+    ShapeType p4_shape_type [P3_STAGES-1:0];
+
     always_ff @( posedge clk ) begin
         p4_hit[0] <= quad_sol_real_pos;
+
+        p4_rot[0] <= p3_rot[P2_STAGES-1];
+        p4_shape_type[0] <= p3_shape_type[P2_STAGES-1];
+
         for (int i = 1; i < P4_STAGES; i = i+1) begin
             p4_hit[i] <= p4_hit[i-1];
+
+            p4_rot[i] <= p4_rot[i-1];
+            p4_shape_type[i] <= p4_shape_type[i-1];
         end
     end
     
@@ -323,6 +359,7 @@ module raycaster#(
     assign p4_t_scale[1] = quad_sol;
     assign p4_t_scale[2] = quad_sol;
 
+    // intersection = src + t*dir
     // 6 stages
     logic p4_dir_scaled_valid;
     vec3 p4_dir_scaled;
@@ -352,20 +389,154 @@ module raycaster#(
     );
 
     
+    // intersection_transform = src_transform + t*dir_transform
+    // 6 stages
+    vec3 p4_ps1_src_transform [P4_PS1_STAGES];
+    always_ff @( posedge clk ) begin 
+        p4_ps1_src_transform[0] <= p3_src_transform[P3_STAGES-1];
+        for (int i = 1; i < P4_PS1_STAGES; i = i + 1) begin
+            p4_ps1_src_transform[i] <= p4_ps1_src_transform[i-1];
+        end
+    end
+
+    logic p4_dir_transform_scaled_valid;
+    vec3 p4_dir_transform_scaled;
+
+    scale p4_mult_t_dir_transform (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(quad_sol_valid),
+        .in(p3_dir_transform[P3_STAGES-1]),
+        .scale(p4_t_scale),
+        .valid_out(p4_dir_transform_scaled_valid),
+        .out(p4_dir_transform_scaled)
+    );
+
+    // 8 stages
+    logic p4_intersection_transform_valid;
+    vec3 p4_intersection_transform;
+
+    translate p4_add_t_dir_src_transform (
+        .clk(clk),
+        .rst(rst),
+        .valid_in(p4_dir_transform_scaled_valid),
+        .in(p4_dir_transform_scaled),
+        .trans(p4_ps1_src_transform[P4_PS1_STAGES-1]),
+        .valid_out(p4_intersection_transform_valid),
+        .out(p4_intersection_transform)
+    );
+
+    
     // TODO: normal computation
-    // intersection_transform = src_transform + t * dir_transform (2 stages)
-    // normal_transform = f(intersection transform) (combinational for conic sections)
-    // normal = R * normal_transform (we don't care about scaling)
+    /// Phase 5: normal computation
+    // 51-stage
+    // normal_transform = f(intersection transform) (combinational for conic sections) (1-stage)
+    // normal = R  S^-1 normal_transform (44 + 6 = 50-stage)
+    
+    vec3 p1234_shape_scale_inv;
+    generate
+        genvar scale_pipe_i;
+        for (scale_pipe_i = 0; scale_pipe_i < 3; scale_pipe_i = scale_pipe_i + 1) begin
+            pipe#(
+                .LENGTH(P1_STAGES + P2_STAGES + P3_STAGES + P4_STAGES),
+                .WIDTH(16)
+            ) pipe_scale (
+                .clk(clk),
+                .rst(rst),
+                .in(shape_scale_inv[scale_pipe_i]),
+                .out(p1234_shape_scale_inv[scale_pipe_i])
+            );
+        end
+    endgenerate
+
+    // 1-stage: decide 
+    vec3 p5_normal_transform;
+
+    always_ff @( posedge clk ) begin
+        case (p4_shape_type[P4_STAGES-1])
+            stOff: begin
+                p5_normal_transform[0] <= 0;
+                p5_normal_transform[1] <= 0;
+                p5_normal_transform[2] <= 0;
+            end
+            stSphere: begin
+                p5_normal_transform[0] <= p4_intersection_transform[0];
+                p5_normal_transform[1] <= p4_intersection_transform[1];
+                p5_normal_transform[2] <= p4_intersection_transform[2];
+            end
+            stCylinder: begin
+                p5_normal_transform[0] <= p4_intersection_transform[0];
+                p5_normal_transform[1] <= p4_intersection_transform[1];
+                p5_normal_transform[2] <= 0;
+            end
+            stCone: begin
+                // NOT normalized!
+                p5_normal_transform[0] <= p4_intersection_transform[0];
+                p5_normal_transform[1] <= p4_intersection_transform[1];
+                p5_normal_transform[2] <= {~p4_intersection_transform[2][15], p4_intersection_transform[2][14:0]};
+            end
+        endcase
+    end
+
+    logic p5_intersection_valid;
+    pipe#(
+        .LENGTH(P5_STAGES),
+        .WIDTH(1)
+    ) p5_pipe_intersection_valid (
+        .clk(clk),
+        .rst(rst),
+        .in(p4_intersection_valid),
+        .out(p5_intersection_valid)
+    );
+
+    logic p5_hit;
+    pipe#(
+        .LENGTH(P5_STAGES),
+        .WIDTH(1)
+    ) p5_pipe_hit (
+        .clk(clk),
+        .rst(rst),
+        .in(p4_hit[P4_STAGES-1]),
+        .out(p5_hit)
+    );
+
+    float16 p5_sq_distance;
+    pipe#(
+        .LENGTH(P5_STAGES),
+        .WIDTH(16)
+    ) p5_pipe_sq_distance (
+        .clk(clk),
+        .rst(rst),
+        .in(p4_ps3_sq_distance[P4_PS3_STAGES-1]),
+        .out(p5_sq_distance)
+    );
+
+    vec3 p5_intersection;
+    generate
+        genvar p5_intersection_pipe_i;
+        for (p5_intersection_pipe_i = 0; p5_intersection_pipe_i < 3; p5_intersection_pipe_i = p5_intersection_pipe_i + 1) begin
+            pipe#(
+                .LENGTH(P5_STAGES),
+                .WIDTH(16)
+            ) p5_pipe_sq_distance (
+                .clk(clk),
+                .rst(rst),
+                .in(p4_intersection[p5_intersection_pipe_i]),
+                .out(p5_intersection[p5_intersection_pipe_i])
+            );
+        end
+    endgenerate
+
 
 
     // Distance should be scaled solution
-    assign valid_out = p4_intersection_valid;
-    assign hit = p4_hit[P4_STAGES-1];
-    assign sq_distance = p4_ps3_sq_distance[P4_PS3_STAGES-1];
+    assign valid_out = p5_intersection_valid;
+    assign hit = p5_hit;
+    assign sq_distance = p5_sq_distance;
 
-    assign intersection[0] = p4_intersection[0];
-    assign intersection[1] = p4_intersection[1];
-    assign intersection[2] = p4_intersection[2];
+    assign intersection[0] = p5_intersection[0];
+    assign intersection[1] = p5_intersection[1];
+    assign intersection[2] = p5_intersection[2];
 endmodule
 
 

@@ -39,6 +39,9 @@ module raytracing_controller(
     assign light_dir[0] = {~cur_light.xfor[15], cur_light.xfor[14:0]};
     assign light_dir[1] = {~cur_light.yfor[15], cur_light.yfor[14:0]};
     assign light_dir[2] = {~cur_light.zfor[15], cur_light.zfor[14:0]};
+    // TODO: light_dir is different for point sources. for now, just assume directional
+    
+    vec3 light_src;
 
     logic valid_light_1;
     logic valid_light_2;
@@ -101,6 +104,14 @@ module raytracing_controller(
                         shape_cast_valid_in <= 1'b1;
                     end else begin
                         if (shape_cast_valid_out) begin
+                            // TODO: instead move to LIGHTING state when hit
+                            if (shape_cast_hit) begin
+                                light_src[0] <= shape_cast_intersection[0];
+                                light_src[1] <= shape_cast_intersection[1];
+                                light_src[2] <= shape_cast_intersection[2];
+                                cur_light_addr <= 0;
+                                sent_command <= 1'b0;
+                            end
                             state <= GIVE_OUTPUT;
                             pixel_value <= shape_cast_hit ? shape_cast_hit_shape.col : 16'b0;
                         end
@@ -112,6 +123,13 @@ module raytracing_controller(
                         shape_cast_valid_in <= 1'b1;
                     end else begin
                         shape_cast_valid_in <= 1'b0;
+                        if (sent_command) begin
+                            if (shape_cast_valid_out) begin
+                                
+                            end
+                        end else begin
+                            valid_light_1 <= 1'b1;
+                        end
                     end
                 end else if (state == GIVE_OUTPUT) begin
                     shape_cast_valid_in <= 1'b0;
@@ -174,7 +192,7 @@ module raytracing_controller(
         .read_shape_addr(cur_shape_addr),
         .valid_out(shape_cast_valid_out),
         .hit(shape_cast_hit),
-        .intersection(),
+        .intersection(shape_cast_intersection),
         .hit_shape(shape_cast_hit_shape)
     );
 
