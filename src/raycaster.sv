@@ -635,6 +635,7 @@ module all_shapes_raycaster (
     output vec3 intersection,
     output Shape hit_shape,
     output vec3 intersection_normal,
+    output ShapeAddr hit_shape_addr,
     output logic[1:0] debug_state
 );
     typedef enum logic[1:0] { IDLE, SENDING, WAITING, TABULATING } all_shape_rc_state;
@@ -831,6 +832,7 @@ module all_shapes_raycaster (
     assign intersection = best_intersection;
     assign hit_shape = cur_shape;
     assign intersection_normal = best_normal;
+    assign hit_shape_addr = best_shape_addr;
 
 endmodule
 

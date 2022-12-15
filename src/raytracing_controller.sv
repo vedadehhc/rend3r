@@ -223,6 +223,7 @@ module raytracing_controller(
     // send all raycasts for single pixel (all initial, then NUM_LIGHTS sets of lighting)
     // pipeline shape along with raycast
 
+    ShapeAddr hit_shape_addr;
     logic [15:0] hit_color;
     vec3 hit_normal;
 
@@ -310,6 +311,7 @@ module raytracing_controller(
                                 state <= LIGHTING;
                                 hit_color <= shape_cast_hit_shape.col;
                                 hit_normal <= shape_cast_normal;
+                                hit_shape_addr <= shape_cast_shape_addr;
                             end else begin
                                 state <= GIVE_OUTPUT;
                                 pixel_value <= pixel_background;
@@ -409,10 +411,28 @@ module raytracing_controller(
     vec3 shape_cast_intersection;
     Shape shape_cast_hit_shape;
     vec3 shape_cast_normal;
+    ShapeAddr shape_cast_shape_addr;
 
 
     // calculate raycast direction based on pixel values
     // pass src, dir, shape type, shape transform to the raycaster
+
+    ShapeAddr cur_shape_addr_1;
+    ShapeAddr cur_shape_addr_2;
+
+    always_ff @( posedge clk ) begin 
+        cur_shape_addr_1 <= cur_shape_addr;
+        cur_shape_addr_2 <= cur_shape_addr_1;
+    end
+
+    Shape shape_cast_shape;
+    always @(*) begin
+        shape_cast_shape = cur_shape
+        if (state == LIGHTING && cur_shape_addr_2 == hit_shape_addr) begin
+            shape_case_shape.sType = stOff;
+        end 
+    end
+    
 
     all_shapes_raycaster shape_cast (
         .clk(clk),
@@ -420,13 +440,14 @@ module raytracing_controller(
         .valid_in(shape_cast_valid_in),
         .src(state == LIGHTING ? light_src : camera_src),
         .dir(state == LIGHTING ? light_dir : camera_dir),
-        .cur_shape(cur_shape),
+        .cur_shape(shape_cast_shape),
         .read_shape_addr(cur_shape_addr),
         .valid_out(shape_cast_valid_out),
         .hit(shape_cast_hit),
         .intersection(shape_cast_intersection),
         .hit_shape(shape_cast_hit_shape),
         .intersection_normal(shape_cast_normal),
+        .hit_shape_addr(shape_cast_shape_addr),
         .debug_state(shape_cast_debug_state)
     );
 
