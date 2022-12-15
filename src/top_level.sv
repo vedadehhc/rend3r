@@ -41,6 +41,20 @@ module top_level (
 
 );
 
+  logic finished_render;
+  logic [63:0] cycle_count;
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      cycle_count <= 0;
+      finished_render <= 1'b0;
+    end else if (!finished_render) begin
+      cycle_count <= cycle_count + 1;
+      if (pixel_write_enable && pixel_addr >= `FRAME_WIDTH * (SCREEN_HEIGHT-1) + SCREEN_WIDTH) begin
+        finished_render <= 1'b1;
+      end
+    end
+  end
+
   logic step_by_step = 1'b0;
   logic next_step = p_btnu;
 
@@ -209,7 +223,7 @@ module top_level (
   end
 
   logic [31:0] seven_seg_val;
-  assign seven_seg_val = c_btnd ? valid_count : {ray_pixel_out, ray_pixel_y[3:0], ray_pixel_x[3:0], 1'b0, ray_shape_addr[0], shape_cast_debug_state, pc_debug[3:0]};// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
+  assign seven_seg_val = c_btnl ? (cycle_count[63:32]): (c_btnr ? (cycle_count[31:0]) : (c_btnd ? valid_count : {ray_pixel_out, ray_pixel_y[3:0], ray_pixel_x[3:0], 1'b0, ray_shape_addr[0], shape_cast_debug_state, pc_debug[3:0]}));// displaying_t3d ? cam_tri[vert_index][coord_index] : rast_tri[vert_index][coord_index];
 
 
   seven_segment_controller mssc (
