@@ -427,9 +427,9 @@ module raytracing_controller(
 
     Shape shape_cast_shape;
     always @(*) begin
-        shape_cast_shape = cur_shape
+        shape_cast_shape = cur_shape;
         if (state == LIGHTING && cur_shape_addr_2 == hit_shape_addr) begin
-            shape_case_shape.sType = stOff;
+            shape_cast_shape.sType = stOff;
         end 
     end
     
