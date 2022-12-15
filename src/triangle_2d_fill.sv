@@ -59,7 +59,7 @@ module triangle_2d_fill (
   assign has_neg   = (d0 < 0) | (d1 < 0) | (d2 < 0);
   assign has_pos   = (d0 > 0) | (d1 > 0) | (d2 > 0);
 
-  assign is_within = ~(has_neg & has_pos);
+  assign is_within = !(hcount == 0) && !(has_neg && has_pos);
 
 endmodule
 

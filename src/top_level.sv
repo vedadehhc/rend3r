@@ -48,7 +48,6 @@ module top_level (
   assign led[1] = mem_ready;
   assign led[2] = rast_busy;
 
-
   logic execInst_valid;
   DecodedInst execInst;
   logic mem_ready;
@@ -56,7 +55,6 @@ module top_level (
   Light cur_light;
   logic [GEOMETRY_WIDTH-1:0] cur_geo;
   InstructionAddr pc_debug;
-
 
   iprocessor processor (
       .clk_100mhz(sys_clk),
@@ -212,6 +210,7 @@ module top_level (
   view camera;
   logic [31:0] seven_seg_val;
 
+
   enum {
     Idle,  // while !rast_busy
     RequestingTriangle,  // set pause low (1 cycle)
@@ -219,6 +218,8 @@ module top_level (
     CalculatingTriangle,  // waiting for rast_tri_valid
     TriangleFilling  // while <-> hcount, vcount
   } rast_state;
+
+  assign led[12:8] = rast_state;
 
   triangle_3d_to_2d t23 (  // 63 stages
       .clk(sys_clk),
