@@ -49,7 +49,7 @@ module top_level (
       finished_render <= 1'b0;
     end else if (!finished_render) begin
       cycle_count <= cycle_count + 1;
-      if (pixel_write_enable && pixel_addr >= `FRAME_WIDTH * (SCREEN_HEIGHT-1) + SCREEN_WIDTH) begin
+      if (valid_count >= 196607) begin
         finished_render <= 1'b1;
       end
     end
