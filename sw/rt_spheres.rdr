@@ -1,0 +1,22 @@
+nr
+cam xloc, 0
+cam yloc, 0
+cam zloc, 0
+lt 0, xfor, 1
+lt 0, yfor, 1
+lt 0, zfor, -1
+sp 0, xloc, yloc, 0, 0
+sp 0, zloc, type, -2, 1
+sp 0, col, zscl, 0b00000_000000_11111, 1
+sp 0, xscl, yscl, 1, 1
+sp 0, rrot, irot, 1, 0
+sp 0, jrot, krot, 0, 0
+sp 1, xloc, yloc, 3, 0
+sp 1, zloc, type, -5, 1
+sp 1, col, zscl, 0b11111_111111_00000, 1
+sp 1, xscl, yscl, 0.5, 1
+sp 1, rrot, irot, 0.924, 0
+sp 1, jrot, krot, 0, 0.383
+nf
+er
+er

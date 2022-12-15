@@ -43,8 +43,8 @@ module top_level (
 
   logic finished_render;
   logic [63:0] cycle_count;
-  always_ff @(posedge clk) begin
-    if (rst) begin
+  always_ff @(posedge sys_clk) begin
+    if (sys_rst) begin
       cycle_count <= 0;
       finished_render <= 1'b0;
     end else if (!finished_render) begin
